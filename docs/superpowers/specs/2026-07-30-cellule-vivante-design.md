@@ -23,6 +23,10 @@ Quatre phénomènes sont traités :
 
 **Critère d'échec** : le site est beau et l'étudiant n'en retient qu'une ambiance.
 
+Ce critère est le point du projet, et il ne se mesure pas en images par seconde. Il est vérifié par un **auto-contrôle de trois questions à la fin de chaque chapitre** — du contenu dans `contenu/`, pas de la machinerie nouvelle. Une question porte sur un ordre de grandeur, une sur un mécanisme, une sur une idée fausse courante. Un chapitre dont on ne sait pas écrire les trois questions est un chapitre qui n'enseigne rien, et c'est un signal à traiter au moment de la rédaction, pas après.
+
+**Ampleur.** L'architecture retenue est estimée à **45–60 jours-homme**, dont environ **35 % hors code** : rédaction française, production des silhouettes moléculaires, relecture par un biologiste, maquettes mobiles, accessibilité. C'est le chiffre le plus décisif de ce document.
+
 ### Hypothèses posées
 
 - **Cellule eucaryote animale générique.** Pas de neurone (les potentiels d'action sont hors périmètre), pas de cellule végétale, pas de procaryote. Les valeurs bactériennes n'apparaissent qu'en comparaison explicite.
@@ -302,6 +306,11 @@ Le validateur donne un avertissement de contraste sur trois teintes sur six (`#E
 
 **Ce risque est chaîné** : si les deux voies échouent, la direction artistique tombe *et* la palette doit être revalidée sans dépendre du contour. Il devient donc la **porte 0** du lot 1 (§11).
 
+**Repli nommé, pour qu'un banc raté ne redevienne pas un brainstorming.** Deux options dans l'ordre de préférence :
+
+1. **Séparer les six familles par la luminosité et la silhouette seules**, sans contour. C'est de toute façon ce que la palette devra faire si la porte 0a échoue, puisque son accessibilité ne pourra plus s'appuyer sur un encodage secondaire graphique. Reste dans la même direction artistique, coût faible.
+2. **Basculer sur la direction « coupe optique »** — fond `#07080B`, quatre canaux fluorescents `#3B6FD4`, `#22A05A`, `#C93E9E`, `#C08420`, **déjà validée intégralement** (bande de luminosité, chroma, séparation daltonienne, contraste ≥ 3:1). Elle assume la suppression en la justifiant par le protocole : dans une image de fluorescence, ce qui n'est pas marqué n'est réellement pas visible. Changement de direction artistique, mais sans revalidation à refaire.
+
 ### 5.4 Rendu
 
 Cel-shading : aplats et contour, pas de spéculaire, pas de PBR. La profondeur passe par l'assombrissement et un brouillard exponentiel, pas par le flou.
@@ -407,10 +416,12 @@ En dessous de 20 000 entités visibles, le processeur en JavaScript suffit large
 
 1. Ratio de pixels 2 → 1,5 → 1,25 → 1 (le plus efficace, le moins visible)
 2. Profondeur de champ coupée
-3. Densité de la boîte de vérité réduite, avec le badge mis à jour en conséquence
+3. **Arête de la dalle réduite**, avec le badge mis à jour en conséquence — jamais la densité (voir ci-dessous)
 4. Bloom sur mip plus bas, puis coupé
 5. Détail des sphères 2 → 1 → 0
 6. En dernier recours, image fixe
+
+**Quand le budget manque, on rétrécit la dalle, jamais sa densité.** Une boîte de vérité à densité réduite n'est plus une boîte de vérité : c'est exactement la malhonnêteté que tout le reste de la spécification combat. Montrer un volume plus petit à densité juste reste vrai ; montrer le même volume à densité fausse ne l'est pas. Le badge annonce l'arête courante, et l'arête plus faible du mobile (de l'ordre de 0,3 à 0,7 µm) est une **conséquence énoncée du budget**, pas un plancher arbitraire.
 
 ### 9.5 Mobile
 
@@ -460,6 +471,7 @@ Ce qui définit « fini », chiffré :
 | Axe d'accessibilité | aucune violation critique |
 | Parcours clavier complet sans souris | passant |
 | Relecture par un biologiste | faite, avant mise en ligne |
+| **Auto-contrôle de trois questions par chapitre** | **rédigé, et chaque réponse trouvable dans le chapitre** |
 
 Le test d'images par seconde en CI tourne en rendu logiciel : il n'attrape que les régressions catastrophiques (fuite d'objets, matériaux recréés par image). Il ne remplace pas une passe manuelle sur appareil réel avant chaque livraison.
 
@@ -477,10 +489,12 @@ Chaque lot passe par son propre cycle spec → plan → implémentation.
 
 Court, mais bloquant. Aucune ligne de la scène finale n'est écrite avant.
 
+**Le lot 0 est de l'implémentation, pas de la mesure passive** : les trois bancs demandent d'écrire du WebGL et des shaders. Il attend donc l'approbation de cette spécification et passe par un plan d'implémentation comme le reste. « Ce n'est qu'un banc » n'est pas une raison de commencer à coder.
+
 | Porte | Question | Si ça échoue |
 |---|---|---|
-| **0a — Contour** | Une coque inversée à largeur constante à l'écran tient-elle le budget sur 100 k instances ? La détection de bord en post-traitement est-elle finançable ? Le contour intérieur entre instances de même teinte est-il obtenable ? | La direction artistique tombe et la palette doit être revalidée sans dépendre du contour (§5.3) |
-| **0b — Boîte de vérité** | Une dalle de 0,3 à 1,5 µm à densité vraie tient-elle 55 fps sur le Mac et 28 fps sur un vrai iPhone ? | On réduit l'arête de la dalle et on l'annonce, plutôt que de baisser la densité en silence |
+| **0a — Contour** | Une coque inversée à largeur constante à l'écran tient-elle le budget sur 100 k instances ? La détection de bord en post-traitement est-elle finançable ? Le contour intérieur entre instances de même teinte est-il obtenable ? | Repli nommé en §5.3 : d'abord séparer les familles par luminosité et silhouette seules ; sinon basculer sur la direction « coupe optique », déjà validée intégralement |
+| **0b — Boîte de vérité** | Une dalle de 0,3 à 1,5 µm à densité vraie tient-elle 55 fps sur le Mac et 28 fps sur un vrai iPhone ? | On réduit **l'arête** de la dalle et on l'annonce — jamais la densité (§9.4) |
 | **0c — Silhouettes** | Combien de temps coûte réellement la production d'une silhouette moléculaire reconnaissable, de la structure PDB au binaire ? | On réduit le nombre de familles distinctes avant de s'engager sur quatre phénomènes |
 
 ### Lots suivants
