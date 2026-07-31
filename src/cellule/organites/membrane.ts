@@ -22,7 +22,19 @@ const RAYON_INTERNE = RAYON_CELLULE - EPAISSEUR_BICOUCHE
 /** Plan médian de la bicouche : les protéines y sont centrées pour la traverser. */
 const RAYON_MEDIAN = RAYON_CELLULE - EPAISSEUR_BICOUCHE / 2
 
-const NOMBRE_PROTEINES = 700
+/**
+ * Nombre de protéines transmembranaires dessinées.
+ *
+ * La membrane fait 1 257 µm² et en porte réellement de 10 000 à 30 000 par µm²,
+ * soit de l'ordre de 10⁷ molécules — hors budget de trois ordres de grandeur.
+ * On en dessine 60 000, ce qui donne 48 par µm² : assez pour que la membrane se
+ * lise comme une mosaïque hérissée et non comme un ballon lisse, et il faut dire
+ * ce qui manque plutôt que de le taire. La fiche porte l'écart.
+ *
+ * Le chiffre précédent, 700, contredisait ouvertement la fiche du module, qui
+ * annonce que la moitié de la masse membranaire est protéique.
+ */
+const NOMBRE_PROTEINES = 60_000
 const RAYON_PROTEINE = 0.012
 const HAUTEUR_PROTEINE = 0.009
 /** Hauteur de la calotte externe, la part qui dépasse côté milieu extérieur. */
@@ -147,6 +159,10 @@ export function creerMembrane(): Organite[] {
       chiffres: [
         { valeur: '5 nm', quoi: "épaisseur de la bicouche, 1 200 fois moins que le diamètre de la cellule" },
         { valeur: '~50 %', quoi: 'de la masse de la membrane est protéique' },
+        {
+          valeur: '10 000 à 30 000',
+          quoi: 'protéines par µm² dans une membrane réelle ; 48 sont dessinées ici, soit un semis 300 fois trop clair',
+        },
         { valeur: '10⁹', quoi: "une bicouche pure laisse passer l'eau un milliard de fois plus vite que les ions sodium" },
         { valeur: '100 000 V/cm', quoi: "champ électrique qui traverse l'épaisseur de la membrane" },
       ],
