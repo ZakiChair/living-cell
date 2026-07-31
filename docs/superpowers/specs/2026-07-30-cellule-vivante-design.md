@@ -2,7 +2,21 @@
 
 **Date** : 2026-07-30
 **Auteur** : Zaki Chair, avec Claude
-**Statut** : conception validée, implémentation non commencée
+**Statut** : ⚠️ **DOCUMENT HISTORIQUE — plusieurs sections ne décrivent plus le produit.**
+
+> **À lire avant celui-ci : [`2026-07-31-verdict-des-sept-criteres.md`](./2026-07-31-verdict-des-sept-criteres.md).**
+>
+> Ce document est la conception d'origine, écrite avant toute implémentation. Le produit a divergé
+> sur plusieurs points, et la revue du 31 juillet en a fait son constat central. Le verdict tranche
+> critère par critère ce qui est **tenu**, ce qui est **réduit** et ce qui est **rayé**, et sa
+> §4 liste les sections d'ici qui décrivent des sous-systèmes inexistants — la pile technique
+> (§13), les bandes d'échelle (§3.4), le contour en post-traitement (§5.3), la dégradation
+> adaptative (§9.4), le répertoire `contenu/` et les chapitres (§3.5, §6.1), la topoisomérase et
+> CRISPR (§1, lot 3), le découpage en lots (§11).
+>
+> Ce qui reste vrai et bien tenu : les sept décisions fondatrices du §2 dans leur DOCTRINE, les
+> mesures des bancs du lot 0, et les pièges du §14, à l'exception de ceux qui portent sur des
+> mécanismes jamais construits.
 
 ---
 
