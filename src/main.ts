@@ -17,6 +17,15 @@ import { creerChromatineDense } from './cellule/organites/chromatineDense.js'
 import { creerFlux } from './cellule/vie.js'
 import type { Mecanisme } from './cellule/mecanismes/contrat.js'
 import { creerMecanismes } from './cellule/mecanismes/tous.js'
+import { creerSceneAtelier, RAYON_DEPOT } from './cellule/atelier/scene.js'
+import { creerPanneauAtelier, FICHE_ATELIER } from './cellule/atelier/panneau.js'
+import {
+  avancerAtelier,
+  creerAtelier,
+  donnerAuRibosome,
+  facteurAffiche,
+} from './noyau/atelier.js'
+import { avancerDe, creerEtat, regimeTraduction } from './noyau/etatCellule.js'
 
 const vue = creerVue(document.body)
 
@@ -45,6 +54,16 @@ for (const f of flux) vue.scene.add(f.objet)
 
 const mecanismes = creerMecanismes()
 for (const m of mecanismes) vue.scene.add(m.objet)
+
+// ── L'atelier du gène ─────────────────────────────────────────────────────
+// La cellule a désormais un ÉTAT, et l'atelier est ce qui le rend manipulable.
+// Les deux vivent dans src/noyau/, testés sans GPU ; ici on ne fait que les
+// brancher à la scène et à l'interface.
+const etatCellule = creerEtat()
+const atelier = creerAtelier()
+const sceneAtelier = creerSceneAtelier()
+sceneAtelier.objet.visible = false
+vue.scene.add(sceneAtelier.objet)
 
 /**
  * Panneau des mécanismes, groupés par organite.
@@ -137,27 +156,62 @@ function mettreEnAvant(choisi: Mecanisme | null): void {
 const cibleSuivie = new THREE.Vector3()
 const deriveTemp = new THREE.Vector3()
 
-/** Position monde de l'ancre d'un mécanisme, à l'instant présent. */
-function cibleMonde(m: Mecanisme, sortie: THREE.Vector3): THREE.Vector3 {
+/** Ancre poursuivie, en coordonnées de la scène, ou null en vue d'ensemble. */
+let ancreSuivie: THREE.Vector3 | null = null
+
+/** Position monde d'une ancre de scène, à l'instant présent. */
+function cibleMonde(ancre: THREE.Vector3, sortie: THREE.Vector3): THREE.Vector3 {
   vue.scene.updateMatrixWorld(true)
-  return sortie.copy(m.ancre).applyMatrix4(vue.scene.matrixWorld)
+  return sortie.copy(ancre).applyMatrix4(vue.scene.matrixWorld)
 }
 
 /**
- * Fait suivre à la caméra la dérive du mécanisme choisi.
+ * Fait suivre à la caméra la dérive de ce qu'on regarde.
  *
  * On applique à la caméra le MÊME déplacement qu'à la cible, et non une
  * position calculée : l'écart caméra ↔ cible reste donc intact, et l'utilisateur
  * garde son orbite, son zoom et son angle de vue. Une caméra rigidement
  * réattachée à chaque image les lui reprendrait.
  */
-function suivreLeMecanisme(): void {
-  if (!mecanismeChoisi) return
-  cibleMonde(mecanismeChoisi, deriveTemp).sub(cibleSuivie)
+function suivreLaCible(): void {
+  if (!ancreSuivie) return
+  cibleMonde(ancreSuivie, deriveTemp).sub(cibleSuivie)
   if (deriveTemp.lengthSq() === 0) return
   cibleSuivie.add(deriveTemp)
   vue.controles.target.add(deriveTemp)
   vue.camera.position.add(deriveTemp)
+}
+
+/**
+ * Pose la caméra sur une ancre de scène, à la bonne distance, et l'y garde.
+ *
+ * `direction` est en coordonnées de SCÈNE et sera tournée avec elle, comme
+ * l'ancre. Une scène dont la disposition a un axe privilégié doit déclarer sous
+ * quel angle elle se regarde : le recul par défaut convient aux mécanismes, qui
+ * sont à peu près sphériques, mais pas à un plateau étiré.
+ */
+const RECUL_PAR_DEFAUT = new THREE.Vector3(0.5, 0.36, 0.79).normalize()
+
+function cadrerSur(
+  ancre: THREE.Vector3,
+  rayon: number,
+  direction: THREE.Vector3 = RECUL_PAR_DEFAUT,
+): void {
+  ancreSuivie = ancre
+  cibleMonde(ancre, cibleSuivie)
+  const distance = (rayon * 1.6) / Math.tan((vue.camera.fov * Math.PI) / 360)
+  // La direction suit la rotation de la scène, sans quoi l'angle de vue
+  // dépendrait de l'instant du clic.
+  vue.scene.updateMatrixWorld(true)
+  const recul = direction
+    .clone()
+    .transformDirection(vue.scene.matrixWorld)
+    .multiplyScalar(distance)
+  vue.controles.target.copy(cibleSuivie)
+  vue.camera.position.copy(cibleSuivie).add(recul)
+  // De près, l'écorché ne ferait que retirer de la matière sans rien révéler.
+  curseurCoupe.value = '100'
+  reglerCoupe(1)
 }
 
 function allerAuMecanisme(m: Mecanisme): void {
@@ -169,27 +223,194 @@ function allerAuMecanisme(m: Mecanisme): void {
     return
   }
 
-  cibleMonde(m, cibleSuivie)
-
-  const distance = (m.rayonCadrage * 1.6) / Math.tan((vue.camera.fov * Math.PI) / 360)
-  const recul = new THREE.Vector3(0.5, 0.36, 0.79).normalize().multiplyScalar(distance)
-  vue.controles.target.copy(cibleSuivie)
-  vue.camera.position.copy(cibleSuivie).add(recul)
-
-  // De près, l'écorché ne ferait que retirer de la matière sans rien révéler.
-  curseurCoupe.value = '100'
-  reglerCoupe(1)
-
+  cadrerSur(m.ancre, m.rayonCadrage)
   mettreEnAvant(m)
   ouvrirFicheMecanisme(m)
 }
 
 function revenirVueEnsemble(): void {
+  ancreSuivie = null
   vue.camera.position.set(5, 5, 24)
   vue.controles.target.set(0, 0, 0)
   curseurCoupe.value = '58'
   reglerCoupe(0.58)
 }
+
+// ── Le mode atelier ───────────────────────────────────────────────────────
+/**
+ * L'atelier est un MODE, pas un mécanisme de plus.
+ *
+ * Il occupe toute l'attention : les seize mécanismes et les flux d'ambiance
+ * sont coupés, l'encombrement est réduit, et le panneau de gauche laisse la
+ * place au sien. Un plateau de trois cents nanomètres au milieu d'une cellule
+ * de vingt micromètres ne se verrait pas autrement.
+ */
+let atelierActif = false
+
+const boutonAtelier = document.getElementById('ouvrirAtelier')!
+boutonAtelier.addEventListener('click', () => {
+  if (atelierActif) quitterAtelier()
+  else entrerAtelier()
+})
+
+/** La fiche de l'atelier, avec son facteur et son ellision, comme un mécanisme. */
+function ouvrirFicheAtelier(): void {
+  ficheTitre.textContent = FICHE_ATELIER.titre
+  ficheRole.textContent = "Enveloppe nucléaire — du gène à la protéine"
+  ficheFacteur.textContent = facteurAffiche(atelier)
+  ficheFacteur.style.display = ''
+  ficheDesc.textContent = FICHE_ATELIER.description
+  ficheNote.textContent = FICHE_ATELIER.ellision
+  fiche.classList.add('ouverte')
+}
+
+const panneauAtelier = creerPanneauAtelier(atelier, etatCellule, {
+  cadrer: () =>
+    cadrerSur(sceneAtelier.ancre, sceneAtelier.rayonCadrage, sceneAtelier.directionCadrage),
+  quitter: () => quitterAtelier(),
+})
+panneauAtelier.racine.hidden = true
+document.getElementById('colonne')!.appendChild(panneauAtelier.racine)
+
+function entrerAtelier(): void {
+  atelierActif = true
+  mettreEnAvant(null)
+  familleIsolee = null
+  appliquerIsolement()
+  sceneAtelier.objet.visible = true
+  for (const f of flux) f.objet.visible = false
+  for (const m of mecanismes) m.objet.visible = false
+  // Les organites sont MASQUÉS, et non estompés comme ailleurs. Le plateau
+  // fait trois cents nanomètres et se tient sur l'enveloppe nucléaire : à cette
+  // distance, le noyau n'est plus un contexte, c'est une paroi opaque entre la
+  // caméra et le sujet. L'atelier est un plateau, et la fiche le déclare.
+  for (const organite of vue.organites) organite.objet.visible = false
+  if (curseurDensite) {
+    curseurDensite.value = '8'
+    reglerDensite(0.08)
+  }
+  panneauAtelier.racine.hidden = false
+  panneauFlux.hidden = true
+  legende.hidden = true
+  boutonAtelier.setAttribute('aria-pressed', 'true')
+  cadrerSur(sceneAtelier.ancre, sceneAtelier.rayonCadrage, sceneAtelier.directionCadrage)
+  ouvrirFicheAtelier()
+}
+
+function quitterAtelier(): void {
+  atelierActif = false
+  sceneAtelier.brinTenu = null
+  sceneAtelier.objet.visible = false
+  for (const organite of vue.organites) organite.objet.visible = true
+  panneauAtelier.racine.hidden = true
+  panneauFlux.hidden = false
+  legende.hidden = false
+  boutonAtelier.setAttribute('aria-pressed', 'false')
+  fiche.classList.remove('ouverte')
+  if (curseurDensite) {
+    curseurDensite.value = '100'
+    reglerDensite(1)
+  }
+  mettreEnAvant(null)
+  revenirVueEnsemble()
+}
+
+/**
+ * LE GESTE DEMANDÉ : saisir le brin d'ARN et le porter au ribosome.
+ *
+ * Le pointeur ne donne que deux coordonnées ; il faut donc choisir une surface
+ * de projection. C'est un plan passant par le brin et FACE À LA CAMÉRA : le brin
+ * suit ainsi le curseur exactement, quel que soit l'angle sous lequel
+ * l'utilisateur a orbité la scène.
+ *
+ * Le seuil de dépôt est en micromètres, pas en pixels : « assez près du
+ * ribosome » doit vouloir dire cinquante nanomètres, une distance biologique,
+ * et non un nombre de pixels qui changerait de sens à chaque zoom.
+ */
+const planSaisie = new THREE.Plane()
+const rayonSaisie = new THREE.Raycaster()
+const pointeurSaisie = new THREE.Vector2()
+const pointSaisie = new THREE.Vector3()
+const posBrin = new THREE.Vector3()
+const posRibosome = new THREE.Vector3()
+const localTemp = new THREE.Vector3()
+const inverseTemp = new THREE.Matrix4()
+let saisieEnCours = false
+
+/** Distance en pixels sous laquelle le pointeur est considéré sur le brin. */
+const RAYON_PRISE_PX = 44
+
+/** Position à l'écran d'un point monde, en pixels. */
+function versEcran(monde: THREE.Vector3, sortie: THREE.Vector2): THREE.Vector2 {
+  const projete = monde.clone().project(vue.camera)
+  return sortie.set(
+    ((projete.x + 1) / 2) * window.innerWidth,
+    ((1 - projete.y) / 2) * window.innerHeight,
+  )
+}
+
+const ecranTemp = new THREE.Vector2()
+
+function brinSousPointeur(x: number, y: number): boolean {
+  if (!atelierActif || atelier.etape !== 'attente') return false
+  sceneAtelier.positionBrin(posBrin)
+  versEcran(posBrin, ecranTemp)
+  return ecranTemp.distanceTo(pointeurSaisie.set(x, y)) < RAYON_PRISE_PX
+}
+
+function deplacerBrin(x: number, y: number): void {
+  // Le plan de saisie fait face à la caméra et passe par LE RIBOSOME, pas par
+  // le brin. Mesuré : un plan passant par le brin transpose exactement le
+  // déplacement à l'écran — à 0,7 pixel près — mais laisse le point déposé sur
+  // la ligne de visée du ribosome, 38 nm devant lui. Viser juste ne suffisait
+  // donc pas à déposer, et rien ne l'expliquait à l'écran.
+  //
+  // Poser le plan sur le ribosome fait sauter le brin d'une trentaine de
+  // nanomètres en profondeur au moment où on le saisit — imperceptible sur un
+  // champ de trois cents — et rend le geste exact : ce qu'on voit sur le
+  // ribosome y est.
+  sceneAtelier.positionRibosome(posRibosome)
+  vue.camera.getWorldDirection(pointSaisie)
+  planSaisie.setFromNormalAndCoplanarPoint(pointSaisie, posRibosome)
+
+  pointeurSaisie.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1)
+  rayonSaisie.setFromCamera(pointeurSaisie, vue.camera)
+  if (!rayonSaisie.ray.intersectPlane(planSaisie, pointSaisie)) return
+
+  // Le brin est positionné en coordonnées locales du plateau : c'est là que la
+  // scène de l'atelier l'attend, et cela le fait tourner avec la cellule.
+  sceneAtelier.objet.updateMatrixWorld(true)
+  inverseTemp.copy(sceneAtelier.objet.matrixWorld).invert()
+  sceneAtelier.brinTenu = localTemp.copy(pointSaisie).applyMatrix4(inverseTemp).clone()
+}
+
+function relacherBrin(): void {
+  if (!saisieEnCours) return
+  saisieEnCours = false
+  sceneAtelier.positionBrin(posBrin)
+  sceneAtelier.positionRibosome(posRibosome)
+  // Assez près du ribosome : la petite sous-unité prend le brin.
+  if (posBrin.distanceTo(posRibosome) < RAYON_DEPOT) donnerAuRibosome(atelier)
+  sceneAtelier.brinTenu = null
+}
+
+window.addEventListener('pointerdown', (e) => {
+  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux, #atelier')) return
+  if (!brinSousPointeur(e.clientX, e.clientY)) return
+  saisieEnCours = true
+  // On coupe l'orbite : sans cela, tirer le brin ferait aussi pivoter la scène.
+  vue.controles.enabled = false
+  deplacerBrin(e.clientX, e.clientY)
+})
+
+window.addEventListener('pointermove', (e) => {
+  if (saisieEnCours) deplacerBrin(e.clientX, e.clientY)
+})
+
+window.addEventListener('pointerup', () => {
+  relacherBrin()
+  vue.controles.enabled = true
+})
 
 // ── Légende ───────────────────────────────────────────────────────────────
 // Une entrée par famille, pas par exemplaire : six mitochondries font une
@@ -518,9 +739,19 @@ function boucle(): void {
   for (const f of flux) if (f.objet.visible) f.animer(tempsVie)
   for (const m of mecanismes) if (m.objet.visible) m.animer(tempsVie)
 
+  // ── L'état de la cellule, et l'atelier qu'il gouverne ────────────────────
+  // Le moteur tourne EN PERMANENCE, même hors atelier : un levier tiré depuis la
+  // vue d'ensemble doit avoir déjà produit son effet quand on descend voir.
+  avancerDe(etatCellule, dt)
+  if (atelierActif) {
+    avancerAtelier(atelier, dt, regimeTraduction(etatCellule.atp))
+    sceneAtelier.animer(atelier, tempsVie)
+    panneauAtelier.rafraichir(atelier, etatCellule)
+  }
+
   // Avant `controles.update()` : la cible doit être à jour quand l'amortissement
   // calcule le déplacement de cette image.
-  suivreLeMecanisme()
+  suivreLaCible()
   vue.controles.update()
   majSurvol()
   majEchelle()
@@ -534,8 +765,43 @@ requestAnimationFrame(() => {
   document.getElementById('chargement')!.classList.add('parti')
 })
 
-// Repère de diagnostic pour les tests de bout en bout.
+// Repères de diagnostic pour les tests de bout en bout.
 ;(window as unknown as { __celluleReady?: boolean }).__celluleReady = true
+/**
+ * Ce qu'un test a besoin de savoir sans deviner.
+ *
+ * La position à l'écran du brin est la seule chose qu'un test ne peut ni
+ * calculer ni lire dans le DOM : elle dépend de la caméra, de la rotation de la
+ * scène et de l'étape en cours. Sans elle, vérifier le geste demandé reviendrait
+ * à cliquer au jugé, ce qui ne prouve rien quand ça échoue.
+ */
+;(window as unknown as { __atelier?: unknown }).__atelier = {
+  ecranBrin: () => {
+    sceneAtelier.positionBrin(posBrin)
+    versEcran(posBrin, ecranTemp)
+    return { x: ecranTemp.x, y: ecranTemp.y }
+  },
+  ecranRibosome: () => {
+    sceneAtelier.positionRibosome(posRibosome)
+    versEcran(posRibosome, ecranTemp)
+    return { x: ecranTemp.x, y: ecranTemp.y }
+  },
+  /** Distance brin ↔ ribosome en micromètres, et le seuil de dépôt. */
+  distanceDepot: () => ({
+    distance: sceneAtelier
+      .positionBrin(posBrin)
+      .distanceTo(sceneAtelier.positionRibosome(posRibosome)),
+    seuil: RAYON_DEPOT,
+  }),
+  etat: () => ({
+    etape: atelier.etape,
+    codons: atelier.codons,
+    liaisons: atelier.liaisons,
+    atp: etatCellule.atp,
+    forceProtonMotrice: etatCellule.forceProtonMotrice,
+    gradientNa: etatCellule.gradientNa,
+  }),
+}
 console.info(
   `cellule assemblée : ${vue.organites.length} organites, ` +
     `${familles.size} familles, rayon ${RAYON_CELLULE} µm`,

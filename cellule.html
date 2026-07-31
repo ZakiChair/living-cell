@@ -121,6 +121,9 @@
         min-height: 26px;
         transition: background 0.14s;
       }
+      /* `display: flex` ci-dessus l'emporte sur la feuille du navigateur :
+         sans cette règle, l'attribut `hidden` ne masque rien. */
+      #legende[hidden] { display: none; }
       #legende button:hover { background: rgba(28, 26, 23, 0.07); }
       #legende button[aria-pressed="true"] { background: rgba(28, 26, 23, 0.11); font-weight: 600; }
       #legende button:focus-visible { outline: 2px solid #0072b2; outline-offset: 1px; }
@@ -299,6 +302,179 @@
       }
       #reglages button:hover { background: rgba(28, 26, 23, 0.16); }
 
+      /* ── Atelier du gène ────────────────────────────────────── */
+      #atelier {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        background: var(--voile);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--trait);
+        border-radius: 10px;
+        padding: 14px 15px;
+      }
+      #atelier[hidden] { display: none; }
+      .atelier-entete { display: flex; align-items: baseline; gap: 8px; }
+      #atelier h2 { margin: 0; font-size: 0.98rem; letter-spacing: -0.01em; flex: 1; }
+      #atelier h3 {
+        margin: 16px 0 7px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--encre-3);
+        font-weight: 600;
+      }
+      .atelier-gene { margin: 3px 0 11px; font-size: 0.8rem; color: var(--encre-2); }
+
+      .atelier-jauge {
+        height: 3px;
+        background: rgba(28, 26, 23, 0.12);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .atelier-jauge i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: #0072b2;
+        transition: width 0.2s linear;
+      }
+      .atelier-etape { margin: 10px 0 2px; font-size: 0.88rem; font-weight: 600; }
+      .atelier-sous { margin: 0 0 12px; font-size: 0.79rem; color: var(--encre-2); }
+
+      .atelier-boutons { display: flex; flex-wrap: wrap; gap: 6px; }
+      #atelier button {
+        border: 0;
+        background: rgba(28, 26, 23, 0.08);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font: inherit;
+        font-size: 0.81rem;
+        color: var(--encre);
+        cursor: pointer;
+        min-height: 30px;
+      }
+      #atelier button:hover:not(:disabled) { background: rgba(28, 26, 23, 0.16); }
+      #atelier button:disabled { opacity: 0.38; cursor: default; }
+      #atelier button.primaire:not(:disabled) { background: rgba(0, 114, 178, 0.16); font-weight: 600; }
+      #atelier button:focus-visible { outline: 2px solid #0072b2; outline-offset: 1px; }
+
+      /* L'affordance du geste : quand le brin peut être donné, la commande
+         respire. Sans elle, rien ne dirait qu'on peut aussi le SAISIR dans la
+         scène et le porter jusqu'au ribosome. */
+      #atelier.a-donner button.primaire:not(:disabled) {
+        animation: respire 1.6s ease-in-out infinite;
+      }
+      @keyframes respire {
+        0%, 100% { background: rgba(0, 114, 178, 0.16); }
+        50% { background: rgba(0, 114, 178, 0.34); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #atelier.a-donner button.primaire:not(:disabled) { animation: none; }
+        .atelier-jauge i { transition: none; }
+      }
+
+      .atelier-reglages {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 11px;
+        font-size: 0.79rem;
+        color: var(--encre-2);
+      }
+      .atelier-reglages label { display: flex; align-items: center; gap: 7px; }
+      .atelier-reglages input[type="range"] { width: 92px; height: 24px; accent-color: #0072b2; }
+      .atelier-case input { width: 17px; height: 17px; accent-color: #0072b2; }
+
+      .atelier-lecture {
+        margin-top: 12px;
+        padding: 9px 11px;
+        border-radius: 8px;
+        background: rgba(28, 26, 23, 0.05);
+        opacity: 0.4;
+      }
+      .atelier-lecture.active { opacity: 1; background: rgba(0, 114, 178, 0.09); }
+      .atelier-lecture .codon {
+        font: 600 1.15rem/1.2 ui-monospace, "SF Mono", Menlo, monospace;
+        letter-spacing: 0.16em;
+      }
+      .atelier-lecture .anti {
+        font: 0.72rem/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+        color: var(--encre-2);
+      }
+      .atelier-lecture .residu { font-size: 0.83rem; margin-top: 3px; }
+
+      .atelier-sequence { display: flex; flex-wrap: wrap; gap: 3px; }
+      .atelier-sequence .residu {
+        width: 19px;
+        height: 19px;
+        display: grid;
+        place-content: center;
+        border-radius: 4px;
+        font: 600 0.68rem/1 ui-monospace, "SF Mono", Menlo, monospace;
+        background: rgba(28, 26, 23, 0.07);
+        color: var(--encre-3);
+        border: 1px solid transparent;
+      }
+      /* Un résidu posé prend la teinte de sa CLASSE chimique, jamais la sienne :
+         vingt teintes ne seraient discriminables par personne, et ce qui décide
+         du repliement est l'alternance des caractères. */
+      .atelier-sequence .residu.pose { color: #fff; border-color: rgba(0, 0, 0, 0.12); }
+      .residu.pose.apolaire { background: #e69f00; color: #1c1a17; }
+      .residu.pose.polaire { background: #56b4e9; color: #1c1a17; }
+      .residu.pose.basique { background: #0072b2; }
+      .residu.pose.acide { background: #d55e00; }
+
+      .atelier-classes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 8px;
+        font-size: 0.71rem;
+        color: var(--encre-2);
+      }
+      .atelier-classes .classe { display: flex; align-items: center; gap: 5px; }
+      .atelier-classes i { width: 9px; height: 9px; border-radius: 2px; }
+      .atelier-classes i.apolaire { background: #e69f00; }
+      .atelier-classes i.polaire { background: #56b4e9; }
+      .atelier-classes i.basique { background: #0072b2; }
+      .atelier-classes i.acide { background: #d55e00; }
+
+      .atelier-bilan {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 3px 12px;
+        margin: 0;
+        font-size: 0.79rem;
+      }
+      .atelier-bilan dt { color: var(--encre-2); }
+      .atelier-bilan dd { margin: 0; font-variant-numeric: tabular-nums; }
+      #atelier.a-court .atelier-bilan dd { color: #b35400; }
+      #atelier.a-sec .atelier-bilan dd { color: #d55e00; font-weight: 600; }
+
+      .atelier-leviers { display: flex; flex-wrap: wrap; gap: 6px; }
+      #atelier button.levier[aria-pressed="true"] {
+        background: rgba(213, 94, 0, 0.22);
+        font-weight: 600;
+      }
+      .atelier-explication {
+        margin: 9px 0 0;
+        font-size: 0.77rem;
+        color: var(--encre-2);
+        line-height: 1.5;
+      }
+      .atelier-explication:empty { display: none; }
+
+      .atelier-note {
+        margin: 12px 0 0;
+        padding: 8px 10px;
+        border-left: 2px solid rgba(28, 26, 23, 0.18);
+        font-size: 0.74rem;
+        color: var(--encre-2);
+        background: rgba(28, 26, 23, 0.035);
+        border-radius: 0 6px 6px 0;
+      }
+
       #echelle {
         position: fixed;
         right: 30px;
@@ -364,6 +540,7 @@
         <input id="coupe" type="range" min="0" max="100" value="58" aria-label="Ouverture de l'écorché" />
       </label>
       <span class="sep"></span>
+      <button id="ouvrirAtelier" aria-pressed="false">Atelier du gène</button>
       <button id="verite">Boîte de vérité</button>
       <button id="rotation" aria-pressed="true">Rotation</button>
       <button id="recadrer">Recadrer</button>

@@ -67,19 +67,17 @@ src/cellule/atelier/           la 3D et l'interface de l'atelier
   panneau.ts                   les commandes et la lecture
 ```
 
-### 3.2 Le contrat des mécanismes n'est pas cassé
+### 3.2 Le contrat des mécanismes n'est pas touché du tout
 
-Les treize mécanismes existants gardent `animer(temps)` inchangé. Le contrat gagne **un champ
-optionnel** :
+Il était prévu d'ajouter au contrat un champ optionnel `reagir?(etat)`, par lequel les mécanismes
+existants auraient pu lire l'état. **Il n'a pas été écrit.** L'atelier étant autonome, aucun des
+treize mécanismes n'a besoin de lire l'état, et un champ que personne n'implémente est de
+l'API spéculative — ce que le §2 de `CLAUDE.md` interdit.
 
-```ts
-/** Facultatif : les mécanismes qui lisent l'état de la cellule le déclarent ici. */
-reagir?: (etat: EtatCellule) => void
-```
-
-Zéro régression sur 15 582 lignes, et conformité au §3 de `CLAUDE.md` (modifications
-chirurgicales). Vérifié : `mettreAEchelleReelle` reconstruit ses objets par `{...m}`, donc un champ
-ajouté au contrat traverse l'enveloppe sans disparaître.
+Le contrat `Mecanisme` est donc rigoureusement inchangé, et les 15 582 lignes de `src/cellule/` ne
+subissent que des corrections de chiffres. (La vérification faite au passage reste utile pour la
+suite : `mettreAEchelleReelle` reconstruit ses objets par `{...m}`, donc un champ ajouté au contrat
+traverserait l'enveloppe sans disparaître.)
 
 ### 3.3 Le moteur : trois variables, pas trente
 
@@ -202,6 +200,26 @@ l'histoire du dépôt à porter sur du code que la page exécute.
   vaut 4 ; la traduction s'arrête quand le pool est vide et reprend quand il remonte.
 - **Badge contre animation** (exigence D3 de la spec d'origine, jamais honorée) : un test compare le
   débit d'ATP annoncé par la fiche de la chaîne respiratoire à celui que le code produit.
+
+## 6 bis. Ce que la construction a corrigé dans cette conception
+
+Écrit après coup, parce que trois points de ce document se sont révélés faux à l'exécution.
+
+- **La chaîne respiratoire n'avait pas de réserve.** Le contrôle respiratoire était borné à son
+  régime de repos, si bien qu'une cellule réoxygénée mettait dix minutes à remonter au lieu de
+  vingt secondes. La réserve respiratoire — une mitochondrie tourne à 1,5 à 3 fois son régime de
+  repos quand l'ADP abonde — manquait purement et simplement.
+- **Le gradient sodium ne s'effondre PAS sous anoxie.** Le test avait été écrit à « moins de 95 % » ;
+  le modèle en rend 97, et c'est lui qui a raison. La pompe est vingt fois plus rapide que la fuite :
+  même à 40 % de régime, elle tient le gradient. Un manque d'énergie partiel n'entame donc presque
+  pas le potentiel de membrane — seul un blocage franc le fait, et c'est ce que fait l'ouabaïne.
+- **Le plan de saisie du brin ne pouvait pas passer par le brin.** Mesuré en navigateur : le
+  déplacement à l'écran est exact à 0,7 pixel près, mais le point déposé reste sur la ligne de visée
+  du ribosome, trente-huit nanomètres devant lui. Viser juste ne suffisait pas à déposer. Le plan
+  passe désormais par le ribosome.
+- **Le fragment d'enveloppe a dû rétrécir.** Le plateau était dessiné à l'échelle vraie de bout en
+  bout, et le pore de 120 nm écrasait des acteurs de 30. C'est le même arbitrage que la boîte de
+  vérité : on ne peut pas être vrai partout à la fois, et il faut écrire lequel on sacrifie.
 
 ## 7. Vérification de livraison
 

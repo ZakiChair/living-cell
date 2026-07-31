@@ -165,7 +165,13 @@ export function organiteSous(vue: Vue, x: number, y: number): Organite | null {
     // l'atteindrait quand même : on refait donc le test du plan de coupe.
     if (PLAN_COUPE.distanceToPoint(touche.point) < 0) continue
     const organite = vue.proprietaire.get(touche.object)
-    if (organite) return organite
+    if (!organite) continue
+    // La liste blanche contient les MAILLAGES ; masquer un organite masque son
+    // groupe, et le `visible` des enfants reste vrai. Un lancer de rayon sur
+    // liste plate ne remonte pas la chaîne des parents, contrairement au rendu :
+    // sans ce test, un organite invisible reste survolable et nommé.
+    if (!organite.objet.visible) continue
+    return organite
   }
   return null
 }

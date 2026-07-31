@@ -204,129 +204,15 @@ export function creerTraficProteines(): Flux {
 }
 
 /**
- * TRADUCTION D'UN ARN MESSAGER.
+ * Les flux d'ambiance de la cellule.
  *
- * Un brin d'ARNm porté par plusieurs ribosomes — un polysome, car un ARNm actif
- * n'en porte jamais un seul. Chaque ribosome avance codon par codon et laisse
- * derrière lui une chaîne d'acides aminés qui s'allonge.
- *
- * Le ribosome du mammifère assemble 5 à 6 acides aminés par seconde ; à un
- * ralenti de ×20, un codon prend un peu plus de trois secondes, ce qui est
- * lisible. Le mouvement est un CLIQUET discret, pas un glissement continu :
- * c'est l'erreur la plus répandue des animations de traduction.
+ * Il y en avait trois. La traduction a été retirée : elle était la TROISIÈME du
+ * projet — après le polysome libre et la translocation au réticulum — et son
+ * champ `facteur` annonçait « ralenti ×20 » pour un accéléré ×3, faux de signe
+ * et d'un facteur cinquante-neuf. Rien ne pouvait le signaler, ce champ n'étant
+ * lu par personne : le panneau n'est peuplé que depuis `mecanismes`. L'atelier
+ * du gène en ajoutant une quatrième, la garder revenait à ajouter à la pile.
  */
-export function creerTraduction(): Flux {
-  const alea = creerAlea(31337)
-  const groupe = new THREE.Group()
-  groupe.position.set(-4.6, 3.4, 1.6)
-
-  const NB_CODONS = 42
-  const PAS = 0.06
-
-  // Le brin d'ARNm : replié, jamais tendu. Un ARNm réel est en pelote.
-  const pointsBrin: THREE.Vector3[] = []
-  for (let i = 0; i <= 10; i++) {
-    const u = i / 10
-    pointsBrin.push(
-      new THREE.Vector3(
-        (u - 0.5) * NB_CODONS * PAS,
-        Math.sin(u * Math.PI * 2.2) * 0.22 + (alea() - 0.5) * 0.08,
-        Math.cos(u * Math.PI * 1.7) * 0.18,
-      ),
-    )
-  }
-  const brin = new THREE.CatmullRomCurve3(pointsBrin)
-  const tubeBrin = new THREE.Mesh(
-    new THREE.TubeGeometry(brin, 140, 0.012, 6, false),
-    materiauOrganite(TEINTES.chromatine),
-  )
-  groupe.add(tubeBrin)
-
-  // Trois ribosomes sur le même brin : c'est un polysome.
-  const NB_RIBOSOMES = 3
-  const ribosomes: THREE.Group[] = []
-  for (let i = 0; i < NB_RIBOSOMES; i++) {
-    const ribosome = new THREE.Group()
-    // Le ribosome a deux sous-unités de tailles nettement différentes, et c'est
-    // à ça qu'on le reconnaît. Il mesure 25 nm, soit 0,025 µm.
-    const grande = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(0.016, 2),
-      materiauOrganite(TEINTES.ribosome),
-    )
-    grande.scale.set(1, 0.85, 1)
-    const petite = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(0.011, 2),
-      materiauOrganite(0xb04a00),
-    )
-    petite.position.y = -0.018
-    petite.scale.set(1.05, 0.75, 1)
-    ribosome.add(grande, petite)
-    groupe.add(ribosome)
-    ribosomes.push(ribosome)
-  }
-
-  // La chaîne naissante : elle sort par le tunnel du ribosome et s'allonge.
-  const CHAINE_MAX = 26
-  const geometrieAcide = new THREE.IcosahedronGeometry(0.009, 1)
-  const materiauChaine = materiauOrganite(TEINTES.golgi, { doubleFace: false })
-  const chaines = new THREE.InstancedMesh(
-    geometrieAcide,
-    materiauChaine,
-    CHAINE_MAX * NB_RIBOSOMES,
-  )
-  chaines.frustumCulled = false
-  groupe.add(chaines)
-
-  const animer = (temps: number): void => {
-    for (let r = 0; r < NB_RIBOSOMES; r++) {
-      // Cliquet : la position avance par pas entiers de codon, jamais entre deux.
-      const avance = temps * 0.42 + r * 0.31
-      const codon = Math.floor(avance * NB_CODONS) % NB_CODONS
-      const t = codon / NB_CODONS
-
-      brin.getPointAt(t, positionTemp)
-      const ribosome = ribosomes[r]!
-      ribosome.position.copy(positionTemp)
-      // Le ribosome est posé SUR le brin, pas traversé par lui.
-      brin.getTangentAt(t, axeTemp)
-      quaternionTemp.setFromUnitVectors(new THREE.Vector3(0, 1, 0), axeTemp)
-      ribosome.quaternion.copy(quaternionTemp)
-
-      // La chaîne s'allonge à mesure que le ribosome avance, puis repart de zéro
-      // au codon stop — la protéine est libérée et le ribosome se détache.
-      const longueur = Math.min(CHAINE_MAX, codon)
-      for (let a = 0; a < CHAINE_MAX; a++) {
-        const indice = r * CHAINE_MAX + a
-        if (a >= longueur) {
-          echelleTemp.setScalar(0)
-        } else {
-          echelleTemp.setScalar(1)
-          const recul = (a + 1) * 0.014
-          positionTemp.copy(ribosome.position)
-          positionTemp.x += Math.sin(a * 0.9 + r) * 0.03 - recul * 0.3
-          positionTemp.y += 0.035 + recul * 0.55
-          positionTemp.z += Math.cos(a * 0.7 + r) * 0.03
-        }
-        matriceTemp.compose(positionTemp, quaternionTemp, echelleTemp)
-        chaines.setMatrixAt(indice, matriceTemp)
-      }
-    }
-    echelleTemp.setScalar(1)
-    chaines.instanceMatrix.needsUpdate = true
-  }
-
-  animer(0)
-
-  return {
-    cle: 'traduction',
-    nom: 'Traduction dans le ribosome',
-    facteur: 'ralenti ×20',
-    objet: groupe,
-    animer,
-  }
-}
-
-/** Tous les flux vivants de la cellule. */
 export function creerFlux(): Flux[] {
-  return [creerEchangesMineraux(), creerTraficProteines(), creerTraduction()]
+  return [creerEchangesMineraux(), creerTraficProteines()]
 }
