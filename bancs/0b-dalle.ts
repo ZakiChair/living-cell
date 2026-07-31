@@ -98,31 +98,70 @@ function construireDalle(areteNm: number): void {
 
 construireDalle(ARETES_NM[indexArete]!)
 
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' && indexArete < ARETES_NM.length - 1) {
-    indexArete++
-    construireDalle(ARETES_NM[indexArete]!)
-  }
-  if (e.key === 'ArrowLeft' && indexArete > 0) {
-    indexArete--
-    construireDalle(ARETES_NM[indexArete]!)
-  }
-  if (e.key === 'e') {
-    mesures.push({
-      areteNm: ARETES_NM[indexArete]!,
-      profondeurNm: PROFONDEUR_NM,
-      instances: dalle!.count,
-      gpuMs: mesurerGpu() ?? -1,
-      ips: ctx.compteur.imagesParSeconde(),
-    })
-    enregistrerResultat('0b-dalle', mesures)
-  }
+/** Instant du dernier changement d'arête : sert à mesurer la dérive thermique. */
+let debutPalier = performance.now()
+/** Plus basse cadence observée depuis le début du palier, une fois la mesure établie. */
+let ipsMiniPalier = Infinity
+/** Cadence relevée à une minute, pour la comparer à celle de cinq minutes. */
+let ipsUneMinute: number | null = null
+
+function changerArete(nouvelIndex: number): void {
+  indexArete = nouvelIndex
+  construireDalle(ARETES_NM[indexArete]!)
+  debutPalier = performance.now()
+  ipsMiniPalier = Infinity
+  ipsUneMinute = null
+}
+
+// Sur téléphone il n'y a pas de flèches : toucher la moitié gauche recule d'une
+// arête, la moitié droite avance. Sans ça, la mesure demanderait de réécrire
+// l'adresse à la main entre chaque palier.
+addEventListener('pointerdown', (e) => {
+  const versLaDroite = e.clientX > window.innerWidth / 2
+  if (versLaDroite && indexArete < ARETES_NM.length - 1) changerArete(indexArete + 1)
+  if (!versLaDroite && indexArete > 0) changerArete(indexArete - 1)
 })
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' && indexArete < ARETES_NM.length - 1) changerArete(indexArete + 1)
+  if (e.key === 'ArrowLeft' && indexArete > 0) changerArete(indexArete - 1)
+  if (e.key === 'e') exporter()
+})
+
+function exporter(): void {
+  mesures.push({
+    areteNm: ARETES_NM[indexArete]!,
+    profondeurNm: PROFONDEUR_NM,
+    instances: dalle!.count,
+    gpuMs: mesurerGpu() ?? -1,
+    ips: ctx.compteur.imagesParSeconde(),
+  })
+  enregistrerResultat('0b-dalle', mesures)
+}
+
+function formaterDuree(ms: number): string {
+  const s = Math.floor(ms / 1000)
+  return `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`
+}
 
 demarrerBoucle(ctx, () => {
   const areteNm = ARETES_NM[indexArete]!
   const ips = ctx.compteur.imagesParSeconde()
   const gpu = mesurerGpu()
+  const ecoule = performance.now() - debutPalier
+
+  // On ne retient la cadence qu'une fois la fenêtre de mesure remplie, sinon
+  // les premières images faussent le minimum.
+  if (ecoule > 3_000 && ips > 0) {
+    ipsMiniPalier = Math.min(ipsMiniPalier, ips)
+    if (ipsUneMinute === null && ecoule > 60_000) ipsUneMinute = ips
+  }
+
+  const derive =
+    ipsUneMinute !== null && ips > 0
+      ? `${(((ips - ipsUneMinute) / ipsUneMinute) * 100).toFixed(0)} %`
+      : '—'
+
   definirLignes([
     `BANC 0b — dalle à densité vraie`,
     ``,
@@ -131,12 +170,19 @@ demarrerBoucle(ctx, () => {
     `occupation      ${(OCCUPATION_CYTOSOL * 100).toFixed(0)} %`,
     `instances       ${dalle!.count.toLocaleString('fr-FR')}`,
     `temps GPU       ${gpu === null ? 'extension absente' : gpu.toFixed(2) + ' ms'}`,
+    ``,
     `images/s        ${ips.toFixed(0)}`,
+    `minimum         ${Number.isFinite(ipsMiniPalier) ? ipsMiniPalier.toFixed(0) : '—'}`,
+    `à 1 min         ${ipsUneMinute === null ? 'pas encore' : ipsUneMinute.toFixed(0)}`,
+    `dérive depuis   ${derive}`,
+    ``,
+    `sur ce palier   ${formaterDuree(ecoule)}`,
+    `⟵ RELEVER À 5 MIN, pas à 1 min ⟶`,
     ``,
     `porte bureau    ${ips >= PORTE_BUREAU ? 'PASSÉE' : 'ÉCHOUÉE'} (≥ ${PORTE_BUREAU})`,
     `porte mobile    ${ips >= PORTE_MOBILE ? 'PASSÉE' : 'ÉCHOUÉE'} (≥ ${PORTE_MOBILE})`,
     ``,
-    `[← →] changer d'arête   [e] exporter`,
-    `?arete=1000&profondeur=300 pour fixer la mesure`,
+    `toucher à gauche / à droite pour changer d'arête`,
+    `[← →] au clavier   [e] exporter`,
   ])
 })

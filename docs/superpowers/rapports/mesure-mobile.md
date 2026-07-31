@@ -23,15 +23,27 @@ http://192.168.0.21:5199/bancs/0b-dalle.html?arete=1500&profondeur=300
 
 Si l'adresse a changé, la retrouver par `ipconfig getifaddr en0`.
 
+## Comment naviguer sur le téléphone
+
+**Toucher la moitié gauche de l'écran** recule d'une arête, **la moitié droite** avance. Les arêtes disponibles sont 300, 500, 700, 1 000, 1 500, 2 000, 3 000, 4 000 et 6 000 nm. Chaque changement remet le chronomètre du palier à zéro.
+
+Le panneau fait le travail de surveillance à ta place :
+
+- `sur ce palier` — le temps écoulé depuis le dernier changement d'arête ;
+- `à 1 min` — la cadence relevée automatiquement à la première minute ;
+- `dérive depuis` — l'écart en pourcentage entre maintenant et cette première minute, c'est-à-dire le throttling thermique rendu visible ;
+- `minimum` — la plus basse cadence vue sur le palier.
+
 ## Ce qu'il faut relever
 
-Le panneau affiche tout ce qui est nécessaire. Pour **chaque appareil** — au minimum un iPhone récent et un Android milieu de gamme :
+Pour **chaque appareil** — au minimum un iPhone récent et un Android milieu de gamme :
 
 1. **Le modèle exact et la version du système.**
-2. **Les images par seconde à une minute**, sur l'arête de 1 500 nm.
-3. **Les images par seconde à cinq minutes**, sans toucher à l'appareil. C'est la valeur qui compte : le throttling thermique est réel et une scène stable en une minute peut perdre 30 à 40 % ensuite.
-4. **La plus grande arête qui garde au moins 28 images/s à cinq minutes.** Changer d'arête avec `?arete=` : les valeurs disponibles sont 300, 500, 700, 1000, 1500, 2000, 3000, 4000, 6000.
-5. **Si le panneau affiche « CONTEXTE WEBGL PERDU »**, le noter avec l'arête à laquelle c'est arrivé. C'est le mode de panne typique d'iOS par dépassement mémoire, et il doit figurer au rapport même s'il ne survient qu'une fois.
+2. Sur l'arête de 1 500 nm, laisser tourner **cinq minutes sans toucher à l'appareil**, puis noter `images/s`, `à 1 min` et `dérive depuis`. C'est la valeur à cinq minutes qui compte : une scène stable en une minute peut perdre 30 à 40 % ensuite.
+3. **La plus grande arête qui garde au moins 28 images/s à cinq minutes.** Monter d'un palier, attendre, redescendre si la porte échoue.
+4. **Si le panneau affiche « CONTEXTE WEBGL PERDU »**, le noter avec l'arête à laquelle c'est arrivé. C'est le mode de panne typique d'iOS par dépassement mémoire, et il doit figurer au rapport même s'il ne survient qu'une fois.
+
+Garder l'écran allumé pendant les cinq minutes : une mise en veille suspend la boucle de rendu et fausse la mesure.
 
 ## Repères mesurés sur le Mac, pour comparaison
 
