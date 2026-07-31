@@ -1045,7 +1045,9 @@ export function creerGlycolyse(): MecanismeBrut[] {
         "sortent d'aucun moteur rotatif : le phosphate saute directement d'un intermédiaire très " +
         "énergétique sur une ADP de passage — c'est la phosphorylation au niveau du substrat, l'exact " +
         "contraire de l'ATP synthase, qui exige une membrane et un gradient de protons. Les " +
-        'tailles sont vraies : les dix enzymes tiennent dans 90 nm et un glucose fait 1 nm. Seule ' +
+        'enzymes sont à la taille vraie : les dix tiennent dans 90 nm et chacune fait 5 à 9. Les ' +
+        "sucres, eux, sont grossis d'environ trois fois — un glucose de 1 nm y est tracé sur 3 — " +
+        'sans quoi leurs carbones ne se compteraient pas. Seule ' +
         'la disposition est une convention — la chaîne est rangée en arc alors que ces enzymes sont ' +
         'en réalité dispersées dans le cytosol ; le substrat les trouve par collision, et ' +
         "l'on montre aussi les rencontres qui ne donnent rien. Les deux pyruvates sortent du cadre vers " +

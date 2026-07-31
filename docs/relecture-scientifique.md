@@ -1,0 +1,427 @@
+# Dossier de relecture scientifique — « La cellule »
+
+**Ce document est GÉNÉRÉ** depuis les objets que la page livre réellement, par
+`outils/dossierRelecture.ts`. Il ne peut donc pas être périmé par rapport au produit.
+Le régénérer après toute modification :
+
+```
+npx tsx outils/dossierRelecture.ts > docs/relecture-scientifique.md
+```
+
+## Ce qui est demandé au relecteur
+
+Le site s'adresse à des étudiants en biologie. Trois questions par affirmation :
+
+1. **Est-ce faux ?** Un ordre de grandeur, une unité, une stœchiométrie, un mécanisme.
+2. **Est-ce trompeur ?** Vrai mais formulé de façon à installer une intuition fausse.
+3. **Manque-t-il l'essentiel ?** Une réserve dont l'absence rend l'affirmation abusive.
+
+Les chiffres sont repérés en gras dans chaque fiche pour guider la lecture. Le champ
+**Ellision** dit ce que l’animation coupe ou échantillonne : c’est là que se logent les
+écarts entre ce qui est montré et ce qui est vrai, et il mérite autant d’attention que
+la description.
+
+---
+
+## 1. Les données de référence
+
+### 1.1 La séquence du gène
+
+- **Gène** : Chaîne B de l'insuline — Moitié de l'hormone qui fait entrer le glucose dans les cellules.
+- **Longueur** : 90 bases, 30 codons
+- **Source** : NM_000207.3 (NCBI), région codant la chaîne B de la préproinsuline humaine
+- **Confiance déclarée** : [A], collationnée
+
+```
+TTTGTGAACCAACACCTGTGCGGCTCACACCTGGTGGAAGCTCTCTACCTAGTGTGCGGG
+GAACGAGGCTTCTTCTACACACCCAAGACC
+```
+
+Traduite par la table standard, elle donne : `FVNQHLCGSHLVEALYLVCGERGFFYTPKT`
+
+> **À vérifier** : la séquence est-elle bien celle de NM_000207.3, base par base ? La
+> région retenue s'arrête à la fin de la chaîne B ; le gène entier continue sur le
+> peptide C puis la chaîne A. Est-ce dit assez clairement à l’étudiant ?
+
+### 1.2 La table du code génétique
+
+Les 64 codons sont tabulés dans `src/noyau/codeGenetique.ts`, dans l'ordre
+canonique U, C, A, G. Trois codons stop, vingt acides aminés, et la redondance non
+uniforme (six codons pour Leu, Ser et Arg ; un seul pour Met et Trp) est verrouillée par
+test.
+
+| Redondance | Acides aminés |
+|---|---|
+| 6 codons | Arg, Leu, Ser |
+| 4 codons | Ala, Gly, Pro, Thr, Val |
+| 3 codons | Ile |
+| 2 codons | Asn, Asp, Cys, Gln, Glu, His, Lys, Phe, Tyr |
+| 1 codons | Met, Trp |
+
+### 1.3 Le modèle énergétique
+
+Trois variables d'état gouvernent l'atelier et les trois leviers. Ce sont les seuls
+chiffres du site qui pilotent une simulation plutôt que de décorer une animation.
+
+| Grandeur | Valeur retenue | Confiance déclarée | À vérifier |
+|---|---|---|---|
+| ATP cytosolique au repos | 3 mM | [B] — fourchette 1 à 5 mM | la valeur médiane retenue est-elle défendable pour une cellule générique ? |
+| Renouvellement complet du pool | 30 s | [B] | l'ordre de grandeur tient-il hors muscle ? |
+| Part de la pompe Na⁺/K⁺ | 25 % du budget | [B] — 20 à 30 % | |
+| Part de la synthèse protéique | 30 % | [B] — 20 à 30 % | |
+| Part du reste (transport, biosynthèse) | 45 % | [B] | |
+| ATP par glucose, glycolyse seule | 2 sur 30 | [A] | la valeur moderne de 30 est-elle celle à enseigner, plutôt que 36–38 ? |
+| Réserve respiratoire | ×2 | [B] — 1,5 à 3 | |
+
+**Les trois leviers et leurs effets, tels que le modèle les produit :**
+
+| Levier | ATP | Force proton-motrice | Gradient Na⁺/K⁺ |
+|---|---|---|---|
+| Couper l'oxygène | tombe à ~5 % du repos | s'effondre | ne perd que ~3 % |
+| Oligomycine | tombe à ~5 % | **monte de ~24 %** | intact |
+| Ouabaïne | **monte de ~17 %** | intacte | tombe à zéro |
+
+> **À vérifier** : les deux effets contre-intuitifs sont le cœur pédagogique du
+> dispositif. Sont-ils justes, et les explications affichées les rendent-elles bien ?
+> Le gradient qui résiste à l'anoxie est-il une conséquence acceptable, ou trompeuse ?
+
+---
+
+## 2. Les seize mécanismes
+
+### 2.1 Glycolyse
+
+**Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×5
+
+**Justification du facteur.** Le transit d'un glucose à travers les dix étapes ne dure pas le même temps selon l'état de la cellule : le rapport entre les réserves d'intermédiaires et le flux donne moins d'une seconde dans un muscle à l'effort, et plusieurs dizaines de secondes dans une cellule au repos. C'est ce dernier cas qui est joué ici : une dizaine de secondes à l'écran pour un tour complet, soit environ cinq fois plus vite que le réel.
+
+**Description lue par l’étudiant.** La glycolyse coupe un glucose à six carbones en deux pyruvates à trois, dans le cytosol, sans oxygène et sans le moindre organite : c'est la voie la plus ancienne et la plus universelle, et une hématie, qui n'a pas de mitochondrie, ne vit que de celle-là. La cellule doit d'abord INVESTIR — deux ATP sont dépensés aux étapes 1 et 3, et on les voit partir avant que rien ne rentre ; au clivage par l'aldolase le cycle s'ouvre et se coupe en deux trioses, et tout ce qui suit se produit en double, ce qui est la seule raison pour laquelle la phase de récupération rend quatre ATP et deux NADH, soit un bilan NET de +2 ATP. Ces quatre ATP ne sortent d'aucun moteur rotatif : le phosphate saute directement d'un intermédiaire très énergétique sur une ADP de passage — c'est la phosphorylation au niveau du substrat, l'exact contraire de l'ATP synthase, qui exige une membrane et un gradient de protons. Les enzymes sont à la taille vraie : les dix tiennent dans 90 nm et chacune fait 5 à 9. Les sucres, eux, sont grossis d'environ trois fois — un glucose de 1 nm y est tracé sur 3 — sans quoi leurs carbones ne se compteraient pas. Seule la disposition est une convention — la chaîne est rangée en arc alors que ces enzymes sont en réalité dispersées dans le cytosol ; le substrat les trouve par collision, et l'on montre aussi les rencontres qui ne donnent rien. Les deux pyruvates sortent du cadre vers la mitochondrie s'il y a de l'oxygène, et vers la fermentation s'il n'y en a pas ; les deux NADH, eux, emportent leurs électrons vers la chaîne respiratoire, et ce sont eux qui relient cette voie à toutes les autres. La réglette du haut compte le tour en cours : deux ATP dépensés en anneaux creux, quatre produits, deux NADH, deux pyruvates, et en bas le solde net de deux ATP.
+
+**Ellision — ce qui est coupé ou échantillonné.** Trois horloges cohabitent, et une seule est au facteur affiché. La chimie de chaque étape est en réalité de l'ordre de la milliseconde — la triose-phosphate isomérase traite près de dix mille molécules par seconde — et elle est donc ici RALENTIE. L'attente entre deux rencontres, elle, est COUPÉE : un intermédiaire dérive dans le cytosol avant de tomber sur l'enzyme suivante, et rien de cette attente n'est montré à l'échelle. La densité est réduite d'un facteur mille : ce volume contient réellement des dizaines de milliers de protéines, et une cellule mène des dizaines de milliers de glucoses de front — on n'en suit qu'un. Sont absents l'eau, les ions Mg²⁺ et H⁺, le transporteur GLUT qui fait entrer le glucose, le détail de la régulation de la phosphofructokinase (inhibée par l'ATP et le citrate, activée par l'AMP et le fructose-2,6-bisphosphate), et le devenir du NADH. Après le clivage, les deux trioses passent ici sur le même poste alors que chacun trouve sa propre copie de l'enzyme.
+
+> **Chiffres à contrôler** : 90 nm · 1 nm · 90
+
+### 2.2 Le destin du pyruvate : oxygène ou fermentation
+
+**Siège** : Cytosol et mitochondrie · **Facteur temporel affiché** : accéléré ×5
+
+**Justification du facteur.** Ce qui est accéléré ×5 ici est le RÉGIME, pas le geste enzymatique : dans un muscle qui démarre, l'oxygène local s'épuise puis revient en une trentaine de secondes — 35 s réelles deviennent 7 s d'écran, et les deux régimes se comparent dans le même plan, à la suite.
+
+**Description lue par l’étudiant.** Le pyruvate sorti de la glycolyse se présente devant un aiguillage : avec de l'oxygène il entre dans la mitochondrie, où la pyruvate déshydrogénase lui retire un carbone — le CO₂ qui s'en va — et envoie les deux autres au cycle de Krebs, pour 30 à 32 ATP par glucose ; sans oxygène, la lactate déshydrogénase le réduit en lactate et le bilan reste aux 2 ATP de la glycolyse. La fermentation ne fabrique aucun ATP : sa seule fonction est de rendre le NAD⁺ que la glycolyse consomme, et c'est cette boucle — les navettes et la jauge — qu'il faut suivre, pas le lactate. L'oxygène, lui, ne pousse rien : il TIRE les électrons au bout de la chaîne, au complexe IV, et qu'il manque, la file se bloque de proche en proche jusqu'à la glycolyse, anneau par anneau. Molécules et enzymes sont dessinées trente à cinquante fois trop grosses pour rester visibles à côté d'une membrane : c'est un parti de représentation, pas une échelle.
+
+**Ellision — ce qui est coupé ou échantillonné.** Trois horloges cohabitent, et une seule porte le facteur affiché. Les actes enzymatiques sont en réalité RALENTIS d'environ ×1 000 : la lactate déshydrogénase traite quelques centaines de molécules par seconde et un électron traverse la chaîne en quelques millisecondes ; à vitesse vraie on ne verrait qu'un flou. Les attentes de rencontre sont COUPÉES, et la densité divisée par plusieurs milliers. Sont absentes la glycolyse et les dix étapes du cycle de Krebs, qui sont des modules voisins ; le coenzyme A n'est pas dessiné ; l'ubiquinone et le cytochrome c sont sautés — un électron passe du complexe I au III puis au IV sans transporteur visible ; le complexe II et les FADH₂ du cycle de Krebs sont absents ; le gradient de protons est figuré par l'ATP synthase mais non compté (≈ 10 H⁺ pompés par NADH). Le NADH cytosolique ne traverse PAS la membrane : ce sont ses électrons qui passent, par la navette malate-aspartate, et c'est cela que montre l'hydrure qui franchit la paroi. La diffusion est brownienne mais BIAISÉE vers le poste visé : livrée au pur hasard, une rencontre demanderait ici des minutes — les refus, eux, sont réels et se voient. Enfin la vignette « levure », en bas à droite, est scriptée et non simulée.
+
+> **Chiffres à contrôler** : 35 s · 7 s · 35 · 30 · 32 · 1 000 · 10
+
+### 2.3 Bêta-oxydation des acides gras
+
+**Siège** : Matrice mitochondriale · **Facteur temporel affiché** : ralenti ×5
+
+**Justification du facteur.** Les quatre enzymes de la spirale tournent une dizaine de fois par seconde : un tour complet, diffusions comprises, prend environ un tiers de seconde, soit 1,8 s à l'écran. Les sept tours d'un palmitate durent réellement deux à trois secondes ; ici ils en prennent treize, soit un RALENTI d'environ 5 — et non un accéléré, comme le badge l'a longtemps annoncé à tort. L'entrée par la carnitine, plus lente que la spirale, prend trois secondes de plus.
+
+**Description lue par l’étudiant.** Un acide gras ne traverse pas la membrane interne tout seul : il est activé en acyl-CoA au prix de deux ATP, son coenzyme A est échangé contre la CARNITINE, l'ensemble traverse, et le CoA lui est rendu de l'autre côté. Cette navette est l'étape limitante et le point de contrôle de toute l'oxydation des graisses — d'où la file qui attend dehors. Dans la matrice, quatre enzymes en boucle répètent la même séquence — oxydation, hydratation, oxydation, thiolyse — et la chaîne perd DEUX carbones à chaque tour : le palmitate, seize carbones, fait sept tours et donne huit acétyl-CoA, avec sept FADH₂ et sept NADH. La scène entière fait 45 nm de large : c'est un FRAGMENT de matrice, et non une mitochondrie, qui en fait deux mille. Les molécules y sont dessinées environ cinq fois trop grosses pour qu'on puisse compter leurs carbones — un palmitate de 2 nm y est tracé sur 11.
+
+**Ellision — ce qui est coupé ou échantillonné.** Une pause AJOUTÉE d'une seconde et demie tient l'abaque complet en fin de cycle : elle n'existe pas dans la cellule, elle sert à laisser lire le bilan avant que tout reparte. L'ATTENTE, elle, est coupée, pas ralentie : dans le cytosol un acyl-CoA peut patienter très longtemps avant de trouver CPT1, et c'est justement pour cela que la porte est le point de contrôle. L'agitation thermique, elle, est RALENTIE d'environ ×10 000 — à cette échelle une molécule traverserait le champ en une fraction de milliseconde. La densité est réduite d'un facteur cent : à 500 g de protéines par litre, cette matrice contient des MILLIONS de molécules par µm³. Enfin le FAD de l'acyl-CoA déshydrogénase est en réalité un cofacteur PROSTHÉTIQUE, lié à demeure : ses électrons partent par la flavoprotéine ETF, pas la molécule. On le dessine en navette pour que le trajet de l'énergie se voie. Sont absents la lipase qui libère l'acide gras, l'albumine qui le transporte dans le sang, et les acides gras impairs ou insaturés, qui demandent des enzymes de plus.
+
+> **Chiffres à contrôler** : 1,8 s · 45 nm · 2 nm · 45 · 11 · 10 000 · 500
+
+### 2.4 Cycle de Krebs
+
+**Siège** : Matrice mitochondriale · **Facteur temporel affiché** : accéléré ×5
+
+**Justification du facteur.** Le temps qu'un carbone met à faire le tour des huit enzymes dépend du régime : de l'ordre d'une cinquantaine de secondes dans un muscle au repos, où le flux est faible et les réserves d'intermédiaires larges, et quelques secondes seulement à l'effort. Le tour dure ici dix secondes : accéléré ×5 par rapport au repos, et ralenti d'autant par rapport à l'effort.
+
+**Description lue par l’étudiant.** Huit enzymes en anneau. L'acétyl-CoA à deux carbones — que livrent aussi bien le sucre que les acides gras et les acides aminés — se condense sur un oxaloacétate à quatre carbones pour donner le citrate à six ; le tour qui suit démonte ce citrate jusqu'à régénérer l'oxaloacétate, prêt à recommencer. Deux carbones s'échappent en chemin sous forme de CO₂, à l'isocitrate déshydrogénase puis à l'α-cétoglutarate déshydrogénase : c'est exactement le carbone que vous expirez en lisant cette phrase. Le cycle ne produit qu'une seule liaison riche par tour — un GTP, aussitôt converti en ATP — et là n'est pas l'essentiel : sa vraie récolte, ce sont trois NADH et un FADH₂, des transporteurs d'électrons qui montent vers la chaîne respiratoire de la crête et y valent neuf ATP de plus. Un glucose donne deux pyruvates, donc deux tours — les deux jetons du bas — et comme le cycle fournit aussi le squelette de plusieurs acides aminés, de l'hème et du glucose, on le dit amphibolique : il brûle et il construit.
+
+**Ellision — ce qui est coupé ou échantillonné.** L'anneau est une convention de lecture, pas une structure : seule la succinate déshydrogénase est réellement fixée — c'est le complexe II, planté dans la membrane interne, dessiné ici contre la crête. Les sept autres flottent dans la matrice, où le substrat les trouve par collision. La scène fait 50 nm de large en tout : les huit enzymes s'y tiennent dans un anneau de 25 nm et chacune fait 4 à 5 nm, ce qui est l'ordre de grandeur vrai. Les billes de carbone, elles, sont GROSSIES : une liaison carbone-carbone y fait 1,1 nm pour 0,15 réels, sans quoi on ne pourrait pas les compter — et compter les carbones est tout l'objet de cette figure. Les molécules d'eau, les protons et le coenzyme A libre ne sont pas dessinés, et la vraie matrice est bien plus encombrée que ce brouillard de grains.
+
+> **Chiffres à contrôler** : 50 nm · 25 nm · 5 nm · 1,1 nm · 50 · 25 · 15
+
+### 2.5 Chaîne respiratoire et ATP synthase
+
+**Siège** : Mitochondrie · **Facteur temporel affiché** : ralenti ×200
+
+**Justification du facteur.** L'ATP synthase tourne à environ 130 tours par seconde : un tour prend 8 ms, ce qui devient 1,5 s à l'écran et se suit à l'œil — un ralenti de 200, arrondi depuis les 195 que donne le calcul exact. Rien n’est agrandi : la portion de crête représentée fait 160 nm, un complexe I en fait 20, et il faut donc descendre à cette échelle pour les voir — c'est ce que fait la caméra, et la barre en bas à droite dit où on en est.
+
+**Description lue par l’étudiant.** La chaîne ne fabrique pas d'ATP : elle pompe des protons. Les électrons arrivés du NADH descendent une pente de potentiel rédox, de −320 mV jusqu'à +820 mV pour l'oxygène, et à chaque marche les complexes I, III et IV éjectent des protons hors de la matrice. Le complexe II, lui, ne pompe pas : il ne fait qu'injecter des électrons. Le gradient ainsi créé est la vraie monnaie d'énergie. Les protons qui redescendent traversent le rotor de l'ATP synthase et le font tourner ; la tête F1, tenue immobile par un bras statorique, voit sa tige tourner dedans et fabrique un ATP par tiers de tour. C'est le plus petit moteur rotatif connu. Au bout de la chaîne, l'oxygène accepte les électrons et devient de l'eau — il ne brûle rien, il tire.
+
+**Ellision — ce qui est coupé ou échantillonné.** Le débit d'ATP est juste — trois par tour, deux par seconde d'écran — mais les EFFECTIFS sont échantillonnés : huit ATP et quatre molécules d'eau en vol à la fois, là où une crête réelle en libère un flot continu. Les quatorze électrons et les cent vingt protons sont de même des représentants, pas un inventaire. Une seule crête est montrée sur les quelques dizaines d'une mitochondrie, et les complexes y sont espacés régulièrement alors qu'ils sont en réalité rassemblés en supercomplexes mobiles.
+
+> **Chiffres à contrôler** : 8 ms · 1,5 s · 160 nm · 130 · 200 · 195 · 160 · 20 · 320 · 820
+
+### 2.6 Transcription de l'ADN en ARN
+
+**Siège** : Noyau · **Facteur temporel affiché** : ralenti ×20
+
+**Justification du facteur.** L'ARN polymérase II avance ici à 60 nucléotides par seconde, soit 17 ms par nucléotide : à l'écran chaque nucléotide prend 0,33 s, soit un ralenti de 20, et un tour d'hélice de 10,5 paires de bases 3,5 s. Même facteur que la traduction, pour que les deux vitesses se comparent directement. Ces 60 nt/s font 3,6 kb/min : la vitesse mesurée in vivo va de 1 à 6 kb/min selon le gène, et la fiche de l'épissage prend 2 kb/min, l'autre bout de la même fourchette. Ce n'est pas une contradiction, c'est une dispersion réelle.
+
+**Description lue par l’étudiant.** L'ARN polymérase II ouvre la double hélice sur douze à quatorze paires de bases, copie le brin matrice et referme le duplex derrière elle : cette bulle de 4 nm qui se déplace est toute la mécanique du procédé. Le transcrit sort par un canal latéral et s'allonge, coiffé dès son vingt-cinquième nucléotide, bien avant que la polymérase ait fini. Trois enzymes se suivent sur le même gène, et comme aucune ne tourne autour de l'ADN, chacune entasse les tours devant elle et les arrache derrière : la contrainte reste piégée entre les nucléosomes qui ancrent le segment, le gène se vrille, et il faut qu'une topoisomérase passe le relâcher. Les nucléotides libres, eux, ne savent pas où est le site actif : à chaque instant un seul des huit qui rôdent autour de l'enzyme est en train d'y être incorporé, les sept autres se cognent pour rien.
+
+**Ellision — ce qui est coupé ou échantillonné.** Le gène montré ne fait que 500 pb : un gène humain en fait dix à cent mille, et la polymérase mettrait plus de vingt minutes d'écran à en parcourir quatre mille. Chaque brin est échantillonné à un grain pour deux nucléotides (5 par tour au lieu de 10,5), et hors du gène il n'est tracé qu'un barreau toutes les 21 pb. L'ARN naissant est dessiné replié, un grain pour 7 nucléotides. Le surenroulement est amplifié — 1,8 tour de surplus, et une vrille de 5 nm — sans quoi il resterait invisible, et la topoisomérase est ramenée à une visite toutes les 26 s. L'enroulement nucléosomal est schématisé en spirale autour de l'axe de la fibre, et le duplex est dessiné à 2,5 nm de large au lieu de 2. La polymérase, enfin, est translucide : à sa taille réelle elle cacherait entièrement la bulle.
+
+> **Chiffres à contrôler** : 17 ms · 0,33 s · 3,5 s · 60 nt · 3,6 kb/min · 6 kb/min · 2 kb/min · 60 · 17 · 33 · 20 · 10 · 4 nm · 500 pb · 21 pb · 5 nm · 26 s · 2,5 nm · 500 · 21 · 26
+
+### 2.7 Épissage de l'ARN par le spliceosome
+
+**Siège** : Noyau · **Facteur temporel affiché** : accéléré ×50
+
+**Justification du facteur.** L'épissage d'un intron prend 5 à 10 minutes ; à ×50 il tient en 9 secondes. La transcription des 16 737 pb du transcrit, 8,4 minutes à 2 kb/min, en occupe 10. Ces 2 kb/min sont le bas de la fourchette mesurée in vivo, 1 à 6 kb/min ; la fiche de la transcription prend 60 nt/s, soit 3,6 kb/min, plus haut dans la même fourchette.
+
+**Description lue par l’étudiant.** Le pré-ARN messager sort de la polymérase par petits blocs codants — les exons — séparés de très longs introns : chez l'humain le rapport est de 45 pour 1, l'inverse de ce que montrent les schémas. Pour chaque intron, le spliceosome s'assemble de zéro : U1 reconnaît le site 5', U2 le point de branchement, puis le tri-snRNP U4/U6·U5 arrive et U1 et U4 repartent, U6 prenant la place de U1. L'intron est alors coupé et refermé sur lui-même en LASSO par une liaison 2'-5' à l'adénosine du branchement, les exons sont soudés, et le lasso est débranché puis digéré. L'épissage du premier intron commence — et forme son lasso — bien avant que la polymérase ait fini de transcrire le gène.
+
+**Ellision — ce qui est coupé ou échantillonné.** Intron raccourci ×3,4 : 5 419 pb feraient 1,63 µm, il en est dessiné 0,48. L'exon garde sa longueur vraie (120 pb, 0,036 µm). 4 exons et 3 introns au lieu de 8,8 et 7,8 en moyenne, et la queue 3' du lasso est portée de 0,5 % à 8 % de l'intron pour rester visible.
+
+> **Chiffres à contrôler** : 16 737 pb · 2 kb/min · 6 kb/min · 60 nt · 3,6 kb/min · 10 · 50 · 16 737 · 60 · 45 · 5 419 pb · 1,63 µm · 120 pb · 0,036 µm · 0,5 % · 8 % · 5 419 · 63 · 48 · 120 · 036
+
+### 2.8 Export de l'ARN messager
+
+**Siège** : Enveloppe nucléaire · **Facteur temporel affiché** : ralenti ×200
+
+**Justification du facteur.** Une importine reconnue franchit le pore en moins de dix millisecondes : à ×200 la traversée dure deux secondes, juste au-dessus du seuil où l'œil décroche. Le mRNP, lui, met 50 à 350 ms, soit dix à soixante-dix secondes à l'écran — c'est pourquoi il reste si longtemps en travers du canal alors que les navettes le doublent. Attention : c'est un RALENTI, à l'inverse de l'endocytose et de l'exocytose, dont le badge annonce un accéléré. Les plans sont dans la même cellule et n'ont pas la même horloge : d'où le badge, propre à chaque mécanisme.
+
+**Description lue par l’étudiant.** Le canal du pore n'est pas un trou : il est bourré de nucléoporines FG, des chaînes protéiques désordonnées qui forment un hydrogel. Un cargo ne franchit rien, il FOND dedans par interactions transitoires — d'où les 2,5 ms de séjour de l'importine β et les 7,1 ms de la transportine. L'ARN messager, lui, n'est jamais nu : empaqueté de protéines en mRNP, il doit se déplier pour entrer en file, tête la première, et l'hydrogel s'écarte localement sur son passage. Le pore lui-même est symétrique et passif : la directionnalité vient du gradient RanGTP nucléaire / RanGDP cytosolique, et c'est bien RanGTP qu'on voit percuter l'importine et lui faire lâcher son cargo. Tout autour, des molécules abordent le pore et repartent : les essais infructueux sont l'immense majorité.
+
+**Ellision — ce qui est coupé ou échantillonné.** Un noyau porte des milliers de pores et chacun laisse passer plusieurs centaines de molécules par seconde ; on en montre un seul, et une trentaine de molécules. Les trente nucléoporines différentes sont dessinées comme une seule famille — seul le relief les sépare. Le maillage FG est réduit à quarante chaînes au lieu de deux cents environ, sans quoi on ne verrait plus rien traverser. Enfin l'hydrolyse du RanGTP côté cytosol, qui recharge le gradient, n'est pas montrée.
+
+> **Chiffres à contrôler** : 350 ms · 200 · 50 · 350 · 2,5 ms · 7,1 ms
+
+### 2.9 Traduction : un polysome au travail
+
+**Siège** : Cytosol · **Facteur temporel affiché** : ralenti ×20
+
+**Justification du facteur.** Un ribosome de mammifère pose 5 à 6 acides aminés par seconde : un codon dure 170 ms, qui deviennent 3,4 s à l’écran — un ralenti de 20. Une bactérie irait quatre fois plus vite.
+
+**Description lue par l’étudiant.** Un ARNm n’est jamais lu par un seul ribosome, et il n’est jamais tendu : il est en pelote, sa coiffe tenue contre sa queue poly-A par eIF4G, et cinq ribosomes le parcourent en file — c’est un polysome. Chacun avance par cliquets discrets, un codon à la fois, et reste parfaitement immobile entre deux pas. Avant chaque pas, trois à cinq ARNt viennent percuter le ribosome et repartent, la plupart sans même tomber sur le site A : c’est cette accumulation de rejets, et rien d’autre, qui fait la fidélité de la traduction. Le bon ARNt cède son acide aminé, la liaison peptidique est formée par l’ARN ribosomique lui-même, les sous-unités pivotent, et la chaîne sort par le tunnel de dix nanomètres où elle commence déjà à se replier — le ribosome le plus avancé porte la plus longue.
+
+**Ellision — ce qui est coupé ou échantillonné.** Douze codons seulement, puis le ribosome se défait et un autre repart en amont : une protéine de 300 acides aminés demanderait dix-sept minutes d’écran à ce ralenti. Le pas d’un codon est vrai — 0,9 nm, un trentième du ribosome — donc ce qui rend le cliquet lisible n’est pas la distance mais le RYTHME : trois secondes d’immobilité complète, puis tout d’un coup. La rotation des deux sous-unités est portée de 8° à 20°, et les résidus de la chaîne sont espacés de 0,9 nm au lieu de 0,35, sans quoi l’ajout d’un acide aminé serait invisible. Les trente premiers résidus restent cachés dans le tunnel, comme en vrai. Trois à cinq rejets par codon est un minorant : il y en a souvent plus de dix. Les facteurs d’élongation eEF1A et eEF2, et le GTP qu’ils consomment, ne sont pas dessinés — à 1 nm ils ne feraient pas un pixel.
+
+> **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20 · 0,9 nm · 1 nm · 300 · 35
+
+### 2.10 Translocation dans le réticulum
+
+**Siège** : Réticulum endoplasmique rugueux · **Facteur temporel affiché** : ralenti ×20
+
+**Justification du facteur.** Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran, ralenti de 20. La chaîne traverse la membrane exactement au rythme où elle sort du tunnel.
+
+**Description lue par l’étudiant.** Le même mécanisme, mais le ribosome est amarré à un canal Sec61 planté dans la membrane du réticulum : la chaîne qu’il fabrique ne part pas dans le cytosol, elle traverse la membrane à mesure qu’elle sort du tunnel et s’accumule dans la lumière, où elle rejoint les protéines déjà faites. C’est là, à ce canal, que se décide la différence entre une protéine cytosolique et une protéine destinée à l’export — le ribosome libre qui dérive au-dessus fait exactement le même travail, mais sa chaîne reste dehors. Trois autres ribosomes amarrés à côté font la même chose sur le même ARNm, et quelques-uns viennent cogner la membrane sans y trouver de canal et repartent : sans peptide signal, rien ne les retient.
+
+**Ellision — ce qui est coupé ou échantillonné.** Le début manque : la reconnaissance du peptide signal par la SRP, l’arrêt momentané de la traduction et l’accostage au translocon ont déjà eu lieu quand la scène commence. Le clivage du peptide signal et le repliement assisté par les chaperons ne sont pas montrés non plus. Douze codons, puis on reprend — comme pour le polysome. Sur les cent cinquante ribosomes de ce fragment de membrane, on ne suit la chaîne que de quatre.
+
+> **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20
+
+### 2.11 Kinésine et dynéine sur le microtubule
+
+**Siège** : Cytosquelette · **Facteur temporel affiché** : ralenti ×100
+
+**Justification du facteur.** La kinésine fait environ cent pas PRODUCTIFS par seconde, de 8 nm chacun, soit 800 nm/s : un pas dure 10 ms dans la cellule, il en prend une à l'écran. On verra pourtant une tentative et demie par seconde — une sur trois échoue et ne fait pas avancer la molécule, il faut donc compter les pas qui aboutissent, pas les balancements.
+
+**Description lue par l’étudiant.** Vue rapprochée d'un tronçon de microtubule, à trois micromètres du centrosome ; les tubes sont ceux de cette démonstration, un peu plus épais que ceux du cytosquelette parce que les tubulines y sont dessinées en relief. Le rail n'est pas lisse : treize protofilaments de dimères α/β y forment un damier hélicoïdal, et c'est sur ce damier que les moteurs posent leurs pieds. La kinésine marche main sur main vers l'extrémité plus, à la périphérie, en tirant sa vésicule ; la dynéine, reconnaissable à ses anneaux AAA+ au bout de longues tiges, la croise en sens inverse vers le centre — c'est le trafic à double sens de l'axone. Aucun des deux ne sait où il va : la tête libre cherche son site en diffusant et manque son coup une fois sur trois, et après une centaine de pas le moteur lâche, part en promenade brownienne et se raccroche ailleurs par collision.
+
+**Ellision — ce qui est coupé ou échantillonné.** Le pas lui-même dure moins de 100 µs, contre une dizaine de millisecondes d'attente d'ATP : il est étiré au quart du cycle, sinon il tiendrait dans une seule image. L'ATP n'est pas dessinée — 1 nm de large, elle ferait moins d'un pixel. Le damier de tubuline n'est posé que sur 0,9 µm de rail : les 52 000 tubulines d'un tube entier coûteraient dix fois le budget. Enfin, le décrochage est arrangé deux fois : un moteur libre quitterait le cadre en un dixième de seconde d'écran, sa promenade est donc fortement ralentie ; et c'est la MÊME molécule qu'on voit revenir se poser plus loin, alors que dans la cellule celle qui lâche est perdue et c'en est une autre, parmi le millier qui traînent là, qui prend sa place.
+
+> **Chiffres à contrôler** : 8 nm · 800 nm · 10 ms · 800 · 10 · 1 nm · 0,9 µm · 100 · 52 000
+
+### 2.12 Instabilité dynamique du microtubule
+
+**Siège** : Cytosquelette · **Facteur temporel affiché** : accéléré ×3
+
+**Justification du facteur.** Le tube pousse d'environ 1,8 µm/min et s'effondre à 17 µm/min. Accéléré trois fois, il remplit les 0,38 µm de la fenêtre gravée en quatre secondes et les reperd en moins d'une demi-seconde : les deux vitesses sont montrées telles quelles, et c'est leur rapport de près de dix qui doit sauter aux yeux.
+
+**Description lue par l’étudiant.** La même charpente, mais par son bout, à huit micromètres et demi du centre. Les dimères de tubuline libres — en vert, chargés de GTP — cognent contre l'extrémité plus au hasard : presque tous repartent, quelques-uns s'ajoutent, et le tube pousse par pas de 8 nm, un protofilament à la fois, ce qui lui donne un bout effiloché et jamais plat. Tant que la couronne de GTP tient au sommet, l'édifice tient ; dès qu'elle est perdue, les treize protofilaments s'écartent en cornes de bélier et le tube se défait près de dix fois plus vite qu'il n'a poussé. C'est l'instabilité dynamique : un microtubule ne se raccourcit pas, il s'effondre — puis repart.
+
+**Ellision — ce qui est coupé ou échantillonné.** La FRÉQUENCE, elle, est comprimée : dans la cellule une catastrophe survient toutes les minutes ou deux, ici toutes les cinq secondes — parce que la fenêtre gravée ne fait que 0,38 µm et que le tube la remplit aussitôt. Le damier de tubuline n'est dessiné qu'autour de l'extrémité plus ; au-delà le tube est lisse. Le pool libre est réduit à 160 dimères là où la cellule en compte des dizaines de millions, leur diffusion est fortement ralentie — à l'échelle réelle ils traverseraient le cadre en un millième de seconde — et un seul est absorbé par image alors que cent quarante-six s'ajoutent chaque seconde. L'hydrolyse du GTP en GDP n'est pas figurée : le vert du capuchon devient gris quand la tubuline s'enfonce dans le réseau, et c'est tout.
+
+> **Chiffres à contrôler** : 1,8 µm · 17 µm · 0,38 µm · 17 · 38 · 8 nm · 160
+
+### 2.13 Endocytose par puits de clathrine
+
+**Siège** : Membrane plasmique · **Facteur temporel affiché** : accéléré ×2,3
+
+**Justification du facteur.** Un puits de clathrine met 30 à 60 s à se creuser, à se pincer et à perdre son manteau. Le cycle complet dure ici 20 s d'écran pour 45 s réelles, soit un accéléré de ×2,3 environ. Aucun ralenti : à cette échelle de temps, l'endocytose est déjà lisible à l'œil nu.
+
+**Description lue par l’étudiant.** Un manteau de clathrine se polymérise sous la membrane, la courbe, et l'enfonce jusqu'à ne plus laisser qu'un col. La dynamine s'enroule autour de ce col comme un ressort, hydrolyse du GTP et le pince : la vésicule se détache. Le manteau se défait alors aussitôt — sans ce décapage, la vésicule ne pourrait fusionner avec rien et la clathrine ne servirait qu'une fois. Les récepteurs ne sont pas prélevés au hasard : ils sont retenus par le manteau à mesure que leur errance les y amène, et le fret se retrouve concentré dans la vésicule.
+
+**Ellision — ce qui est coupé ou échantillonné.** Le pincement lui-même — la scission par la dynamine — dure moins d'une seconde et n'est donc pas ralenti par rapport au reste : il passe vite, comme en vrai. Les adaptateurs AP2 qui cousent le manteau aux récepteurs, l'actine qui pousse le puits, et Hsc70 qui arrache les triskèles ne sont pas dessinés ; on ne voit que leur effet. Chaque arête est tracée comme un seul segment alors que deux jambes de triskèles s'y chevauchent. Les deux puits abortifs ne creusent pas la membrane, seul leur manteau est figuré.
+
+> **Chiffres à contrôler** : 60 s · 20 s · 45 s · 30 · 60 · 20 · 45
+
+### 2.14 Exocytose et fusion SNARE
+
+**Siège** : Membrane plasmique · **Facteur temporel affiché** : deux temps : accéléré ×5, puis ralenti ×5 000
+
+**Justification du facteur.** Deux temps, parce qu'une seule vitesse serait fausse pour l'un des deux. L'errance et l'amarrage de la vésicule prennent une trentaine de secondes : ils occupent les 6,7 premières secondes d'écran, soit un accéléré d'environ ×5. La fermeture éclair des SNARE et l'ouverture du pore, elles, durent moins de 1 ms et sont étalées sur les 5 s suivantes — un ralenti de ×5 000. Sans ce ralenti, la fusion serait une image et demie.
+
+**Description lue par l’étudiant.** Une vésicule sécrétoire erre sous la membrane. Quand elle passe à portée, ses v-SNARE rencontrent les t-SNARE de la membrane et les quatre hélices se referment comme une fermeture éclair, du bout libre vers les membranes : c'est cette fermeture qui tire les deux bicouches l'une contre l'autre jusqu'au contact. Un pore de moins de 2 nm s'ouvre alors, le contenu part dans le milieu extérieur, et la vésicule finit de se déplier dans la membrane plasmique. Sa membrane ne disparaît pas : elle S'AJOUTE, et ses protéines se dispersent dans le plan — la surface de la cellule vient d'augmenter, et il faudra que l'endocytose la reprenne.
+
+**Ellision — ce qui est coupé ou échantillonné.** Le calcium qui déclenche la fusion, la synaptotagmine qui le détecte, Munc13 et Munc18 qui préparent la syntaxine, et NSF/α-SNAP qui redéfont le complexe après coup ne sont pas dessinés ; les complexes SNARE disparaissent simplement une fois la fusion faite. Chaque hélice est figurée par 13 grains au lieu de la soixantaine de résidus qu'elle compte. Le mouvement des vésicules est une errance à deux sinus, pas une intégration brownienne : la propriété conservée est l'absence de cap, pas la statistique du déplacement.
+
+> **Chiffres à contrôler** : 1 ms · 5 s · 5 000 · 2 nm · 13
+
+### 2.15 Pompe Na⁺/K⁺ et canal potassique
+
+**Siège** : Membrane plasmique · **Facteur temporel affiché** : ralenti ×1 000
+
+**Justification du facteur.** Un cycle de pompe prend 7 à 20 ms, ce qui devient une douzaine de secondes à l'écran et se suit état par état. À ce même ralenti, le canal devrait débiter cent mille ions par seconde d'écran : il est donc physiquement indessinable en billes, et c'est pourquoi il est rendu en jet. Ce contraste n'est pas un effet de style, c'est la mesure de l'écart.
+
+**Description lue par l’étudiant.** La pompe traverse quatre conformations. En E1 elle est ouverte vers l'intérieur et lie trois ions sodium ; l'ATP la phosphoryle et la ferme ; elle bascule en E2-P ouverte vers le dehors, lâche le sodium et prend deux ions potassium ; la déphosphorylation la ramène au départ. Trois charges sortent, deux entrent : la pompe est électrogénique et contribue de quelques millivolts au potentiel de repos. Elle ne le fabrique pas, contrairement à ce qu'on lit partout — le potentiel de repos est un potentiel de diffusion du potassium, rendu possible par les canaux de fuite comme celui de droite. La pompe, elle, entretient les gradients contre la diffusion, et c'est un travail permanent qui coûte le quart du budget énergétique d’une cellule générique — et jusqu’à la moitié dans un neurone.
+
+**Ellision — ce qui est coupé ou échantillonné.** Les EFFECTIFS sont multipliés par six : dix-huit sodiums et douze potassiums traversent par cycle, là où la pompe réelle en déplace trois et deux. Le rapport 3:2 est conservé — c'est lui qui fait de la pompe une pompe électrogénique, et c'est le fait qui porte —, mais un étudiant qui compte les billes compte un échantillon, pas un cycle. À trois et deux, la scène ne montrerait presque rien entre deux conformations. Le jet du canal, lui, est coupé et non ralenti : cent mille ions par seconde d'écran ne se dessinent pas. Une seule pompe et un seul canal sont montrés là où un micromètre carré de membrane en porte des centaines, et l'ATP consommé — un par cycle — est figuré sans son cortège de phosphorylations intermédiaires.
+
+> **Chiffres à contrôler** : 20 ms · 20
+
+### 2.16 Dégradation par le protéasome
+
+**Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×10
+
+**Justification du facteur.** Une chaîne complète — engagement, dépliement, dernier peptide — prend environ 23 s sur protéine purifiée ; à ×10 elle tient en 2,3 s à l'écran. Au même facteur le protéasome dessiné avale une cible toutes les sept secondes environ, soit une par minute réelle : dans la fourchette mesurée de 0,05 à 5 protéines par minute.
+
+**Description lue par l’étudiant.** On montre partout la synthèse des protéines, jamais leur destruction : les deux tournent pourtant en parallèle en permanence. Une cible reçoit une chaîne d'ubiquitines posées une à une par une ligase E3 ; en dessous de quatre maillons en liaison K48 le protéasome la refuse, et elle rebondit sur le chapeau. Au-delà, le chapeau 19S la retient, retire la chaîne en bloc pour la recycler, puis DÉPLIE la protéine et la fait passer en brin étiré dans le tonneau 20S, dont le pore de 1,3 nm est trop étroit pour une protéine repliée. Il en ressort des peptides de deux à trente acides aminés.
+
+**Ellision — ce qui est coupé ou échantillonné.** Trois horloges cohabitent ici, et une seule est au facteur affiché. L'attente entre deux rencontres est COUPÉE, pas ralentie : dans le cytosol une cible met des minutes à des heures avant de croiser une E3 puis un protéasome. L'agitation thermique est à l'inverse RALENTIE d'environ cent mille — le coefficient de diffusion dessiné vaut 3·10⁻⁵ µm²/s contre 3 µm²/s en cytosol, où une protéine traverserait ce champ en un cinquième de milliseconde et ne montrerait qu'un flou. La densité, enfin, est divisée par quarante : ce volume contient réellement quelques centaines de protéines, on en dessine sept ; les ubiquitines libres sont au contraire bien plus nombreuses ici qu'en solution, sans quoi le recyclage serait invisible. Sont absents l'enzyme d'activation E1, l'enzyme de conjugaison E2, et les chaînes K63 ou K11, qui ne mènent pas au protéasome.
+
+> **Chiffres à contrôler** : 23 s · 2,3 s · 23 · 10 · 05 · 1,3 nm · 3 µm
+
+---
+
+## 3. Les 18 familles d'organites
+
+### 3.1 Membrane plasmique
+
+**Rôle affiché** : Ferme la cellule et trie tout ce qui entre et sort.
+
+La membrane plasmique n'est pas une paroi mais un film : deux couches de lipides dos à dos, cinq nanomètres en tout, quatre mille fois plus fin que la cellule est large. La moitié de sa masse est faite de protéines plantées de part en part — pompes, canaux, récepteurs — si nombreuses que la surface tient de la mosaïque plutôt que du ballon. Le lipide isole, les protéines choisissent : la cellule reste chimiquement distincte du monde tout en négociant avec lui.
+
+### 3.2 Cytosquelette
+
+**Rôle affiché** : Charpente dynamique : elle tient la forme de la cellule et sert de rails au transport interne.
+
+Des réseaux de fibres protéiques traversent tout le cytoplasme et lui donnent sa tenue : sans eux, la cellule s'affaisserait comme une poche d'eau. Les microtubules, les plus épais, rayonnent du centrosome vers la périphérie et servent de rails aux moteurs moléculaires qui déplacent vésicules et chromosomes. Sous la membrane, un feutrage serré de filaments d'actine — le cortex — fixe la forme de la surface et permet à la cellule de ramper, de se contracter et de se diviser. L'ensemble se démonte et se reconstruit sans arrêt : c'est une charpente qui se réinvente en quelques minutes.
+
+### 3.3 Centrosome
+
+**Rôle affiché** : Centre organisateur des microtubules : c'est de lui que part toute la charpente.
+
+Le centrosome est le point de départ des microtubules, un nuage de matériel péricentriolaire qui les amorce autour de deux centrioles disposés à angle droit. Chaque centriole est un barillet creux de neuf triplets de microtubules ; cette symétrie d'ordre 9 est conservée à l'identique de l'algue verte à l'être humain. Avant la division, le centrosome se duplique et les deux copies migrent aux pôles opposés de la cellule pour bâtir le fuseau qui séparera les chromosomes.
+
+### 3.4 Réticulum endoplasmique rugueux
+
+**Rôle affiché** : Fabrique et replie les protéines destinées à l’export et aux membranes.
+
+Le réticulum endoplasmique rugueux est un empilement de citernes aplaties dont la membrane prolonge directement celle de l’enveloppe nucléaire : les deux compartiments n’en forment qu’un. Sa face cytosolique est couverte de ribosomes — ce sont eux qui la rendent « rugueuse » — qui poussent la protéine naissante dans la lumière des citernes au fur et à mesure qu’ils la lisent. Les protéines y sont repliées, contrôlées, puis expédiées vers l’appareil de Golgi par vésicules. Une cellule qui sécrète beaucoup, comme un plasmocyte, en est presque entièrement remplie.
+
+### 3.5 Réticulum endoplasmique lisse
+
+**Rôle affiché** : Fabrique les lipides et neutralise les toxiques.
+
+Le réticulum lisse prolonge le rugueux, mais sa membrane ne porte aucun ribosome : elle est nue, et le voisin grenu s'arrête net à la frontière. Au lieu de citernes aplaties, il forme un lacis de tubules ramifiés qui se rejoignent en carrefours renflés. Ses enzymes y assemblent les lipides des membranes et les hormones stéroïdes, et y dégradent alcool et médicaments. Il sert enfin de coffre à calcium, qu'il relâche dans le cytosol au moment voulu.
+
+### 3.6 Noyau
+
+**Rôle affiché** : Conserve l'ADN et gouverne la cellule en exportant ses ARN messagers.
+
+Le noyau met les chromosomes à l'abri du cytoplasme derrière une enveloppe faite de deux membranes accolées, séparées par un espace de quarante nanomètres. Rien ne franchit cette double paroi ailleurs que par les pores nucléaires, des anneaux de protéines qui percent les deux membranes à la fois et filtrent le trafic dans les deux sens. À l'intérieur, la chromatine remplit tout le volume : c'est l'ADN enroulé sur des protéines, relâché là où les gènes se lisent, compacté ailleurs. La masse dense qu'on aperçoit dedans est le nucléole, l'atelier où les ribosomes sont assemblés avant de sortir travailler dans le cytoplasme.
+
+### 3.7 Appareil de Golgi
+
+**Rôle affiché** : Trie, modifie et emballe les protéines venues du réticulum.
+
+Une pile de citernes aplaties et incurvées, empilées comme des assiettes creuses. Les protéines entrent par la face cis, la plus large, tournée vers le noyau et le réticulum ; elles traversent la pile citerne après citerne et ressortent par la face trans sous forme de vésicules. À chaque étage, des enzymes différentes taillent et complètent leurs chaînes de sucres : c'est la glycosylation. Le Golgi est le bureau de tri de la cellule, il décide de la destination finale de chaque protéine.
+
+### 3.8 Mitochondrie
+
+**Rôle affiché** : Fabrique l'ATP, la monnaie énergétique de la cellule.
+
+La mitochondrie est enveloppée de deux membranes. L'interne se replie en crêtes qui plongent dans la matrice : ces replis multiplient la surface disponible pour la chaîne respiratoire, là où l'oxygène est consommé et l'ATP assemblée. Plus une cellule travaille, plus ses crêtes sont serrées — un muscle cardiaque en est bourré. Elle garde un ADN circulaire à elle, vestige de la bactérie qu'elle a été.
+
+### 3.9 Lysosomes
+
+**Rôle affiché** : Digèrent et recyclent : l'estomac de la cellule.
+
+Un lysosome est une poche d'enzymes hydrolytiques qui démonte ce que la cellule a ingéré, et ses propres organites usés. Une pompe à protons maintient son intérieur à pH 4,5-5, deux unités et demie sous le cytosol : les hydrolases n'y sont actives que là, si bien qu'une fuite ne digère pas la cellule. Le contenu granuleux visible ici par transparence est ce matériel en cours de digestion — c'est lui qui a valu à ces vésicules leur premier nom, corps denses.
+
+### 3.10 Peroxysomes
+
+**Rôle affiché** : Oxydent les longues chaînes grasses et détruisent le peroxyde d'hydrogène.
+
+Le peroxysome coupe les acides gras à très longue chaîne que la mitochondrie ne sait pas attaquer, et détoxifie l'alcool dans le foie. Ces oxydations produisent du peroxyde d'hydrogène, un poison, que la catalase logée dans la même vésicule casse aussitôt en eau et en oxygène : produire et neutraliser au même endroit, c'est toute l'idée. L'octaèdre central figure le cœur cristallin d'urate oxydase, sa signature en microscopie — décrit chez le rat et beaucoup de mammifères, mais le gène est inactivé chez l'humain. Il ne vient pas du Golgi : il se divise, ou bourgeonne du réticulum.
+
+### 3.11 Vésicules de transport
+
+**Rôle affiché** : Portent les protéines du Golgi jusqu’à la membrane.
+
+Ce sont les navettes de la voie sécrétoire : elles bourgeonnent de la face trans du Golgi, traversent le cytoplasme en chapelets et fusionnent avec la membrane plasmique, qui libère leur contenu au-dehors. Une vésicule ne naît jamais nue : un manteau protéique — COPII, COPI ou clathrine — déforme la membrane, la découpe, puis se démonte aussitôt le bourgeon détaché. Les dix vésicules encore proches du Golgi le portent ici, en cage polyédrique translucide ; les autres l'ont déjà perdu. C'est ce détail que les vulgarisations oublient, et sans lui on ne comprend pas comment une membrane plate devient une bulle.
+
+### 3.12 Boîte de vérité
+
+**Rôle affiché** : Le cytoplasme à sa densité réelle : 25 % du volume
+
+Dans ce cube de 647 nm d'arête, et nulle part ailleurs dans cette cellule, l'encombrement est celui de la biologie : 157 000 protéines, complexes, ribosomes et ARN, tous dessinés à leur taille vraie, du grain de 5 nm au ribosome de 25 nm. Une protéine ne traverse jamais un tel milieu en ligne droite ; elle rebondit sur ses voisines, et c'est pourquoi la GFP y diffuse trois fois plus lentement que dans l’eau. Cette densité ne peut pas être tenue partout : à l'échelle de la cellule entière il faudrait des centaines de millions d'objets, contre les deux cent mille que la carte graphique dessine à 60 images par seconde. Partout ailleurs dans cette cellule, le cytosol est éclairci d'environ trois ordres de grandeur : le grain que vous y voyez est un échantillon, pas un inventaire.
+
+> **Chiffres à contrôler** : 25 % · 25 · 647 nm · 5 nm · 25 nm · 647 · 157 000 · 60
+
+### 3.13 Cytosol
+
+**Rôle affiché** : Le milieu, jamais vide
+
+Le cytosol est un gel encombré, pas une solution : 300 mg de protéines par millilitre, un cinquième à un tiers du volume occupé, et une bonne part de l'eau retenue à la surface des macromolécules. Le semis dessiné ici est honnête sur sa propre limite : sa densité est réduite d'environ trois ordres de grandeur par rapport au réel, faute de budget de rendu — 60 000 objets là où la biologie en met des centaines de millions. À l'échelle de la cellule il donne le grain fin qu'on voit en microscopie électronique ; en zoomant il se résout en objets isolés, là où le vrai cytosol serait un mur. Pour voir cette densité vraie, il faut entrer dans la boîte de vérité.
+
+> **Chiffres à contrôler** : 300 · 60 000
+
+### 3.14 Pores nucléaires
+
+**Rôle affiché** : Seule porte du noyau : filtre tout ce qui entre et tout ce qui sort.
+
+Le complexe du pore nucléaire est la plus grosse machine de la cellule : une trentaine de protéines différentes, les nucléoporines, assemblées en huit exemplaires autour d'un canal unique. L'anneau côté cytosol porte des filaments libres qui pêchent les cargos ; côté noyau, huit filaments plongent et se referment sur un anneau distal — c'est le panier, la silhouette qui signe l'enveloppe nucléaire. Un noyau en porte de quelques centaines à plusieurs milliers selon son activité. Le canal fait 40 nanomètres, ce qui suffit largement : un ARN messager empaqueté en fait 15 à 35. Il peut se dilater jusqu'à 70, mais c'est une réponse au STRESS — manque d'énergie, choc osmotique — et non un élargissement à la demande d'un cargo. Les petites molécules diffusent librement, les grosses ne franchissent le maillage que munies du bon signal d'adressage. Un cargo reconnu traverse en moins de dix millisecondes.
+
+> **Chiffres à contrôler** : 40 · 15 · 35 · 70
+
+### 3.15 Matrice mitochondriale
+
+**Rôle affiché** : Le compartiment le plus concentré de la cellule, entre les crêtes.
+
+Entre les crêtes il n'y a pas de vide : la matrice est une pâte d'enzymes où se déroule le cycle de Krebs, qui démonte les nutriments et charge les transporteurs alimentant la chaîne respiratoire. On y voit aussi des granules denses de calcium, réserve tampon de la cellule, et surtout des nucléoïdes : la mitochondrie possède son propre ADN, circulaire comme celui d'une bactérie, souvenir de l'organisme libre qu'elle a été. Cet ADN ne vient que de la mère, ce qui en fait la trace la plus lisible des lignées humaines.
+
+### 3.16 Ribosomes libres
+
+**Rôle affiché** : Traduisent les ARN messagers en protéines, en plein cytosol.
+
+Ce semis de grains est ce qui donne au cytoplasme sa texture granuleuse en microscopie électronique — le mot « ribosome » vient de là. Chacun est fait de deux sous-unités emboîtées, une grande et une petite, qui se referment sur un ARN messager le temps d'assembler une protéine puis se séparent. Ceux-ci sont libres : ils fabriquent les protéines qui resteront dans le cytosol, tandis que leurs jumeaux accrochés au réticulum produisent les protéines destinées à être exportées ou insérées dans une membrane.
+
+### 3.17 Nucléosomes
+
+**Rôle affiché** : Empaquettent l'ADN : deux mètres de double hélice dans six micromètres.
+
+Un nucléosome, ce sont 147 paires de bases enroulées 1,7 fois autour d'un octamère d'histones : un palet de onze nanomètres. Il y en a une trentaine de millions dans un noyau humain, et ce sont eux qui remplissent réellement le volume — pas quelques fils dans une bulle, un feutre saturé. La densité n'y est pas la même partout : contre l'enveloppe, l'hétérochromatine est compactée et muette ; vers le centre, l'euchromatine relâchée laisse lire les gènes. Enfin chaque chromosome reste groupé dans son territoire au lieu de se disperser — ce sont les régions de teintes différentes.
+
+> **Chiffres à contrôler** : 147
+
+### 3.18 Machinerie nucléaire
+
+**Rôle affiché** : Lit les gènes et découpe les ARN : polymérases, facteurs, spliceosomes.
+
+Entre les nucléosomes circule tout ce qui travaille sur l'ADN : les ARN polymérases qui recopient les gènes, les facteurs de transcription qui décident lesquels, les spliceosomes qui découpent les ARN à peine transcrits. Ces complexes se tiennent surtout là où la chromatine est desserrée, vers le centre du noyau — contre l'enveloppe, la chromatine compactée ne se lit pas. Les grosses masses sombres sont des corps nucléaires : taches d'épissage et corps de Cajal, où les facteurs sont stockés et remis en état entre deux usages.
+
+---
+
+## 4. L'atelier du gène
+
+La chaîne complète, d'un bout à l'autre : l'ARN polymérase copie les quatre-vingt-dix paires de bases du gène en ouvrant la double hélice sur treize à la fois, le transcrit reçoit sa coiffe dès le vingt-cinquième nucléotide, franchit le pore nucléaire — qui n'est pas un trou mais un hydrogel où le brin doit fondre — et attend. Il n'ira nulle part tout seul : c'est vous qui le donnez au ribosome, et rien ne se traduit avant. Ensuite le ribosome lit un codon à la fois, trois à cinq ARN de transfert viennent cogner avant le bon, et l'acide aminé désigné s'ajoute à la chaîne. La séquence est celle de la chaîne B de l'insuline humaine : la protéine qui s'affiche résidu par résidu est déterminée par les bases du gène, par la table standard du code génétique et par rien d’autre. Ces quatre-vingt-dix bases sont celles du gène INS humain, collationnées sur GenBank (NM_000207.3) et épinglées base par base par un test.
+
+**Ellision.** C'EST UN PLATEAU, pas une vue de la cellule : les organites sont retirés le temps de la scène, car à trois cents nanomètres le noyau n'est plus un contexte mais une paroi opaque devant le sujet. Le fragment d'enveloppe et l'anneau du pore sont réduits à 150 nm de côté — un pore réel en fait 120 de large et écraserait des acteurs qui, eux, gardent leurs dimensions exactes : 29 nm pour le gène, 30 pour le ribosome, 54 pour le messager. Le mécanisme « Export nucléaire » montre le pore à sa vraie taille. Un grain d'ARN messager pour trois nucléotides, soit un par codon. Le RIBOSOME EST FIXE ET LE BRIN DÉFILE : dans la cellule c’est l’inverse, mais c'est le même mouvement vu d'un autre repère, et celui-ci garde le ribosome au centre du cadre. Six ARN de transfert sont montrés là où le cytosol en contient des centaines de milliers. Un seul ribosome est représenté alors qu'un ARNm actif en porte toujours plusieurs — c'est un polysome, et le mécanisme « Synthèse des protéines » le montre. L'épissage est absent : ce segment n'a pas d'intron, ce qui est vrai de la région montrée mais pas du gène entier. Enfin les protéines qui accompagnent le transcrit — le mRNP — ne sont pas dessinées, alors qu'un ARNm n'est jamais nu.
+
+> **Chiffres à contrôler** : 150 nm · 29 nm · 150 · 120 · 29 · 30 · 54
+
+---
+
+## 5. Ce que le relecteur ne verra pas ici
+
+Ce dossier couvre le TEXTE. Trois choses lui échappent et demandent la page :
+
+- **Les proportions** : tout est dessiné à l'échelle vraie sauf ce que les ellisions
+  déclarent. Un écart de taille se voit à l’écran, pas dans une fiche.
+- **Les cinétiques relatives** : un canal qui débite cent mille fois plus qu'une pompe
+  est rendu par un contraste visuel, sans un mot.
+- **Le geste** : donner un brin d'ARN à un ribosome, et couper l'oxygène pour voir la
+  traduction s’arrêter.
+
+*Généré depuis 16 mécanismes, 18 familles d'organites et 90 bases.*

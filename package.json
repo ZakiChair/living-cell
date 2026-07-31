@@ -8,7 +8,8 @@
     "banc": "vite",
     "build": "vite build",
     "test": "vitest run",
-    "test:suivi": "vitest"
+    "test:suivi": "vitest",
+    "relecture": "tsx outils/dossierRelecture.ts > docs/relecture-scientifique.md"
   },
   "dependencies": {
     "three": "0.185.1"
