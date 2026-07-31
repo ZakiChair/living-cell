@@ -448,6 +448,50 @@ describe('chaque mécanisme se déroule dans son organite', () => {
     expect(injustifies, 'facteurs que leur justification ne reprend jamais').toEqual([])
   })
 
+  /**
+   * FILET GÉNÉRIQUE : aucune matrice non finie sur une heure d'animation.
+   *
+   * Trois mécanismes sur seize confrontent leur facteur à une mesure de leur
+   * animation ; les treize autres n'ont aucun test qui appelle seulement
+   * `animer()`. Ce test ne remplace pas la mesure — il ne dit rien du facteur —
+   * mais il attrape la classe de défaut qui rend une scène invisible sans un
+   * mot d'erreur : une position ou une échelle devenue NaN ou infinie, qui fait
+   * disparaître tout un `InstancedMesh` du rendu.
+   *
+   * Une heure d'écran, échantillonnée : un défaut qui n'apparaît qu'après un
+   * long cycle — le surenroulement de la transcription revient toutes les 26 s,
+   * la bêta-oxydation toutes les 20 — ne se verrait pas sur dix secondes.
+   */
+  it("n'engendre aucune matrice non finie sur une heure d'animation", () => {
+    const matrice = new THREE.Matrix4()
+    const fautifs: string[] = []
+
+    for (const m of mecanismes) {
+      for (const temps of [0, 0.5, 7, 26.5, 61, 137, 613, 1800, 3600]) {
+        m.animer(temps)
+        m.objet.traverse((noeud) => {
+          const amas = noeud as THREE.InstancedMesh
+          if (!amas.isInstancedMesh) return
+          for (let i = 0; i < amas.count; i++) {
+            amas.getMatrixAt(i, matrice)
+            if (!matrice.elements.every(Number.isFinite)) {
+              fautifs.push(`${m.cle} → ${amas.name || 'amas'} instance ${i} à t=${temps} s`)
+              return
+            }
+          }
+        })
+        // La position et l'échelle des maillages ordinaires comptent aussi :
+        // une échelle NaN escamote la pièce sans rien signaler.
+        m.objet.traverse((noeud) => {
+          const ok = [noeud.position, noeud.scale].every((v) => Number.isFinite(v.x + v.y + v.z))
+          if (!ok) fautifs.push(`${m.cle} → ${noeud.name || noeud.type} à t=${temps} s`)
+        })
+      }
+    }
+
+    expect(fautifs.slice(0, 5), `${fautifs.length} valeurs non finies`).toEqual([])
+  })
+
   it('place les mécanismes nucléaires dans le noyau', () => {
     const nucleaires = mecanismes.filter((m) => m.siege === 'Noyau')
     expect(nucleaires.length).toBeGreaterThan(0)

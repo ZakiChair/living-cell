@@ -50,7 +50,10 @@ const ETATS = [
 ] as const
 
 /** Durée d'un état à l'écran, en secondes. Quatre états font un cycle complet. */
-const DUREE_ETAT = 3.2
+export const DUREE_ETAT = 3.2
+/** Stœchiométrie réelle : trois sodiums sortent, deux potassiums entrent. */
+export const NA_PAR_CYCLE = 3
+export const K_PAR_CYCLE = 2
 
 // ── Temporaires hissés : animer() ne doit jamais allouer ───────────────────
 const _position = new THREE.Vector3()
@@ -132,6 +135,9 @@ export function creerPompeSodiumPotassium(): MecanismeBrut[] {
     materiauOrganite(TEINTE_SODIUM),
     NB_SODIUM,
   )
+  // Nommés pour que le test D3 COMPTE les traversées dans les matrices, au lieu
+  // de relire NB_SODIUM et NB_POTASSIUM — ce qui ne prouverait rien.
+  sodium.name = 'sodium'
   sodium.frustumCulled = false
   groupe.add(sodium)
 
@@ -140,6 +146,7 @@ export function creerPompeSodiumPotassium(): MecanismeBrut[] {
     materiauOrganite(TEINTE_POTASSIUM),
     NB_POTASSIUM,
   )
+  potassium.name = 'potassium'
   potassium.frustumCulled = false
   groupe.add(potassium)
 
