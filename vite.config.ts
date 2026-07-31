@@ -13,6 +13,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        cellule: resolve(racine, 'cellule.html'),
         sommaire: resolve(racine, 'index.html'),
         contour: resolve(racine, 'bancs/0a-contour.html'),
         dalle: resolve(racine, 'bancs/0b-dalle.html'),

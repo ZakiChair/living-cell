@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>La cellule — modélisation interactive</title>
+    <style>
+      :root {
+        --ivoire: #f2eee4;
+        --encre: #1c1a17;
+        --encre-2: rgba(28, 26, 23, 0.62);
+        --encre-3: rgba(28, 26, 23, 0.38);
+        --voile: rgba(242, 238, 228, 0.9);
+        --trait: rgba(28, 26, 23, 0.14);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: var(--ivoire);
+        color: var(--encre);
+        font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      canvas { display: block; }
+
+      /* ── Chargement ─────────────────────────────────────────── */
+      #chargement {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        gap: 14px;
+        justify-items: center;
+        background: var(--ivoire);
+        z-index: 50;
+        transition: opacity 0.6s ease;
+      }
+      #chargement.parti { opacity: 0; pointer-events: none; }
+      #chargement h1 { margin: 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+      #chargement p { margin: 0; color: var(--encre-2); font-size: 0.9rem; }
+      .jauge { width: 220px; height: 2px; background: var(--trait); overflow: hidden; }
+      .jauge i { display: block; height: 100%; width: 30%; background: #0072b2; animation: glisse 1.1s ease-in-out infinite; }
+      @keyframes glisse { 0% { transform: translateX(-100%); } 100% { transform: translateX(430%); } }
+
+      /* ── Titre ──────────────────────────────────────────────── */
+      #titre {
+        position: fixed;
+        top: 26px;
+        left: 30px;
+        max-width: 20rem;
+        pointer-events: none;
+      }
+      #titre h1 {
+        margin: 0 0 4px;
+        font-size: 1.28rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+      }
+      #titre p { margin: 0; font-size: 0.83rem; color: var(--encre-2); }
+
+      /* ── Légende ────────────────────────────────────────────── */
+      #legende {
+        position: fixed;
+        left: 30px;
+        bottom: 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        background: var(--voile);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--trait);
+        border-radius: 9px;
+        padding: 9px;
+        max-height: 52vh;
+        overflow-y: auto;
+      }
+      #legende button {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: none;
+        border: 0;
+        border-radius: 6px;
+        padding: 6px 9px;
+        font: inherit;
+        font-size: 0.84rem;
+        color: var(--encre);
+        cursor: pointer;
+        text-align: left;
+        min-height: 26px;
+        transition: background 0.14s;
+      }
+      #legende button:hover { background: rgba(28, 26, 23, 0.07); }
+      #legende button[aria-pressed="true"] { background: rgba(28, 26, 23, 0.11); font-weight: 600; }
+      #legende button:focus-visible { outline: 2px solid #0072b2; outline-offset: 1px; }
+      .pastille {
+        width: 11px;
+        height: 11px;
+        border-radius: 3px;
+        flex: none;
+        border: 1px solid rgba(28, 26, 23, 0.3);
+      }
+
+      /* ── Processus vivants ──────────────────────────────────── */
+      #flux {
+        position: fixed;
+        top: 26px;
+        left: 30px;
+        margin-top: 74px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        pointer-events: none;
+      }
+      .flux {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 0.8rem;
+      }
+      .flux b { font-weight: 500; color: var(--encre-2); }
+      .flux .badge {
+        font-size: 0.72rem;
+        font-variant-numeric: tabular-nums;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: rgba(28, 26, 23, 0.09);
+        color: var(--encre-2);
+        white-space: nowrap;
+      }
+
+      /* ── Étiquette au survol ────────────────────────────────── */
+      #survol {
+        position: fixed;
+        padding: 7px 11px;
+        background: var(--encre);
+        color: var(--ivoire);
+        border-radius: 7px;
+        font-size: 0.82rem;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.12s;
+        z-index: 20;
+        max-width: 17rem;
+      }
+      #survol.visible { opacity: 1; }
+      #survol b { display: block; font-weight: 600; }
+      #survol span { color: rgba(242, 238, 228, 0.72); font-size: 0.78rem; }
+
+      /* ── Fiche ──────────────────────────────────────────────── */
+      #fiche {
+        position: fixed;
+        top: 26px;
+        right: 30px;
+        width: 22rem;
+        max-height: calc(100vh - 52px);
+        overflow-y: auto;
+        background: var(--voile);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--trait);
+        border-radius: 11px;
+        padding: 20px 22px;
+        transform: translateX(calc(100% + 40px));
+        transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      #fiche.ouverte { transform: none; }
+      #fiche h2 { margin: 0 0 3px; font-size: 1.08rem; letter-spacing: -0.01em; }
+      #fiche .role { margin: 0 0 14px; font-size: 0.84rem; color: var(--encre-2); }
+      #fiche .desc { margin: 0 0 16px; font-size: 0.88rem; }
+      #fiche dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 7px 13px; font-size: 0.83rem; }
+      #fiche dt { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+      #fiche dd { margin: 0; color: var(--encre-2); }
+      #fiche .fermer {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(28, 26, 23, 0.08);
+        color: var(--encre);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      #fiche .fermer:hover { background: rgba(28, 26, 23, 0.16); }
+
+      /* ── Réglages ───────────────────────────────────────────── */
+      #reglages {
+        position: fixed;
+        bottom: 26px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--voile);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--trait);
+        border-radius: 999px;
+        padding: 10px 20px;
+        font-size: 0.83rem;
+      }
+      #reglages label { display: flex; align-items: center; gap: 9px; color: var(--encre-2); }
+      #reglages input[type="range"] { width: 130px; accent-color: #0072b2; }
+      #reglages .sep { width: 1px; height: 18px; background: var(--trait); }
+      #reglages button {
+        border: 0;
+        background: rgba(28, 26, 23, 0.08);
+        border-radius: 999px;
+        padding: 5px 13px;
+        font: inherit;
+        font-size: 0.82rem;
+        cursor: pointer;
+        min-height: 26px;
+      }
+      #reglages button:hover { background: rgba(28, 26, 23, 0.16); }
+
+      #echelle {
+        position: fixed;
+        right: 30px;
+        bottom: 26px;
+        font-size: 0.78rem;
+        color: var(--encre-2);
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+      #echelle .barre {
+        height: 2px;
+        background: var(--encre);
+        margin-bottom: 5px;
+        margin-left: auto;
+      }
+
+      @media (max-width: 900px) {
+        #fiche { width: auto; left: 16px; right: 16px; top: auto; bottom: 96px; max-height: 46vh; }
+        #fiche.ouverte { transform: none; }
+        #fiche:not(.ouverte) { transform: translateY(calc(100% + 120px)); }
+        #legende { max-height: 30vh; left: 16px; bottom: 90px; }
+        #titre { left: 16px; top: 16px; }
+        #echelle { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chargement">
+      <h1>La cellule</h1>
+      <div class="jauge"><i></i></div>
+      <p>Assemblage des organites…</p>
+    </div>
+
+    <header id="titre">
+      <h1>La cellule</h1>
+      <p>Écorché d'une cellule eucaryote animale. Survolez un organite pour l'identifier, cliquez pour la fiche.</p>
+    </header>
+
+    <nav id="legende" aria-label="Organites"></nav>
+
+    <section id="flux" aria-label="Processus vivants"></section>
+
+    <div id="survol" role="status" aria-live="polite"></div>
+
+    <aside id="fiche" aria-live="polite">
+      <button class="fermer" aria-label="Fermer la fiche">✕</button>
+      <h2></h2>
+      <p class="role"></p>
+      <p class="desc"></p>
+      <dl></dl>
+    </aside>
+
+    <div id="reglages">
+      <label>
+        Écorché
+        <input id="coupe" type="range" min="0" max="100" value="58" aria-label="Ouverture de l'écorché" />
+      </label>
+      <span class="sep"></span>
+      <button id="rotation" aria-pressed="true">Rotation</button>
+      <button id="recadrer">Recadrer</button>
+    </div>
+
+    <div id="echelle">
+      <div class="barre" style="width: 90px"></div>
+      <span id="echelleTexte">— µm</span>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

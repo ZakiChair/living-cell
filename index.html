@@ -3,20 +3,59 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cellule vivante — bancs du lot 0</title>
+    <title>Cellule vivante</title>
     <style>
-      body { font: 16px/1.6 system-ui, sans-serif; max-width: 40rem; margin: 4rem auto; padding: 0 1rem; background: #F2EEE4; color: #1C1A17; }
-      h1 { font-size: 1.4rem; }
-      li { margin: 0.5rem 0; }
-      a { color: #0072B2; }
+      body {
+        font: 16px/1.6 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+        max-width: 34rem;
+        margin: 12vh auto;
+        padding: 0 1.5rem;
+        background: #f2eee4;
+        color: #1c1a17;
+      }
+      h1 { font-size: 1.5rem; letter-spacing: -0.015em; margin: 0 0 0.3rem; }
+      .sous { color: rgba(28, 26, 23, 0.62); margin: 0 0 2.5rem; font-size: 0.95rem; }
+      h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+           color: rgba(28, 26, 23, 0.45); margin: 2rem 0 0.7rem; font-weight: 600; }
+      a.carte {
+        display: block;
+        padding: 1rem 1.2rem;
+        border: 1px solid rgba(28, 26, 23, 0.14);
+        border-radius: 10px;
+        text-decoration: none;
+        color: inherit;
+        margin-bottom: 0.6rem;
+        transition: background 0.15s, border-color 0.15s;
+      }
+      a.carte:hover { background: rgba(28, 26, 23, 0.04); border-color: rgba(28, 26, 23, 0.28); }
+      a.carte b { display: block; font-size: 1rem; margin-bottom: 0.15rem; }
+      a.carte span { font-size: 0.87rem; color: rgba(28, 26, 23, 0.62); }
+      a.principale { border-color: #0072b2; border-width: 1.5px; }
+      a.principale b { color: #0072b2; }
     </style>
   </head>
   <body>
-    <h1>Bancs du lot 0</h1>
-    <p>Trois mesures qui débloquent la conception. Chaque banc affiche ses chiffres à l'écran.</p>
-    <ul>
-      <li><a href="/bancs/0a-contour.html">0a — Contour du cel-shading</a></li>
-      <li><a href="/bancs/0b-dalle.html">0b — Dalle à densité vraie</a></li>
-    </ul>
+    <h1>Cellule vivante</h1>
+    <p class="sous">Modélisation interactive d'une cellule eucaryote animale.</p>
+
+    <h2>La cellule</h2>
+    <a class="carte principale" href="/cellule.html">
+      <b>Écorché interactif →</b>
+      <span>
+        Noyau, mitochondries, appareil de Golgi, réticulum endoplasmique rugueux et lisse,
+        lysosomes, cytosquelette. Survolez pour identifier, cliquez pour la fiche. Les
+        échanges de minéraux, le trafic de protéines et la traduction tournent en direct.
+      </span>
+    </a>
+
+    <h2>Bancs de mesure</h2>
+    <a class="carte" href="/bancs/0b-dalle.html">
+      <b>Dalle à densité vraie</b>
+      <span>25 % du volume occupé par des macromolécules, comme dans un vrai cytoplasme.</span>
+    </a>
+    <a class="carte" href="/bancs/0a-contour.html">
+      <b>Contour du cel-shading</b>
+      <span>Coque inversée contre détection de bord, mesurées au temps GPU.</span>
+    </a>
   </body>
 </html>
