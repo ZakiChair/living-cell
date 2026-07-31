@@ -26,7 +26,7 @@ import {
   donnerAuRibosome,
   facteurAffiche,
 } from './noyau/atelier.js'
-import { avancerDe, creerEtat, regimeTraduction } from './noyau/etatCellule.js'
+import { SAUT_MAX, avancerDe, creerEtat, regimeTraduction } from './noyau/etatCellule.js'
 
 const vue = creerVue(document.body)
 
@@ -769,9 +769,13 @@ function boucle(): void {
   // bien que couper l'oxygène n'arrêtait jamais rien à l'écran. La boucle
   // existait dans le code et restait invisible. Le multiplicateur porte donc
   // sur les deux, et le badge dit le facteur qui en résulte.
-  avancerDe(etatCellule, dt * (atelierActif ? atelier.vitesse : 1))
+  // Le temps simulé est calculé UNE fois, borné UNE fois, et passé aux deux.
+  // Deux bornes posées séparément peuvent toujours diverger, et elles l'ont
+  // fait : `avancerDe` plafonnait à 0,5 s, l'atelier ne plafonnait rien.
+  const dtSimule = Math.min(dt * (atelierActif ? atelier.vitesse : 1), SAUT_MAX)
+  avancerDe(etatCellule, dtSimule)
   if (atelierActif) {
-    avancerAtelier(atelier, dt, regimeTraduction(etatCellule.atp))
+    avancerAtelier(atelier, dtSimule, regimeTraduction(etatCellule.atp))
     sceneAtelier.animer(atelier, tempsVie)
     panneauAtelier.rafraichir(atelier, etatCellule)
   }

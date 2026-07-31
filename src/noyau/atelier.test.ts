@@ -139,8 +139,8 @@ describe('la traduction', () => {
     const a = creerAtelier()
     menerJusqua(a, 'attente')
     donnerAuRibosome(a)
-    // Le premier codon est TTC → UUC, la phénylalanine qui ouvre la chaîne.
-    expect(codonCourant(a)).toBe('UUC')
+    // Le premier codon est TTT → UUU, la phénylalanine qui ouvre la chaîne.
+    expect(codonCourant(a)).toBe('UUU')
     expect(a.gene.proteine[0]).toBe('F')
     tourner(a, DUREE_CODON * 3 + 0.1)
     expect(a.codons).toBe(3)

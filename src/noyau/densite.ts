@@ -25,6 +25,34 @@ export const OCCUPATION_CYTOSOL = 0.25
 /** Volume d'une cellule mammifère typique, en µm³. */
 export const VOLUME_CELLULE_UM3 = 2_000
 
+/**
+ * Volume moyen d'un peuplement mêlé, pondéré par les parts de chaque famille.
+ *
+ * C'est le chiffre qui manquait, et son absence a produit le défaut le plus
+ * grave du produit. Le budget de la boîte de vérité était calculé avec
+ * `VOLUME_COMPLEXE_NM3` — 2 750 nm³, le volume d'un ribosome — alors que le
+ * peuplement livré est fait à 55 % de grains de 5 nm, qui en font 21. Le
+ * volume moyen réel est de l'ordre de 430 nm³, six fois moins, si bien que la
+ * boîte annonçait 25 % d'occupation pour 3,9 % mesurés.
+ *
+ * On ne devine donc plus : on pèse ce qu'on sème.
+ */
+export function volumeMoyenPondere(
+  familles: ReadonlyArray<{ part: number; volumeNm3: number }>,
+): number {
+  let sommeParts = 0
+  let sommeVolumes = 0
+  for (const { part, volumeNm3 } of familles) {
+    if (!(part >= 0) || !(volumeNm3 > 0)) {
+      throw new Error(`famille invalide : part ${part}, volume ${volumeNm3} nm³`)
+    }
+    sommeParts += part
+    sommeVolumes += part * volumeNm3
+  }
+  if (!(sommeParts > 0)) throw new Error('aucune famille peuplée')
+  return sommeVolumes / sommeParts
+}
+
 function verifierOccupation(occupation: number): void {
   if (!(occupation > 0 && occupation <= 1)) {
     throw new Error(`occupation invalide : ${occupation} (attendu entre 0 exclu et 1 inclus)`)

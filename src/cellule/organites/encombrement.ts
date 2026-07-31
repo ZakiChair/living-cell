@@ -6,6 +6,11 @@ import {
   pointDansCoquille,
   type Organite,
 } from '../contrat.js'
+import {
+  OCCUPATION_CYTOSOL,
+  areteCubeTenable,
+  volumeMoyenPondere,
+} from '../../noyau/densite.js'
 
 /**
  * L'encombrement moléculaire : ce qui remplit le cytoplasme.
@@ -18,8 +23,10 @@ import {
  *
  * Il le fait à DEUX RÉGIMES, et la distinction est une exigence d'honnêteté :
  *
- *  — LA BOÎTE DE VÉRITÉ : un cube de 1,2 µm posé dans le cytoplasme dégagé, où
- *    157 000 complexes tiennent la densité réelle. C'est là qu'on regarde de près.
+ *  — LA BOÎTE DE VÉRITÉ : un cube posé dans le cytoplasme dégagé, où 157 000
+ *    objets tiennent la densité réelle. Son arête est DÉDUITE du volume
+ *    réellement semé, pas choisie : voir `ARETE_BOITE`. C'est là qu'on regarde
+ *    de près.
  *  — LE VOILE : 60 000 objets pour tout le reste de la cellule, soit trois
  *    ordres de grandeur SOUS le compte réel. À l'échelle de la cellule ces
  *    objets sont sub-pixel et forment un grain, comme en microscopie
@@ -39,15 +46,9 @@ const GRAINE = 250_982
 
 /** Cube posé dans le cytoplasme dégagé, entre le Golgi et la membrane. */
 const CENTRE_BOITE = new THREE.Vector3(5.2, -3.4, 2.2)
-const ARETE_BOITE = 1.2
-const DEMI_BOITE = ARETE_BOITE / 2
 
 /**
- * Budget de la boîte.
- *
- * Un complexe reconnaissable occupe environ 2 750 nm³, soit 2,75 × 10⁻⁶ µm³.
- * Le cube fait 1,728 µm³ ; à 25 % du volume occupé, 1,728 × 0,25 / 2,75e-6
- * donne ≈ 157 000 instances. C'est un plafond, pas une cible à dépasser.
+ * Budget de la boîte : un plafond d'instances, pas une cible à dépasser.
  */
 const INSTANCES_BOITE = 157_000
 
@@ -128,6 +129,26 @@ interface Famille {
 }
 
 /**
+ * Volume intérieur d'un maillage fermé, en µm³.
+ *
+ * Somme des volumes signés des tétraèdres (origine, v₀, v₁, v₂) : exact pour
+ * tout polyèdre fermé, quelle que soit sa position. C'est la seule façon de
+ * connaître le volume RÉELLEMENT semé, plutôt que celui qu'on croit semer.
+ */
+function volumeDeGeometrie(geometrie: THREE.BufferGeometry): number {
+  const plate = geometrie.index ? geometrie.toNonIndexed() : geometrie
+  const p = plate.getAttribute('position')
+  let six = 0
+  for (let i = 0; i < p.count; i += 3) {
+    const ax = p.getX(i), ay = p.getY(i), az = p.getZ(i)
+    const bx = p.getX(i + 1), by = p.getY(i + 1), bz = p.getZ(i + 1)
+    const cx = p.getX(i + 2), cy = p.getY(i + 2), cz = p.getZ(i + 2)
+    six += ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)
+  }
+  return Math.abs(six) / 6
+}
+
+/**
  * Les cinq familles du peuplement, aux tailles vraies.
  *
  * Chacune tient dans un polyèdre à très peu de faces : à ces tailles un objet
@@ -181,12 +202,41 @@ function creerFamilles(): Famille[] {
       cle: 'arn',
       // ARNt et petits ARN : 8 nm de long pour 2,4 nm d'épaisseur, la double
       // hélice repliée. Bâtonnet ouvert aux deux bouts, invisibles à cette taille.
-      geometrie: new THREE.CylinderGeometry(0.0012, 0.0012, 0.008, 5, 1, true),
+      // Fermé aux deux bouts : les capsules sont invisibles à 8 nm, et un
+      // maillage ouvert n'a pas de volume calculable — or c'est son volume qui
+      // décide de la taille de la boîte.
+      geometrie: new THREE.CylinderGeometry(0.0012, 0.0012, 0.008, 5, 1, false),
       teinte: desaturer(TEINTES.vesicule),
       part: 0.02,
     },
   ]
 }
+
+/**
+ * L'ARÊTE DE LA BOÎTE EST DÉDUITE, PAS CHOISIE.
+ *
+ * C'était le défaut le plus grave du produit, et il portait sur son unique
+ * affirmation de vérité. Le budget d'instances était calculé avec
+ * `VOLUME_COMPLEXE_NM3` — 2 750 nm³, le volume d'un ribosome — alors que le
+ * peuplement livré est fait à 55 % de grains de 5 nm, qui en occupent 21. Le
+ * volume moyen réel est de 432 nm³, six fois moins : la boîte annonçait 25 %
+ * d'occupation pour **3,9 % mesurés**.
+ *
+ * On pèse donc ce qu'on sème, et on en déduit l'arête. La spec disait déjà quoi
+ * faire dans ce cas : « quand le budget manque, on rétrécit la dalle, jamais sa
+ * densité ». Changer la taille ou la proportion d'une famille redimensionne
+ * désormais la boîte pour qu'elle reste honnête, au lieu de rendre son texte
+ * faux en silence.
+ */
+const FAMILLES = creerFamilles()
+/** Volume moyen d'un objet du peuplement, en nm³ (1 µm³ = 10⁹ nm³). */
+const VOLUME_MOYEN_NM3 = volumeMoyenPondere(
+  FAMILLES.map((f) => ({ part: f.part, volumeNm3: volumeDeGeometrie(f.geometrie) * 1e9 })),
+)
+/** Arête, en micromètres, qui fait vraiment 25 % d'occupation au budget donné. */
+const ARETE_BOITE =
+  areteCubeTenable(INSTANCES_BOITE, OCCUPATION_CYTOSOL, VOLUME_MOYEN_NM3) / 1000
+const DEMI_BOITE = ARETE_BOITE / 2
 
 /** Point quelconque dans le cube, en repère local de la boîte. */
 function placerDansBoite(alea: () => number, cible: THREE.Vector3): void {
@@ -264,7 +314,7 @@ function semer(
 export function creerEncombrement(): Organite[] {
   const alea = creerAlea(GRAINE)
   // Une seule géométrie par famille, partagée par les deux régimes.
-  const familles = creerFamilles()
+  const familles = FAMILLES
 
   const boite = new THREE.Group()
   boite.name = 'boite-de-verite'
@@ -296,7 +346,7 @@ export function creerEncombrement(): Organite[] {
       nom: 'Boîte de vérité',
       role: 'Le cytoplasme à sa densité réelle : 25 % du volume',
       description:
-        "Dans ce cube de 1,2 µm d'arête, et nulle part ailleurs dans cette " +
+        `Dans ce cube de ${(ARETE_BOITE * 1000).toFixed(0)} nm d'arête, et nulle part ailleurs dans cette ` +
         "cellule, l'encombrement est celui de la biologie : 157 000 protéines, " +
         'complexes, ribosomes et ARN, tous dessinés à leur taille vraie, du grain ' +
         'de 5 nm au ribosome de 25 nm. Une protéine ne traverse jamais un tel ' +

@@ -314,9 +314,19 @@ export function avancer(etat: EtatCellule, pas: number = PAS): void {
  * cela, le comportement du modèle dépendrait de la cadence de la carte
  * graphique, ce qui est le défaut classique des simulations de navigateur.
  */
+/**
+ * Saut de temps simulé maximal pour une seule image, en secondes.
+ *
+ * Un onglet revenu au premier plan ne doit pas faire bondir l'état. Le plafond
+ * est EXPORTÉ parce qu'il ne doit pas s'appliquer ici seulement : l'atelier
+ * avance sur la même horloge, et deux bornes posées séparément finissent par
+ * diverger — c'est exactement ce qui s'est produit.
+ */
+export const SAUT_MAX = 0.5
+
 export function avancerDe(etat: EtatCellule, secondes: number): number {
-  // Borné : un onglet revenu au premier plan ne doit pas faire un bond d'état.
-  etat.reliquat += Math.min(Math.max(secondes, 0), 0.5)
+  // Borné, et de la même façon que tout ce qui partage cette horloge.
+  etat.reliquat += Math.min(Math.max(secondes, 0) || 0, SAUT_MAX)
   let pasFaits = 0
   while (etat.reliquat >= PAS) {
     avancer(etat, PAS)

@@ -395,11 +395,9 @@ export const FICHE_ATELIER = {
     "cogner avant le bon, et l'acide aminé désigné s'ajoute à la chaîne. La " +
     "séquence est celle de la chaîne B de l'insuline humaine : la protéine qui " +
     "s'affiche résidu par résidu est déterminée par les bases du gène, par la " +
-    'table standard du code génétique et par rien d’autre. Une réserve : ce ' +
-    "qui est vérifié, c'est que ces quatre-vingt-dix bases PRODUISENT bien la " +
-    'chaîne B. Le code étant redondant, plusieurs suites de bases donnent la ' +
-    "même protéine, et celle-ci reste à recollationner sur GenBank avant qu'on " +
-    "puisse affirmer que ce sont les codons exacts du gène INS.",
+    'table standard du code génétique et par rien d’autre. Ces quatre-vingt-dix ' +
+    'bases sont celles du gène INS humain, collationnées sur GenBank ' +
+    '(NM_000207.3) et épinglées base par base par un test.',
   ellision:
     "C'EST UN PLATEAU, pas une vue de la cellule : les organites sont retirés " +
     "le temps de la scène, car à trois cents nanomètres le noyau n'est plus un " +

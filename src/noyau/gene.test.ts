@@ -19,6 +19,25 @@ describe("le gène de la chaîne B de l'insuline", () => {
   })
 
   /**
+   * LA SÉQUENCE EST ÉPINGLÉE BASE PAR BASE.
+   *
+   * Le test de traduction ne suffisait pas : le code génétique est redondant,
+   * donc toute mutation SYNONYME — `CTC` en `CTA`, deux leucines — le laissait
+   * vert. L'ADN affiché à l'écran pouvait cesser d'être celui du gène humain
+   * sans que rien ne le signale, et c'est précisément par là qu'un `TTC` s'était
+   * glissé à la place du `TTT` initial.
+   *
+   * La chaîne ci-dessous est celle de NM_000207.3, recopiée depuis la collation
+   * et non depuis le module qu'elle contrôle.
+   */
+  it('reproduit exactement la séquence de NM_000207.3, base par base', () => {
+    expect(ADN_CHAINE_B).toBe(
+      'TTTGTGAACCAACACCTGTGCGGCTCACACCTGGTGGAAGCTCTCTAC' +
+        'CTAGTGTGCGGGGAACGAGGCTTCTTCTACACACCCAAGACC',
+    )
+  })
+
+  /**
    * LE TEST QUI PORTE TOUT LE RESTE.
    *
    * C'est lui qui garantit que ce que l'atelier montre à l'écran est de la
@@ -55,8 +74,8 @@ describe("le gène de la chaîne B de l'insuline", () => {
     expect(gene.codons).toHaveLength(30)
     expect(gene.residus).toHaveLength(30)
     expect(gene.proteine).toBe(PROTEINE_ATTENDUE)
-    // Le premier codon TTC → UUC → phénylalanine.
-    expect(gene.codons[0]).toBe('UUC')
+    // Le premier codon TTT → UUU → phénylalanine.
+    expect(gene.codons[0]).toBe('UUU')
     expect(gene.residus[0]?.nom).toBe('Phénylalanine')
     expect(gene.residus[0]?.classe).toBe('apolaire')
   })

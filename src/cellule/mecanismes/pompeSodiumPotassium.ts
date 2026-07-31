@@ -287,7 +287,8 @@ export function creerPompeSodiumPotassium(): Mecanisme[] {
         "qu'on lit partout — le potentiel de repos est un potentiel de diffusion du " +
         'potassium, rendu possible par les canaux de fuite comme celui de droite. La ' +
         "pompe, elle, entretient les gradients contre la diffusion, et c'est un travail " +
-        'permanent qui coûte le tiers du budget énergétique de la cellule.',
+        'permanent qui coûte le quart du budget énergétique d’une cellule générique — '  +
+        'et jusqu’à la moitié dans un neurone.',
       objet: groupe,
       ancre: CENTRE.clone(),
       rayonCadrage: 0.5,

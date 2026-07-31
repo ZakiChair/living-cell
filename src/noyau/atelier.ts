@@ -228,7 +228,12 @@ function poserUnAcideAmine(atelier: Atelier): void {
  * ce qui est bien ce que fait une cellule réoxygénée.
  */
 export function avancerAtelier(atelier: Atelier, dt: number, regime: number): void {
-  const allure = atelier.vitesse * Math.max(0, Math.min(1, regime))
+  // `dt` est DÉJÀ multiplié par la vitesse, et déjà borné, par l'appelant : la
+  // cellule et l'atelier partagent une seule horloge. Appliquer `vitesse` ici
+  // aussi la dédoublait — et les deux bornes, posées séparément, divergeaient
+  // dès qu'une image dépassait 25 ms. À vitesse 20, c'est-à-dire sous 40 images
+  // par seconde, l'atelier avançait quatre fois plus vite que la cellule.
+  const allure = Math.max(0, Math.min(1, regime))
   if (allure <= 0) return
   const pas = dt * allure
   atelier.horloge += pas

@@ -18,22 +18,27 @@ import { acideAminePourCodon, transcrire, type AcideAmine } from './codeGenetiqu
  */
 
 /**
- * Source : région codante de la chaîne B du gène INS humain (préproinsuline,
- * NM_000207), lue dans le sens du brin codant, 5'→3'.
+ * Source : région codante de la chaîne B du gène INS humain (préproinsuline),
+ * lue dans le sens du brin codant, 5'→3'.
  *
- * NIVEAU DE CONFIANCE [B]. La séquence protéique qu'elle produit — la chaîne B
- * de l'insuline — est une donnée de niveau [A], vérifiée par le test de ce
- * module. La suite de nucléotides elle-même est reproduite de mémoire d'après
- * une séquence très largement publiée, et doit être recollationnée sur GenBank
- * avant publication, au même titre que le reste des données du site, dont la
- * spec fait une condition de livraison (critère D5).
+ * NIVEAU DE CONFIANCE [A], collationné contre **NM_000207.3** (NCBI). Elle
+ * était écrite de mémoire et portait un [B] ; la collation a montré 89 bases
+ * justes sur 90, la seule différence étant un `TTC` au lieu de `TTT` en tête —
+ * deux codons synonymes de la phénylalanine, donc invisible pour un test qui ne
+ * vérifie que la protéine. Cette base est corrigée.
  *
- * Ce qui est GARANTI par le test, et ne peut donc pas dériver en silence : ces
- * quatre-vingt-dix bases, traduites par la table standard, rendent exactement
- * la chaîne B de l'insuline. Une erreur de frappe casserait la suite.
+ * L'hétérogénéité des codons est d'ailleurs la signature d'une séquence
+ * authentique : les quatre leucines emploient CTG, CTG, CTC puis CTA, la sérine
+ * TCA, l'arginine CGA. Une rétro-traduction depuis la protéine réemploierait le
+ * même codon pour chaque acide aminé.
+ *
+ * DEUX choses sont garanties par les tests, et ne peuvent donc plus dériver en
+ * silence : la séquence exacte, base par base, et le fait qu'elle rende la
+ * chaîne B de l'insuline. Le second seul laissait passer toute mutation
+ * synonyme.
  */
 export const ADN_CHAINE_B =
-  'TTCGTGAACCAACACCTGTGCGGCTCACACCTGGTGGAAGCTCTCTAC' +
+  'TTTGTGAACCAACACCTGTGCGGCTCACACCTGGTGGAAGCTCTCTAC' +
   'CTAGTGTGCGGGGAACGAGGCTTCTTCTACACACCCAAGACC'
 
 /** La chaîne B de l'insuline humaine, en code à une lettre. Donnée [A]. */
