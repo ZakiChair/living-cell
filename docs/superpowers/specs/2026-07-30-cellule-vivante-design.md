@@ -307,6 +307,15 @@ Deux affirmations de cette spec ont été **réfutées par la mesure** :
 - La détection de bord ne coûte pas la classe du SSAO. Le chiffre de 5,63 ms valait pour un effet bien plus lourd, à échantillonnage en hémisphère et flou, pas pour une détection de silhouette.
 - Les deux techniques donnent bien le contour intérieur entre instances de même teinte qui se recouvrent, à condition que celles-ci ne s'interpénètrent pas — ce qui est le cas réel d'un encombrement moléculaire.
 
+**La prémisse d'accessibilité tient sous la technique retenue, et c'est vérifié plutôt que supposé.** Profil de luminance mesuré sur les pixels, en travers du bord d'une sphère orange éclairée posée sur le fond ivoire :
+
+| | Creux au bord | Contraste creux / fond |
+|---|---|---|
+| Sans contour | 0,2511 — pas de creux | 3,01:1 |
+| Détection de bord | **0,1411** | **4,74:1** |
+
+Sans contour, le bord ne creuse pas : l'objet se détache du fond au seul contraste de sa teinte. Avec la détection de bord, la frontière passe au-dessus du seuil de 3:1. L'encodage secondaire qu'exige le validateur existe donc bien.
+
 **Coût induit** : la détection de bord impose une cible de rendu et une conversion colorimétrique explicite. Sans elle, la cible restant en linéaire, l'image finale est nettement assombrie. C'est un défaut rencontré en séance, pas une hypothèse.
 
 Détail des mesures dans `docs/superpowers/rapports/lot-0.md`.
@@ -414,13 +423,13 @@ En dessous de 20 000 entités visibles, le processeur en JavaScript suffit large
 
 **Mesure adaptative en continu**, pas un test unique au chargement : le throttling thermique est réel et une scène stable pendant une minute peut perdre 30 à 40 % après dix minutes. Moyenne glissante du temps d'image, avec hystérésis. Au-delà de ~20 ms, on descend d'un cran ; en dessous de ~12 ms de façon soutenue, on remonte.
 
-Échelle de dégradation, du moins au plus visible :
+Échelle de dégradation, du moins au plus visible, **réordonnée après mesure** :
 
-1. **Arête de la dalle réduite** — mesuré comme le seul levier réellement efficace (§9.2)
-2. Profondeur de champ coupée
-3. **Arête de la dalle réduite**, avec le badge mis à jour en conséquence — jamais la densité (voir ci-dessous)
-4. Bloom sur mip plus bas, puis coupé
-5. Détail des sphères 2 → 1 → 0
+1. Profondeur de champ coupée
+2. Bloom sur mip plus bas, puis coupé
+3. Détail des sphères 2 → 1 → 0 — agit sur la géométrie, donc sur ce qui limite réellement la dalle
+4. **Arête de la dalle réduite**, avec le badge mis à jour en conséquence — jamais la densité (voir ci-dessous). C'est le levier de fond, et le seul qui ait un effet proportionnel.
+5. Ratio de pixels 2 → 1,5 → 1,25 → 1. Placé bas parce que **la mesure le dément comme premier recours** : diviser les pixels par trois n'a fait passer le temps GPU que de 11,96 à 10,45 ms sur la dalle. Il reste utile pour les scènes à grands halos, où le remplissage domine.
 6. En dernier recours, image fixe
 
 **Quand le budget manque, on rétrécit la dalle, jamais sa densité.** Une boîte de vérité à densité réduite n'est plus une boîte de vérité : c'est exactement la malhonnêteté que tout le reste de la spécification combat. Montrer un volume plus petit à densité juste reste vrai ; montrer le même volume à densité fausse ne l'est pas. Le badge annonce l'arête courante, et l'arête plus faible du mobile (de l'ordre de 0,3 à 0,7 µm) est une **conséquence énoncée du budget**, pas un plancher arbitraire.
