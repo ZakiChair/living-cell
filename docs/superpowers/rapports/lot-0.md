@@ -107,11 +107,19 @@ La scène est donc limitée par la **géométrie**, pas par le remplissage : les
 
 Cela ne contredit pas la recherche, qui désignait le taux de remplissage comme plafond : c'était pour de grands halos additifs, un cas différent de celui-ci.
 
-### Mesures sur téléphone : **non faites**
+### Mesures sur téléphone : **écartées par décision, le 2026-07-31**
 
 Elles demandent du matériel physique. L'émulation d'appareil du navigateur redimensionne la fenêtre et ralentit le processeur mais **ne simule pas le GPU**, et cette scène est limitée par le GPU. Une valeur extrapolée serait inventée.
 
-Le protocole, l'adresse et les repères de comparaison sont prêts dans `mesure-mobile.md`. **C'est le seul point du lot 0 qui reste ouvert.**
+Le mobile est donc sorti du périmètre plutôt que laissé en attente. Trois conséquences, portées dans la spec au §9.5 :
+
+1. Aucun chiffre mobile du document n'est vérifié. La ligne mobile du budget est une division d'une seconde par trente, pas une mesure.
+2. **La porte de livraison « ≥ 28 images/s sur iPhone » est retirée.** Une porte qu'on ne franchit jamais n'est pas une porte.
+3. L'arête tenable sur téléphone reste inconnue. Les 4,9 µm valent pour un MacBook Pro M4 Max et pour lui seul.
+
+Deux choses sont gardées, parce qu'elles ne coûtent rien et ne promettent rien : la gestion de `webglcontextlost`, déjà en place dans le harnais, et le protocole de mesure, prêt dans `mesure-mobile.md`. Le jour où le mobile revient au périmètre, c'est une dizaine de minutes.
+
+**La porte 0b est donc close sur son volet ordinateur, qui était la question qui bloquait la conception.**
 
 ---
 

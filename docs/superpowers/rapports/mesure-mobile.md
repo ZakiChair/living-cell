@@ -1,6 +1,10 @@
 # Tâche 10 — mesure sur téléphone réel
 
-**État : à faire par Zaki.** Elle demande du matériel physique, et c'est la seule mesure du lot 0 qui ne peut pas être automatisée.
+> **État : ÉCARTÉE le 2026-07-31.** Le mobile est sorti du périmètre du projet — voir §9.5 de la spec pour les trois conséquences, dont le retrait de la porte de livraison correspondante.
+>
+> Ce document reste en place parce que le protocole est prêt et le banc outillé : si le mobile revient au périmètre, la mesure prend une dizaine de minutes. Rien de ce qui suit n'est à faire aujourd'hui.
+
+Elle demande du matériel physique, et c'était la seule mesure du lot 0 qui ne pouvait pas être automatisée.
 
 Pourquoi elle ne peut pas être contournée : l'émulation d'appareil du navigateur redimensionne la fenêtre et ralentit le processeur, mais **ne simule pas le GPU**. Or le banc 0b est limité par la géométrie côté GPU. Une valeur extrapolée serait inventée, et la spec interdit explicitement d'en afficher une.
 

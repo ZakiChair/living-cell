@@ -103,7 +103,9 @@ Technique retenue (celle de Drew Berry) : animation par images-clés pour script
 
 **C'est le résultat qui a failli passer inaperçu, et il contraint tout.**
 
-Une cellule mammifère fait ~2 000 µm³. À 25 % d'occupation volumique, elle contient entre **10⁸ et 10¹⁰ objets** selon ce qu'on appelle un objet. Le budget de rendu est de ~200 000 instances animées avec marge sur une machine de bureau rapide, et de l'ordre de 30 000 à 50 000 sur un téléphone récent. L'écart est de **trois à cinq ordres de grandeur**.
+Une cellule mammifère fait ~2 000 µm³. À 25 % d'occupation volumique, elle contient entre **10⁸ et 10¹⁰ objets** selon ce qu'on appelle un objet. Le budget de rendu est de ~200 000 instances animées avec marge sur une machine de bureau rapide. L'écart est de **trois à cinq ordres de grandeur**.
+
+*Le budget d'un téléphone n'est pas chiffré ici : aucun appareil n'a été mesuré, et la spec ne s'autorise pas plus de chiffre inventé sur elle-même que sur la biologie (§9.5).*
 
 Le volume finançable dépend entièrement d'un choix jamais énoncé :
 
@@ -189,7 +191,7 @@ Trois « mondes » se substituent en fondu pendant le zoom. Budget GPU constant 
 | Bande | Champ | Statut de vérité | Ce qu'on voit |
 |---|---|---|---|
 | 1 — Cellule | ~20 µm | **schématique, badge d'ellision permanent** | organites en volumes, membrane comme surface, protéines en silhouettes de quelques pixels |
-| 2 — Boîte de vérité | **jusqu'à 4 µm** sur ordinateur, à mesurer sur téléphone | **densité vraie, dalle à profondeur bornée** | bicouche épaisse, pompes et canaux reconnaissables à leur silhouette, encombrement réel, curseur de densité |
+| 2 — Boîte de vérité | **jusqu'à 4 µm**, mesuré sur ordinateur | **densité vraie, dalle à profondeur bornée** | bicouche épaisse, pompes et canaux reconnaissables à leur silhouette, encombrement réel, curseur de densité |
 | 3 — Macromolécule | ~25 nm | densité vraie, voisinage immédiat | un ribosome, un complexe de pompe, l'ADN à 2 nm, codons lisibles |
 
 Le fondu se déclenche sur un seuil de distance caméra, avec hystérésis pour éviter le battement. Une seule bande est instanciée à la fois ; la suivante se prépare pendant le fondu.
@@ -398,10 +400,12 @@ Le piège est actif, pas théorique : un PDF Goodsell a déjà été télécharg
 
 ### 9.1 Budgets
 
-| Cible | Image | GPU | Fil principal |
-|---|---|---|---|
-| Desktop 60 fps | 16,7 ms | ~12 ms | ~4 ms |
-| Mobile 30 fps | 33,3 ms | ~24 ms | ~8 ms |
+| Cible | Image | GPU | Fil principal | Statut |
+|---|---|---|---|---|
+| Desktop 60 fps | 16,7 ms | ~12 ms | ~4 ms | **mesuré** |
+| Mobile 30 fps | 33,3 ms | ~24 ms | ~8 ms | arithmétique, jamais vérifiée sur appareil (§9.5) |
+
+La ligne mobile n'est pas une mesure : c'est la simple division d'une seconde par trente. Ce qu'elle ne dit pas — et qu'on ne sait pas — c'est ce qu'un téléphone met réellement à rendre cette scène.
 
 ### 9.2 Ce qui coûte réellement
 
@@ -432,15 +436,24 @@ En dessous de 20 000 entités visibles, le processeur en JavaScript suffit large
 5. Ratio de pixels 2 → 1,5 → 1,25 → 1. Placé bas parce que **la mesure le dément comme premier recours** : diviser les pixels par trois n'a fait passer le temps GPU que de 11,96 à 10,45 ms sur la dalle. Il reste utile pour les scènes à grands halos, où le remplissage domine.
 6. En dernier recours, image fixe
 
-**Quand le budget manque, on rétrécit la dalle, jamais sa densité.** Une boîte de vérité à densité réduite n'est plus une boîte de vérité : c'est exactement la malhonnêteté que tout le reste de la spécification combat. Montrer un volume plus petit à densité juste reste vrai ; montrer le même volume à densité fausse ne l'est pas. Le badge annonce l'arête courante, et l'arête plus faible du mobile (de l'ordre de 0,3 à 0,7 µm) est une **conséquence énoncée du budget**, pas un plancher arbitraire.
+**Quand le budget manque, on rétrécit la dalle, jamais sa densité.** Une boîte de vérité à densité réduite n'est plus une boîte de vérité : c'est exactement la malhonnêteté que tout le reste de la spécification combat. Montrer un volume plus petit à densité juste reste vrai ; montrer le même volume à densité fausse ne l'est pas. Le badge annonce donc toujours l'arête courante, et toute réduction est une **conséquence énoncée du budget**, pas un plancher arbitraire.
 
-### 9.5 Mobile
+### 9.5 Mobile — hors périmètre, par décision
 
-**Aucun appareil mobile n'a été mesuré.** Les budgets ci-dessus sont des extrapolations. Exigences de départ :
+**Le site vise l'ordinateur. Aucun appareil mobile n'a été mesuré, et la vérification a été écartée le 2026-07-31.**
 
-- Matrice d'appareils réels : un iPhone récent et un Android milieu de gamme, testés physiquement avant toute promesse chiffrée.
-- **Gestion de `webglcontextlost` et `webglcontextrestored` dès la première ligne.** Le mode de panne réel d'iOS est un dépassement mémoire menant à une perte de contexte, qui se traduit par un canvas blanc ou un rechargement d'onglet. Sans gestionnaire, la panne est silencieuse.
-- Maquette mobile du HUD et du panneau latéral **avant** le code, pas après.
+Ce n'est pas un oubli à rattraper plus tard en silence, c'est un choix qui a trois conséquences qu'il faut écrire :
+
+1. **Aucun chiffre mobile de ce document n'est vérifié.** La ligne mobile du §9.1 est une division, pas une mesure. Toute affirmation du type « ça tournera à 30 images par seconde sur iPhone » serait inventée.
+2. **La porte de livraison mobile est retirée du §10.4.** Une porte qu'on ne franchit jamais n'est pas une porte, c'est une décoration. Mieux vaut une exigence de moins qu'une exigence fausse.
+3. **L'arête tenable sur téléphone est inconnue.** Celle de 4 µm du §3.4 vaut pour un MacBook Pro M4 Max et pour lui seul.
+
+Ce qu'on garde malgré tout, parce que ce sont des garde-fous et non des promesses :
+
+- **Gestion de `webglcontextlost` et `webglcontextrestored` dès la première ligne.** Le mode de panne réel d'iOS est un dépassement mémoire menant à une perte de contexte, qui se traduit par un canvas blanc ou un rechargement d'onglet. Sans gestionnaire, la panne est silencieuse. C'est déjà implémenté dans le harnais des bancs, et ça ne coûte rien.
+- **Le protocole de mesure reste prêt** dans `rapports/mesure-mobile.md` : le banc se pilote au toucher et relève seul la dérive thermique. Le jour où le mobile revient au périmètre, c'est une dizaine de minutes de travail, pas un chantier.
+
+Si le mobile revient au périmètre, il faudra rouvrir cette section **avant** d'écrire la moindre ligne d'interface, pas après : une maquette mobile du HUD et du panneau latéral se conçoit en amont.
 
 ---
 
@@ -475,7 +488,7 @@ Ce qui définit « fini », chiffré :
 | Porte | Seuil |
 |---|---|
 | Images par seconde, Mac de développement, scène la plus dense | ≥ 55 |
-| Images par seconde, iPhone cible, scène la plus dense | ≥ 28 |
+| ~~Images par seconde, iPhone cible~~ | **retirée** — le mobile est hors périmètre (§9.5) |
 | Poids du JavaScript | ≤ 250 ko brotli |
 | LCP en 4G simulée | < 2,5 s |
 | Erreurs console, y compris perte de contexte non gérée | 0 |
@@ -505,7 +518,7 @@ Court, mais bloquant. Aucune ligne de la scène finale n'est écrite avant.
 | Porte | Question | Si ça échoue |
 |---|---|---|
 | **0a — Contour** | Une coque inversée à largeur constante à l'écran tient-elle le budget sur 100 k instances ? La détection de bord en post-traitement est-elle finançable ? Le contour intérieur entre instances de même teinte est-il obtenable ? | Repli nommé en §5.3 : d'abord séparer les familles par luminosité et silhouette seules ; sinon basculer sur la direction « coupe optique », déjà validée intégralement |
-| **0b — Boîte de vérité** | Une dalle de 0,3 à 1,5 µm à densité vraie tient-elle 55 fps sur le Mac et 28 fps sur un vrai iPhone ? | On réduit **l'arête** de la dalle et on l'annonce — jamais la densité (§9.4) |
+| **0b — Boîte de vérité** ✅ | Une dalle à densité vraie tient-elle 55 images/s sur le Mac ? **Oui, jusqu'à ~4,9 µm.** Le volet iPhone a été écarté (§9.5). | On réduit **l'arête** de la dalle et on l'annonce — jamais la densité (§9.4) |
 | **0c — Silhouettes** | Combien de temps coûte réellement la production d'une silhouette moléculaire reconnaissable, de la structure PDB au binaire ? | On réduit le nombre de familles distinctes avant de s'engager sur quatre phénomènes |
 
 ### Lots suivants
@@ -527,7 +540,7 @@ Ils sont chiffrés à part parce qu'ils ne se résolvent pas en écrivant du cod
 
 - **Rédaction française.** Toutes les sources sont anglophones et le vocabulaire scientifique français n'est nulle part dans les rapports. Les textes sont rédigés puis relus, pas traduits mécaniquement.
 - **Relecture par un biologiste.** Condition de livraison (D5), avant mise en ligne.
-- **Maquette mobile** du HUD et du panneau latéral, avant le code (§9.5).
+- ~~Maquette mobile du HUD et du panneau latéral~~ — **retiré** : le mobile est hors périmètre (§9.5). À rouvrir avant toute ligne d'interface si le périmètre change.
 - **Fichier de crédits** tenu à jour au fil du pipeline d'assets (§8).
 
 ---
@@ -608,7 +621,7 @@ Versions vérifiées sur le registre npm au 2026-07-30.
 
 ## 16. Ce qui reste ouvert
 
-- **Aucun appareil mobile n'est mesuré.** Les budgets mobiles restent des extrapolations. C'est la moitié encore ouverte de la porte 0b, et le seul point du lot 0 qui reste à faire — protocole prêt dans `rapports/mesure-mobile.md`.
+- **Le mobile est hors périmètre par décision** (§9.5), pas en attente. Aucun chiffre mobile n'est vérifié, la porte de livraison correspondante a été retirée, et le protocole reste prêt si le périmètre change.
 - **Le passage d'un nuage de points Cα à une surface rendue n'est pas mesuré.** Il n'est pas nécessaire aux bandes 1 et 2, où les complexes se rendent en sphères instanciées ; il l'est à la bande 3.
 - **Le paramétrage des conductances** du modèle de membrane est une calibration, pas une donnée. À ajuster et à documenter comme tel.
 - **Les lots 2 à 4 ne sont pas spécifiés en détail.** Ils recevront leur propre cycle une fois le lot 1 jugé sur pièce.
