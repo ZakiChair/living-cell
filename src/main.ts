@@ -10,6 +10,10 @@ import { creerReticulumLisse } from './cellule/organites/reticulumLisse.js'
 import { creerMembrane } from './cellule/organites/membrane.js'
 import { creerVesiculesEtLysosomes } from './cellule/organites/vesiculesEtLysosomes.js'
 import { creerCytosquelette } from './cellule/organites/cytosquelette.js'
+import { creerEncombrement } from './cellule/organites/encombrement.js'
+import { creerPoresNucleaires } from './cellule/organites/poresNucleaires.js'
+import { creerMatrices } from './cellule/organites/matrices.js'
+import { creerChromatineDense } from './cellule/organites/chromatineDense.js'
 import { creerFlux } from './cellule/vie.js'
 
 const vue = creerVue(document.body)
@@ -24,6 +28,13 @@ poser(vue, creerNoyau())
 poser(vue, creerGolgi())
 poser(vue, creerMitochondries())
 poser(vue, creerVesiculesEtLysosomes())
+
+// Le peuplement vient en dernier : c'est ce qui remplit le vide entre les
+// organites, et le cytoplasme n'est jamais de l'eau.
+poser(vue, creerEncombrement())
+poser(vue, creerPoresNucleaires())
+poser(vue, creerMatrices())
+poser(vue, creerChromatineDense())
 
 // ── Les flux vivants ──────────────────────────────────────────────────────
 const flux = creerFlux()
@@ -180,6 +191,80 @@ window.addEventListener('click', (e) => {
   if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche')) return
   if (sousCurseur) ouvrirFiche(sousCurseur)
 })
+
+// ── Curseur de densité ────────────────────────────────────────────────────
+/**
+ * Le geste signature du site.
+ *
+ * À 0 on a le schéma de manuel — des organites qui flottent dans du vide. À 100
+ * on a la vérité : un cytoplasme saturé où 20 à 30 % du volume est occupé par des
+ * macromolécules. Le curseur n'illustre pas cet arbitrage, il le rend manipulable,
+ * et c'est ce qui fait comprendre au passage que le vide des manuels est une
+ * décision de dessinateur, pas un fait.
+ *
+ * Techniquement, `InstancedMesh.count` limite le nombre d'instances dessinées sans
+ * rien réallouer : le curseur ne coûte donc rien.
+ */
+const amasDenses: Array<{ maillage: THREE.InstancedMesh; plein: number }> = []
+const CLES_DENSES = new Set([
+  'boite-de-verite',
+  'voile-cytosol',
+  'matrice-mitochondriale',
+  'ribosomes-libres',
+  'nucleosomes',
+  'machinerie-nucleaire',
+])
+
+for (const organite of vue.organites) {
+  if (!CLES_DENSES.has(organite.cle)) continue
+  organite.objet.traverse((noeud) => {
+    const maillage = noeud as THREE.InstancedMesh
+    if (maillage.isInstancedMesh) amasDenses.push({ maillage, plein: maillage.count })
+  })
+}
+
+const curseurDensite = document.getElementById('densite') as HTMLInputElement | null
+function reglerDensite(fraction: number): void {
+  for (const { maillage, plein } of amasDenses) {
+    maillage.count = Math.max(0, Math.round(plein * fraction))
+  }
+}
+if (curseurDensite) {
+  curseurDensite.addEventListener('input', () => reglerDensite(Number(curseurDensite.value) / 100))
+}
+
+// ── Aller à la boîte de vérité ────────────────────────────────────────────
+const boiteVerite = vue.organites.find((o) => o.cle === 'boite-de-verite')
+const boutonVerite = document.getElementById('verite')
+if (boutonVerite && boiteVerite) {
+  boutonVerite.addEventListener('click', () => {
+    // Le cadrage se calcule sur la géométrie réelle, pas sur l'ancre de
+    // l'étiquette : celle-ci est posée sur un bord pour que le texte ne masque
+    // rien, et viser ce point laisserait la boîte hors champ.
+    const boite = new THREE.Box3().setFromObject(boiteVerite.objet)
+    const centre = boite.getCenter(new THREE.Vector3())
+    const rayon = boite.getSize(new THREE.Vector3()).length() / 2
+
+    // Distance qui fait tenir la sphère englobante dans le champ vertical.
+    const distance = (rayon * 1.35) / Math.tan((vue.camera.fov * Math.PI) / 360)
+    const recul = new THREE.Vector3(0.55, 0.42, 0.72).normalize().multiplyScalar(distance)
+
+    vue.controles.target.copy(centre)
+    vue.camera.position.copy(centre).add(recul)
+
+    // L'écorché est rouvert : à l'intérieur de la boîte, une coupe ne ferait
+    // que retirer de la matière sans rien révéler de plus.
+    curseurCoupe.value = '100'
+    reglerCoupe(1)
+    if (curseurDensite) {
+      curseurDensite.value = '100'
+      reglerDensite(1)
+    }
+    ouvrirFiche(boiteVerite)
+  })
+} else if (boutonVerite) {
+  boutonVerite.remove()
+}
 
 // ── Réglages ──────────────────────────────────────────────────────────────
 const curseurCoupe = document.getElementById('coupe') as HTMLInputElement
