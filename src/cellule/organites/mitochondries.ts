@@ -25,8 +25,16 @@ const RAYON = 0.35
 const NOMBRE = 6
 /** Graine de la FORME des capsules : profil de révolution et crêtes. */
 const GRAINE = 31_415
-/** Graine du PLACEMENT, tenue à part pour que les deux ne s'entraînent pas. */
-const GRAINE_PLACEMENT = 31_415
+/**
+ * Graine du PLACEMENT, tenue à part pour que les deux ne s'entraînent pas.
+ *
+ * Elle doit être DIFFÉRENTE, sinon les deux flux produisent la même suite et
+ * le placement tire ses premières valeurs sur celles-là mêmes qui servent à la
+ * phase du profil et à la première crête. Rien ne casserait, mais les deux
+ * seraient corrélés d'une manière invisible — et le commentaire ci-dessus
+ * mentirait.
+ */
+const GRAINE_PLACEMENT = 27_183
 
 const SEGMENTS_PROFIL = 28
 const SEGMENTS_RADIAUX = 20

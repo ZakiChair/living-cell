@@ -226,6 +226,47 @@ l'histoire du dépôt à porter sur du code que la page exécute.
   bout, et le pore de 120 nm écrasait des acteurs de 30. C'est le même arbitrage que la boîte de
   vérité : on ne peut pas être vrai partout à la fois, et il faut écrire lequel on sacrifie.
 
+## 6 ter. Les invariants d'anatomie, ajoutés après coup
+
+Ce document ne les prévoyait pas : il portait sur l'atelier et les leviers. Mais la revue posait, en
+points 7 et 8 de son ordre de reprise, des tests sur `src/cellule` et une source unique de
+positions, et les deux se sont révélés être le même travail.
+
+**Ce que les tests ont trouvé, écrits avant toute correction :**
+
+| Invariant | Avant | Après |
+|---|---|---|
+| Crêtes confinées dans la membrane interne | 54 points débordent, jusqu'à 27 nm | aucun |
+| Réticulum rugueux hors de l'enveloppe nucléaire | **56,5 %** des sommets dedans, 1,98 µm de profondeur | 0,2 %, 0,098 µm |
+| Mécanismes mitochondriaux dans une mitochondrie | 3,8 à 6,7 µm de la plus proche | 0,00 à 0,21 µm |
+| Ellision déclarée par tous les mécanismes | la pompe Na⁺/K⁺ se taisait | tous |
+| Facteur du badge repris par sa justification | 4 badges injustifiés | tous |
+
+Le 56,5 % reproduit au dixième de pour cent près la mesure indépendante de la revue, ce qui est la
+meilleure preuve que le test mesure bien la chose.
+
+**Trois corrections structurelles plutôt que trois rattrapages :**
+
+- La garde de confinement des crêtes lit désormais le **profil interne lui-même**, celui que la
+  `LatheGeometry` maille, au lieu de rappliquer un facteur d'échelle au profil externe. Elle tient
+  aussi compte de l'inclinaison des disques, qu'une borne calculée au seul centre ignorait.
+- Le réticulum compte sa portée depuis la **surface du noyau** et non depuis l'origine de la
+  cellule. Il ignorait où était le noyau — « son rayon exact n'est pas connu d'ici », disait le
+  commentaire ; il le sait maintenant, `contrat.ts` en étant la source unique.
+- `mitochondries.ts` **publie ses placements**. Cela supprime d'un coup deux défauts : les
+  mécanismes qui écrivaient des coordonnées littérales, et `matrices.ts` qui rejouait la graine ET
+  la séquence de tirages de `mitochondries.ts` — trente-neuf tirages inutilisés dont la seule
+  fonction était de tenir le générateur en phase.
+
+**Deux gardes réparés, chacun vérifié par mutation :**
+
+- Le test badge-contre-animation de la chaîne respiratoire multipliait d'abord l'effectif par la
+  vitesse de cycle : une tautologie, la vitesse étant *définie* comme le quotient. Il compte
+  désormais les naissances dans les matrices d'instances et rend 9,35 ATP par tour si l'on rétablit
+  les anciennes constantes.
+- `version.test.ts` comparait une constante à sa propre valeur recopiée. Il confronte maintenant
+  `VERSION_TROIS` à `package.json` et à `THREE.REVISION`.
+
 ## 7. Vérification de livraison
 
 Un `vitest` vert ne prouve rien sur le fait que l'utilisateur voie le ribosome. La revue a attrapé

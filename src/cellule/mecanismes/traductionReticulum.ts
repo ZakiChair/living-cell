@@ -1108,7 +1108,8 @@ export function creerTraductionReticulum(): Mecanisme[] {
       facteur: 'ralenti ×20',
       justificationFacteur:
         'Un ribosome de mammifère pose 5 à 6 acides aminés par seconde : un codon dure ' +
-        '170 ms, qui deviennent 3,4 s à l’écran. Une bactérie irait quatre fois plus vite.',
+        '170 ms, qui deviennent 3,4 s à l’écran — un ralenti de 20. Une bactérie irait ' +
+        'quatre fois plus vite.',
       ellision:
         'Douze codons seulement, puis le ribosome se défait et un autre repart en amont : ' +
         'une protéine de 300 acides aminés demanderait dix-sept minutes d’écran à ce ' +
@@ -1144,8 +1145,8 @@ export function creerTraductionReticulum(): Mecanisme[] {
       siege: 'Réticulum endoplasmique rugueux',
       facteur: 'ralenti ×20',
       justificationFacteur:
-        'Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran. La chaîne ' +
-        'traverse la membrane exactement au rythme où elle sort du tunnel.',
+        'Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran, ralenti de 20. ' +
+        'La chaîne traverse la membrane exactement au rythme où elle sort du tunnel.',
       ellision:
         'Le début manque : la reconnaissance du peptide signal par la SRP, l’arrêt ' +
         'momentané de la traduction et l’accostage au translocon ont déjà eu lieu quand ' +

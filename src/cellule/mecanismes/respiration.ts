@@ -407,7 +407,8 @@ export function creerRespiration(): Mecanisme[] {
       facteur: 'ralenti ×200',
       justificationFacteur:
         "L'ATP synthase tourne à environ 130 tours par seconde : un tour prend 8 ms, " +
-        "ce qui devient 1,5 s à l'écran et se suit à l'œil. Rien n'est agrandi : la " +
+        "ce qui devient 1,5 s à l'écran et se suit à l'œil — un ralenti de 200, arrondi " +
+        'depuis les 195 que donne le calcul exact. Rien n’est agrandi : la ' +
         'portion de crête représentée fait 160 nm, un complexe I en fait 20, et il ' +
         "faut donc descendre à cette échelle pour les voir — c'est ce que fait la " +
         'caméra, et la barre en bas à droite dit où on en est.',

@@ -42,13 +42,21 @@ const SIEGE = siegeMitochondrie(2)
 const ANCRE = SIEGE.clone().add(new THREE.Vector3(-0.14, -0.1, 0))
 
 /**
- * Les deux directions ci-dessous désignent le cycle de Krebs et la chaîne
- * respiratoire, qui se déroulent dans d'autres mitochondries. Elles ne pointent
- * donc plus une position précise, mais indiquent le sens du flux dans le repère
- * local de cette scène — ce qui est tout ce que la figure en demande.
+ * Où partent l'acétyl-CoA et les transporteurs d'électrons.
+ *
+ * Ces deux vecteurs étaient écrits en dur : ils avaient été calculés à la main
+ * comme la différence entre deux positions littérales, celles du cycle de Krebs
+ * et de la chaîne respiratoire. Ces positions ayant changé, les flèches
+ * pointaient au hasard dans le cytoplasme tout en prétendant désigner quelque
+ * chose. On les CALCULE donc, depuis les mêmes placements que les mécanismes
+ * visés — la flèche montre alors vraiment où va le produit.
+ *
+ * Le groupe n'étant ni tourné ni retourné, sa direction locale est aussi sa
+ * direction monde, et la mise à l'échelle réelle est uniforme : les deux
+ * conservent le vecteur.
  */
-const DIR_KREBS = new THREE.Vector3(-1.4, -0.6, -1.0).normalize()
-const DIR_CHAINE = new THREE.Vector3(-1.4, 0.6, -1.0).normalize()
+export const DIR_KREBS = siegeMitochondrie(1).sub(SIEGE).normalize()
+export const DIR_CHAINE = siegeMitochondrie(0).sub(SIEGE).normalize()
 
 /** La boucle des quatre enzymes. */
 const CENTRE_BOUCLE_X = 0.24
@@ -1149,8 +1157,9 @@ export function creerBetaOxydation(): Mecanisme[] {
       justificationFacteur:
         "Les quatre enzymes de la spirale tournent une dizaine de fois par seconde : un tour complet, " +
         "diffusions comprises, prend environ un tiers de seconde, soit 1,8 s à l'écran. Les sept tours " +
-        "d'un palmitate durent réellement deux à trois secondes ; ici ils en prennent treize, et " +
-        "l'entrée par la carnitine, plus lente que la spirale, en prend trois de plus.",
+        "d'un palmitate durent réellement deux à trois secondes ; ici ils en prennent treize, soit un " +
+        "RALENTI d'environ 5 — et non un accéléré, comme le badge l'a longtemps annoncé à tort. " +
+        "L'entrée par la carnitine, plus lente que la spirale, prend trois secondes de plus.",
       ellision:
         "Une pause AJOUTÉE d'une seconde et demie tient l'abaque complet en fin de cycle : elle " +
         "n'existe pas dans la cellule, elle sert à laisser lire le bilan avant que tout reparte. " +

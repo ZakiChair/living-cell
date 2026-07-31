@@ -1,10 +1,11 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
-import { creerMitochondries } from './organites/mitochondries.js'
+import { creerMitochondries, placementsMitochondries } from './organites/mitochondries.js'
 import { creerReticulumRugueux } from './organites/reticulumRugueux.js'
 import { creerMatrices } from './organites/matrices.js'
 import { creerMecanismes } from './mecanismes/tous.js'
-import { CENTRE_NOYAU, RAYON_NOYAU } from './contrat.js'
+import { DIR_CHAINE, DIR_KREBS } from './mecanismes/betaOxydation.js'
+import { CENTRE_NOYAU, RAYON_CELLULE, RAYON_NOYAU } from './contrat.js'
 
 /**
  * LES INVARIANTS D'ANATOMIE.
@@ -84,6 +85,70 @@ function piecesDeMitochondrie(groupe: THREE.Object3D): {
   const tries = revolutions.sort((a, b) => volume(a) - volume(b))
   return { cretes: instanciees[0]!, interne: tries[0]!, externe: tries[1]! }
 }
+
+describe('les mitochondries sont posées où elles se déclarent', () => {
+  /**
+   * Ces bornes n'avaient jamais été vérifiées, et le passage à deux flux
+   * aléatoires a déplacé les six capsules d'un coup. Ce que le code annonce :
+   * « entre 4 et 8,5 µm du centre : au-delà du noyau, en deçà de la membrane »,
+   * et « on rabat les six exemplaires du côté que la coupe conserve ».
+   *
+   * Une capsule tirée hors de ces bornes traverserait la membrane plasmique ou
+   * s'enfoncerait dans le noyau, et rien ne le dirait — c'est exactement le
+   * genre de défaut que la revue a trouvé partout ailleurs.
+   */
+  const placements = placementsMitochondries()
+  /** Demi-longueur d'une capsule : elle mesure 2 µm de long. */
+  const DEMI_LONGUEUR = 1
+
+  it('en pose bien six', () => {
+    expect(placements).toHaveLength(6)
+  })
+
+  it('les garde dans la coquille cytoplasmique annoncée', () => {
+    for (const [i, p] of placements.entries()) {
+      const rayon = p.position.length()
+      expect(rayon, `mitochondrie ${i + 1} à ${rayon.toFixed(2)} µm du centre`).toBeGreaterThanOrEqual(4)
+      expect(rayon, `mitochondrie ${i + 1} à ${rayon.toFixed(2)} µm du centre`).toBeLessThanOrEqual(8.5)
+    }
+  })
+
+  it('les tient entièrement hors du noyau', () => {
+    for (const [i, p] of placements.entries()) {
+      const distance = p.position.distanceTo(CENTRE_NOYAU)
+      expect(
+        distance,
+        `mitochondrie ${i + 1} à ${distance.toFixed(2)} µm du centre du noyau, qui en fait ${RAYON_NOYAU}`,
+      ).toBeGreaterThan(RAYON_NOYAU + DEMI_LONGUEUR)
+    }
+  })
+
+  it('les tient entièrement dans la membrane plasmique', () => {
+    for (const [i, p] of placements.entries()) {
+      const bord = p.position.length() + DEMI_LONGUEUR
+      expect(bord, `mitochondrie ${i + 1} atteint ${bord.toFixed(2)} µm`).toBeLessThan(RAYON_CELLULE)
+    }
+  })
+
+  it('les rabat du côté que l’écorché conserve', () => {
+    // L'écorché retire tout ce qui est en z positif : une capsule du mauvais
+    // côté disparaîtrait de la planche au réglage par défaut.
+    for (const [i, p] of placements.entries()) {
+      expect(p.position.z, `mitochondrie ${i + 1} en z = ${p.position.z.toFixed(2)}`).toBeLessThanOrEqual(0)
+    }
+  })
+
+  it('ne les empile pas les unes sur les autres', () => {
+    for (let i = 0; i < placements.length; i++) {
+      for (let j = i + 1; j < placements.length; j++) {
+        const ecart = placements[i]!.position.distanceTo(placements[j]!.position)
+        expect(ecart, `les mitochondries ${i + 1} et ${j + 1} sont à ${ecart.toFixed(2)} µm`).toBeGreaterThan(
+          DEMI_LONGUEUR,
+        )
+      }
+    }
+  })
+})
 
 describe('les crêtes restent dans la membrane interne', () => {
   /**
@@ -268,6 +333,92 @@ describe('chaque mécanisme se déroule dans son organite', () => {
       muets.map((m) => m.nom),
       'ces mécanismes ne déclarent aucune ellision',
     ).toEqual([])
+  })
+
+  /**
+   * Le badge de la bêta-oxydation annonçait « accéléré ×5 » pour un ralenti
+   * ×5,4, et sa propre justification décrivait le ralenti deux lignes plus bas.
+   * Aucun test ne pouvait le voir : le badge et sa justification sont deux
+   * chaînes indépendantes, écrites à la main.
+   *
+   * Ce test les relie par le seul lien vérifiable sans lire le français : le
+   * CHIFFRE. Un badge dont le facteur ne se retrouve nulle part dans sa
+   * justification est un badge que personne n'a justifié.
+   */
+  it('justifie chaque facteur que les badges affichent', () => {
+    // Le facteur peut s'écrire en toutes lettres — « environ cinq fois plus
+    // vite ». Refuser cette graphie pousserait à dénaturer un texte qui est
+    // juste, ce qui serait le contraire du but.
+    const enLettres: Record<string, string> = {
+      '2': 'deux',
+      '5': 'cinq',
+      '10': 'dix',
+      '20': 'vingt',
+      '50': 'cinquante',
+      '100': 'cent',
+      '200': 'deux cents',
+      '1000': 'mille',
+      '5000': 'cinq mille',
+      '10000': 'dix mille',
+    }
+
+    const sansMot: string[] = []
+    const injustifies: string[] = []
+
+    for (const m of mecanismes) {
+      if (!/ralenti|accéléré|temps réel/.test(m.facteur)) {
+        sansMot.push(`${m.nom} → « ${m.facteur} »`)
+      }
+      // Un badge peut porter DEUX facteurs — « deux temps : accéléré ×5, puis
+      // ralenti ×5 000 » — et chacun doit être justifié.
+      // Deux formes, parce qu'elles ne se cherchent pas dans le même texte :
+      // un nombre écrit « 5 000 » ne se retrouve que dans une prose dont on a
+      // ÔTÉ les espaces, un nombre écrit « cinq mille » que dans une prose qui
+      // les garde. Les confondre faisait échouer un badge parfaitement justifié.
+      const justificationSerree = m.justificationFacteur.replace(/\s/g, '')
+      const justificationLue = m.justificationFacteur.replace(/\s/g, ' ')
+      for (const trouve of m.facteur.matchAll(/×\s*([\d\s,.]+)/g)) {
+        // La virgule finale de « ×5, puis » appartient à la phrase, pas au nombre.
+        const enChiffres = trouve[1]!.trim().replace(/\s/g, '').replace(/[,.]+$/, '')
+        const mot = enLettres[enChiffres]
+        const justifie =
+          justificationSerree.includes(enChiffres) || (mot !== undefined && justificationLue.includes(mot))
+        if (!justifie) {
+          injustifies.push(`${m.nom} → ×${enChiffres} (badge « ${m.facteur} »)`)
+        }
+      }
+    }
+
+    // On COLLECTE au lieu d'échouer au premier : un test qui s'arrête à la
+    // première violation oblige à autant de passes qu'il y a de défauts, et
+    // laisse croire à chaque tour qu'il n'en restait qu'un.
+    expect(sansMot, 'badges qui ne disent ni ralenti ni accéléré').toEqual([])
+    expect(injustifies, 'facteurs que leur justification ne reprend jamais').toEqual([])
+  })
+
+  /**
+   * Les flèches de sortie de la bêta-oxydation avaient été calculées à la main
+   * comme la différence entre deux positions littérales. Celles-ci ayant changé,
+   * elles pointaient au hasard tout en prétendant désigner le cycle de Krebs et
+   * la chaîne respiratoire. Elles sont maintenant dérivées ; ce test empêche
+   * qu'elles redeviennent décoratives.
+   */
+  it('fait pointer les flèches de la bêta-oxydation vers leurs destinataires', () => {
+    const trouver = (cle: string): THREE.Vector3 => {
+      const m = mecanismes.find((x) => x.cle === cle)
+      expect(m, `mécanisme « ${cle} » introuvable`).toBeDefined()
+      return m!.ancre.clone()
+    }
+    const depart = trouver('beta-oxydation')
+
+    for (const [nom, cible, direction] of [
+      ['Krebs', trouver('krebs'), DIR_KREBS],
+      ['chaîne respiratoire', trouver('respiration'), DIR_CHAINE],
+    ] as const) {
+      const attendue = cible.sub(depart).normalize()
+      const alignement = attendue.dot(direction.clone().normalize())
+      expect(alignement, `la flèche vers ${nom} pointe à côté (produit scalaire ${alignement.toFixed(2)})`).toBeGreaterThan(0.9)
+    }
   })
 
   it('place les mécanismes nucléaires dans le noyau', () => {

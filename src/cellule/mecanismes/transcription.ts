@@ -968,7 +968,8 @@ export function creerTranscription(): Mecanisme[] {
       facteur: 'ralenti ×20',
       justificationFacteur:
         "L'ARN polymérase II avance ici à 60 nucléotides par seconde, soit 17 ms par " +
-        "nucléotide : à l'écran chaque nucléotide prend 0,33 s, et un tour d'hélice de " +
+        "nucléotide : à l'écran chaque nucléotide prend 0,33 s, soit un ralenti de 20, " +
+        "et un tour d'hélice de " +
         '10,5 paires de bases 3,5 s. Même facteur que la traduction, pour que les deux ' +
         'vitesses se comparent directement. Ces 60 nt/s font 3,6 kb/min : la vitesse ' +
         "mesurée in vivo va de 1 à 6 kb/min selon le gène, et la fiche de l'épissage " +
