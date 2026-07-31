@@ -22,8 +22,17 @@ export const VOLUME_MONOMERE_NM3 = 60
 /** Fraction volumique du cytosol occupée par des macromolécules (20 à 30 % mesurés). */
 export const OCCUPATION_CYTOSOL = 0.25
 
-/** Volume d'une cellule mammifère typique, en µm³. */
-export const VOLUME_CELLULE_UM3 = 2_000
+/**
+ * Volume de la cellule RENDUE, en µm³.
+ *
+ * Déduit du rayon de la scène, et non choisi : trois chiffres coexistaient pour
+ * la même cellule — 2 000 ici, 4 000 dans la fiche de l'atelier, 4 189 dans la
+ * sphère effectivement dessinée. Une cellule mammifère fait de 1 000 à
+ * 10 000 µm³ selon le type, donc les trois étaient plausibles ; aucun n'était
+ * celui du produit.
+ */
+export const RAYON_CELLULE_UM = 10
+export const VOLUME_CELLULE_UM3 = (4 / 3) * Math.PI * RAYON_CELLULE_UM ** 3
 
 /**
  * Volume moyen d'un peuplement mêlé, pondéré par les parts de chaque famille.

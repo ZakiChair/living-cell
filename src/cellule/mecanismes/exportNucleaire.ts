@@ -39,7 +39,15 @@ const ROTATION_NULLE = new THREE.Quaternion()
 const SYMETRIE = 8
 /** Canal central : 40 nm de diamètre. */
 const RAYON_CANAL = 0.02
-/** Il se dilate jusqu'à 70 nm pour un mRNP : +15 nm de rayon. */
+/**
+ * Ouverture du maillage FG au passage d'un mRNP : +15 nm de rayon.
+ *
+ * Ce n'est PAS la dilatation du canal de 40 à 70 nm que la littérature décrit —
+ * celle-là répond à un stress, pas à un cargo, et un mRNP de 15 à 35 nm tient
+ * largement dans les 40. Ce qui s'écarte ici est l'hydrogel, localement et le
+ * temps du passage. Les deux fiches l'attribuaient à deux cargos différents, et
+ * la source n'en attribue aucun.
+ */
 const DILATATION_MRNP = 0.015
 /** Une importine fait 10 nm : le maillage doit s'ouvrir d'au moins autant. */
 const DILATATION_CARGO = 0.009
@@ -713,7 +721,7 @@ export function creerExportNucleaire(): MecanismeBrut[] {
         "rien, il FOND dedans par interactions transitoires — d'où les 2,5 ms de séjour de " +
         "l'importine β et les 7,1 ms de la transportine. L'ARN messager, lui, n'est jamais " +
         "nu : empaqueté de protéines en mRNP, il doit se déplier pour entrer en file, tête " +
-        "la première, et le canal se dilate de 40 à 70 nm sur son passage. Le pore lui-même " +
+        "la première, et l'hydrogel s'écarte localement sur son passage. Le pore lui-même " +
         "est symétrique et passif : la directionnalité vient du gradient RanGTP nucléaire / " +
         "RanGDP cytosolique, et c'est bien RanGTP qu'on voit percuter l'importine et lui " +
         "faire lâcher son cargo. Tout autour, des molécules abordent le pore et repartent : " +

@@ -23,7 +23,7 @@ import { creerGene, type Gene } from './gene.js'
  *    EST le mécanisme de la fidélité.
  *
  * Ce module ne compte PAS en concentration. Un ribosome unique ne déplace pas
- * le pool d'ATP d'une cellule de 4 000 µm³ — l'effet est de l'ordre de 10⁻¹¹
+ * le pool d'ATP d'une cellule de 4 200 µm³ — l'effet est de l'ordre de 10⁻¹¹
  * millimolaire par seconde, et prétendre le contraire ferait mentir la jauge.
  * Le couplage va donc dans l'autre sens, qui est le vrai : la concentration
  * d'ATP GOUVERNE le régime du ribosome, et l'atelier compte ses dépenses en

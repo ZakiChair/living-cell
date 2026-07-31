@@ -1181,8 +1181,10 @@ export function creerBetaOxydation(): MecanismeBrut[] {
         "l'oxydation des graisses — d'où la file qui attend dehors. Dans la matrice, quatre enzymes en " +
         "boucle répètent la même séquence — oxydation, hydratation, oxydation, thiolyse — et la chaîne " +
         "perd DEUX carbones à chaque tour : le palmitate, seize carbones, fait sept tours et donne huit " +
-        "acétyl-CoA, avec sept FADH₂ et sept NADH. La mitochondrie est à l'échelle vraie, les molécules " +
-        "sont dessinées environ deux cents fois trop grosses pour qu'on puisse compter leurs carbones.",
+        "acétyl-CoA, avec sept FADH₂ et sept NADH. La scène entière fait 45 nm de large : c'est un " +
+        "FRAGMENT de matrice, et non une mitochondrie, qui en fait deux mille. Les molécules y sont " +
+        "dessinées environ cinq fois trop grosses pour qu'on puisse compter leurs carbones — un " +
+        "palmitate de 2 nm y est tracé sur 11.",
       objet: groupe,
       ancre: ANCRE.clone(),
       // Mesuré : la traîne de la chaîne va jusqu'à 1,02 pendant ses transits

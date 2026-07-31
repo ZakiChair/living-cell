@@ -25,6 +25,12 @@ import type { MecanismeBrut } from './contrat.js'
  * la bonne échelle et ne sont pas touchés.
  */
 const TAILLES_REELLES_UM: Record<string, number> = {
+  // L'ÉPISSAGE N'Y FIGURE PLUS. Il y était à 0,3 µm, ce qui rétrécissait toute
+  // la scène d'un facteur 0,27 — et le sujet de ce mécanisme est justement que
+  // « les longueurs sont vraies au nucléotide près ». Le transcrit dessiné fait
+  // 1,58 µm : c'est la bonne taille pour quatre exons de 120 pb et trois introns
+  // raccourcis ×3,4, et le raccourcissement est déclaré dans son ellision. Le
+  // remettre ici rendrait sa fiche fausse d'un facteur quatre supplémentaire.
   // Quatre complexes espacés d'environ 30 nm, plus l'ATP synthase.
   respiration: 0.16,
   // Dix enzymes en chaîne, chacune de 5 à 8 nm.
@@ -37,8 +43,6 @@ const TAILLES_REELLES_UM: Record<string, number> = {
   'beta-oxydation': 0.045,
   // Une pompe de 10 nm et un canal de 8 nm, séparés de quelques dizaines.
   'pompe-sodium-potassium': 0.06,
-  // Le spliceosome fait 40 nm, mais il travaille sur une portion de transcrit.
-  epissage: 0.3,
 }
 
 const _boite = new THREE.Box3()

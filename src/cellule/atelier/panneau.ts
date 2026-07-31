@@ -290,7 +290,7 @@ export function creerPanneauAtelier(
     'atelier-note',
     "La concentration est en millimolaire, le coût en molécules : les deux ne " +
       "s'additionnent pas. Un ribosome seul ne déplace pas le pool d'une cellule " +
-      'de 4 000 µm³ — le couplage va dans l’autre sens, et c’est le vrai : ' +
+      'de 4 200 µm³ — le couplage va dans l’autre sens, et c’est le vrai : ' +
       "c'est l'ATP disponible qui commande le régime du ribosome.",
   )
   racine.appendChild(noteUnites)

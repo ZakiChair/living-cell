@@ -856,9 +856,11 @@ export function creerKrebs(): MecanismeBrut[] {
         "L'anneau est une convention de lecture, pas une structure : seule la succinate " +
         "déshydrogénase est réellement fixée — c'est le complexe II, planté dans la membrane " +
         'interne, dessiné ici contre la crête. Les sept autres flottent dans la matrice, où le ' +
-        'substrat les trouve par collision. Tout est à la taille vraie : les huit enzymes ' +
-        "tiennent dans un anneau de 50 nm, une enzyme fait 5 à 10 nm et une liaison " +
-        "carbone-carbone 0,15 nm. Les " +
+        'substrat les trouve par collision. La scène fait 50 nm de large en tout : les huit ' +
+        "enzymes s'y tiennent dans un anneau de 25 nm et chacune fait 4 à 5 nm, ce qui est " +
+        "l'ordre de grandeur vrai. Les billes de carbone, elles, sont GROSSIES : une liaison " +
+        "carbone-carbone y fait 1,1 nm pour 0,15 réels, sans quoi on ne pourrait pas les " +
+        "compter — et compter les carbones est tout l'objet de cette figure. Les " +
         "molécules d'eau, les protons et le coenzyme A libre ne sont pas dessinés, et la vraie " +
         'matrice est bien plus encombrée que ce brouillard de grains.',
       description:

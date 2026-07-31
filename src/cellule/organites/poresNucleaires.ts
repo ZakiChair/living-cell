@@ -262,8 +262,10 @@ export function creerPoresNucleaires(): Organite[] {
         'filaments libres qui pêchent les cargos ; côté noyau, huit filaments plongent ' +
         "et se referment sur un anneau distal — c'est le panier, la silhouette qui " +
         "signe l'enveloppe nucléaire. Un noyau en porte de quelques centaines à " +
-        "plusieurs milliers selon son activité. Le canal fait 40 nanomètres et se dilate jusqu'à " +
-        '70 pour laisser passer un ribosome en cours de sortie ; les petites molécules ' +
+        "plusieurs milliers selon son activité. Le canal fait 40 nanomètres, ce qui suffit "  +
+        "largement : un ARN messager empaqueté en fait 15 à 35. Il peut se dilater jusqu'à " +
+        "70, mais c'est une réponse au STRESS — manque d'énergie, choc osmotique — et non "  +
+        "un élargissement à la demande d'un cargo. Les petites molécules " +
         'diffusent librement, les grosses ne franchissent le maillage que munies du bon ' +
         "signal d'adressage. Un cargo reconnu traverse en moins de dix millisecondes.",
       objet: groupe,

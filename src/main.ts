@@ -49,7 +49,7 @@ poser(vue, creerMatrices())
 poser(vue, creerChromatineDense())
 
 // ── Les mécanismes ────────────────────────────────────────────────────────
-// Les trois flux d'ambiance restent : ils occupent le fond de la cellule.
+// Les flux d'ambiance restent : ils occupent le fond de la cellule.
 const flux = creerFlux()
 for (const f of flux) vue.scene.add(f.objet)
 
@@ -465,6 +465,27 @@ for (const organite of vue.organites) {
 }
 
 const legende = document.getElementById('legende')!
+
+/**
+ * Les flux d'ambiance déclarent leur facteur, eux aussi.
+ *
+ * Ils animaient le fond de la cellule en permanence avec un ralenti ×1 000 et un
+ * accéléré ×100 que RIEN n'affichait : le panneau n'est peuplé que depuis
+ * `mecanismes`. C'est exactement ce que le critère D3 interdit — « ne pas
+ * l'écrire serait mentir par omission » — et c'est pour cette raison qu'une
+ * troisième animation d'ambiance avait déjà été retirée. Ceux-ci restent, parce
+ * qu'ils sont la texture du fond et non des scènes à inspecter ; ils portent
+ * donc leur badge en pied de légende.
+ */
+function poserLaNoteDesFlux(): void {
+  const note = document.createElement('p')
+  note.className = 'note-flux'
+  note.textContent =
+    'Le fond est animé en permanence par ' +
+    flux.map((f) => `${f.nom.toLowerCase()} (${f.facteur})`).join(' et ') +
+    '.'
+  legende.appendChild(note)
+}
 let familleIsolee: string | null = null
 
 for (const [racine, { organite, membres }] of familles) {
@@ -494,6 +515,8 @@ for (const [racine, { organite, membres }] of familles) {
   })
   legende.appendChild(bouton)
 }
+
+poserLaNoteDesFlux()
 
 /**
  * Isoler ne masque pas, ça désature.
