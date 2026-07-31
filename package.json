@@ -1,0 +1,23 @@
+{
+  "name": "cellule-vivante",
+  "version": "0.1.0",
+  "description": "Site pédagogique présentant une cellule eucaryote animale comme un système vivant, mesuré et manipulable",
+  "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "banc": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:suivi": "vitest"
+  },
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/three": "0.185.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.0",
+    "vitest": "4.1.10"
+  }
+}
