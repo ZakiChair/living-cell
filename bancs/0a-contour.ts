@@ -2,7 +2,18 @@ import * as THREE from 'three'
 import { creerBanc, demarrerBoucle, definirLignes, mesurerGpu, enregistrerResultat } from './harnais.js'
 import { projection11 } from '../src/noyau/contour.js'
 
-const NOMBRE = 100_000
+/**
+ * Nombre d'instances, réglable par `?n=200000`.
+ *
+ * Attention à la charge choisie : sous le budget d'une image, le GPU
+ * sous-cadence et les écarts inférieurs à la milliseconde deviennent
+ * irrésolubles — à 100 000 instances, la détection de bord ressortait même
+ * « moins chère » que l'absence de contour. Il faut saturer pour comparer.
+ */
+const NOMBRE = Math.max(
+  1_000,
+  Number.parseInt(new URLSearchParams(location.search).get('n') ?? '', 10) || 400_000,
+)
 
 /**
  * Largeur du contour en pixels PHYSIQUES du tampon de dessin, pas en pixels CSS.
@@ -157,10 +168,84 @@ window.addEventListener('resize', () => {
   uniformesContour.hauteurEcran.value = window.innerHeight * Math.min(window.devicePixelRatio, 2)
 })
 
+// --- Seconde voie : détection de bord en post-traitement ---
+// On rend la scène dans une cible avec sa profondeur, puis on cherche les
+// discontinuités. Une passe pleine résolution, de la même famille que le SSAO
+// mesuré à 5,63 ms — c'est précisément l'affirmation qu'on vérifie ici.
+
+const ratioPixel = Math.min(window.devicePixelRatio, 2)
+const cible = new THREE.WebGLRenderTarget(
+  window.innerWidth * ratioPixel,
+  window.innerHeight * ratioPixel,
+)
+cible.depthTexture = new THREE.DepthTexture(cible.width, cible.height)
+cible.depthTexture.type = THREE.UnsignedIntType
+
+const sceneBord = new THREE.Scene()
+const cameraBord = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
+const materiauBord = new THREE.ShaderMaterial({
+  uniforms: {
+    couleurs: { value: cible.texture },
+    profondeur: { value: cible.depthTexture },
+    tailleTexel: { value: new THREE.Vector2(1 / cible.width, 1 / cible.height) },
+    proche: { value: ctx.camera.near },
+    loin: { value: ctx.camera.far },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
+  `,
+  fragmentShader: `
+    varying vec2 vUv;
+    uniform sampler2D couleurs;
+    uniform sampler2D profondeur;
+    uniform vec2 tailleTexel;
+    uniform float proche;
+    uniform float loin;
+
+    float lineaire(vec2 uv) {
+      float z = texture2D(profondeur, uv).x * 2.0 - 1.0;
+      return (2.0 * proche * loin) / (loin + proche - z * (loin - proche));
+    }
+
+    void main() {
+      float c = lineaire(vUv);
+      // Sobel réduit à quatre voisins : suffisant pour une silhouette.
+      float d = abs(lineaire(vUv + vec2(tailleTexel.x, 0.0)) - c)
+              + abs(lineaire(vUv - vec2(tailleTexel.x, 0.0)) - c)
+              + abs(lineaire(vUv + vec2(0.0, tailleTexel.y)) - c)
+              + abs(lineaire(vUv - vec2(0.0, tailleTexel.y)) - c);
+      // Seuil relatif à la profondeur : un bord lointain compte autant qu'un proche.
+      float bord = smoothstep(0.004 * c, 0.02 * c, d);
+      vec3 rendu = texture2D(couleurs, vUv).rgb;
+      gl_FragColor = vec4(mix(rendu, vec3(0.165, 0.137, 0.125), bord), 1.0);
+      // La cible de rendu reste en linéaire : sans cette conversion, l'image
+      // finale est nettement assombrie et la comparaison serait faussée.
+      #include <colorspace_fragment>
+    }
+  `,
+})
+sceneBord.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), materiauBord))
+
 // --- Bascules clavier ---
 let contourActif = true
 let rotationActive = true
+let modeBord = false
 const mesures: Array<{ mode: string; gpuMs: number; ips: number }> = []
+
+// Le harnais rend toujours la scène principale ; en mode bord on la redirige
+// vers la cible, puis on applique la passe plein écran par-dessus.
+const rendreOriginal = ctx.renderer.render.bind(ctx.renderer)
+ctx.renderer.render = ((scene: THREE.Scene, camera: THREE.Camera) => {
+  if (!modeBord || scene === sceneBord) {
+    rendreOriginal(scene, camera)
+    return
+  }
+  ctx.renderer.setRenderTarget(cible)
+  rendreOriginal(scene, camera)
+  ctx.renderer.setRenderTarget(null)
+  rendreOriginal(sceneBord, cameraBord)
+}) as typeof ctx.renderer.render
 
 // L'amas sert à mesurer le coût ; les témoins et l'échelle servent à juger le
 // rendu. Les regarder en même temps ne marche pas : on masque l'amas pour juger.
@@ -178,15 +263,31 @@ window.addEventListener('keydown', (e) => {
     temoins.coque.visible = contourActif
     echelle.coque.visible = contourActif
   }
+  if (e.key === 'b') {
+    modeBord = !modeBord
+    // Les deux voies sont exclusives : on ne compare pas une somme.
+    if (modeBord && contourActif) {
+      contourActif = false
+      amas.coque.visible = false
+      temoins.coque.visible = false
+      echelle.coque.visible = false
+    }
+  }
   if (e.key === ' ') rotationActive = !rotationActive
   if (e.key === 'e') {
     mesures.push({
-      mode: contourActif ? 'coque inversée' : 'sans contour',
+      mode: modeBord ? 'détection de bord' : contourActif ? 'coque inversée' : 'sans contour',
       gpuMs: mesurerGpu() ?? -1,
       ips: ctx.compteur.imagesParSeconde(),
     })
-    enregistrerResultat('0a-coque-inversee', mesures)
+    enregistrerResultat('0a-contour', mesures)
   }
+})
+
+window.addEventListener('resize', () => {
+  const r = Math.min(window.devicePixelRatio, 2)
+  cible.setSize(window.innerWidth * r, window.innerHeight * r)
+  materiauBord.uniforms.tailleTexel!.value.set(1 / cible.width, 1 / cible.height)
 })
 
 demarrerBoucle(ctx, () => {
@@ -204,9 +305,10 @@ demarrerBoucle(ctx, () => {
     `images/s        ${ctx.compteur.imagesParSeconde().toFixed(0)}`,
     `temps image     ${ctx.compteur.moyenne().toFixed(2)} ms`,
     ``,
+    `mode bord       ${modeBord ? 'actif' : 'coupé'}`,
     `amas            ${amasVisible ? 'visible (charge)' : 'masqué (jugement)'}`,
     ``,
-    `[a] amas  [c] contour  [espace] rotation  [e] exporter`,
+    `[a] amas  [c] coque  [b] bord  [espace] rotation  [e] exporter`,
     ``,
     `Masquer l'amas pour juger : les six sphères du bas ont la`,
     `MÊME taille à l'écran mais sont à 12 et 72 unités — leurs`,
