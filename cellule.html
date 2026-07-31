@@ -106,33 +106,87 @@
         border: 1px solid rgba(28, 26, 23, 0.3);
       }
 
-      /* ── Processus vivants ──────────────────────────────────── */
+      /* ── Mécanismes ─────────────────────────────────────────── */
       #flux {
         position: fixed;
-        top: 26px;
+        top: 122px;
         left: 30px;
-        margin-top: 74px;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        pointer-events: none;
+        width: 19rem;
+        max-height: calc(100vh - 400px);
+        overflow-y: auto;
+        background: var(--voile);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--trait);
+        border-radius: 10px;
+        padding: 10px;
       }
+      #flux h2 {
+        margin: 2px 6px 8px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--encre-3);
+        font-weight: 600;
+      }
+      #flux .siege {
+        margin: 9px 6px 3px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--encre-3);
+      }
+      #flux .siege:first-of-type { margin-top: 0; }
       .flux {
         display: flex;
-        align-items: center;
-        gap: 9px;
-        font-size: 0.8rem;
+        align-items: baseline;
+        gap: 8px;
+        width: 100%;
+        background: none;
+        border: 0;
+        border-radius: 6px;
+        padding: 5px 8px;
+        font: inherit;
+        font-size: 0.83rem;
+        color: var(--encre);
+        cursor: pointer;
+        text-align: left;
+        min-height: 26px;
+        transition: background 0.14s;
       }
-      .flux b { font-weight: 500; color: var(--encre-2); }
+      .flux:hover { background: rgba(28, 26, 23, 0.07); }
+      .flux[aria-pressed='true'] { background: rgba(0, 114, 178, 0.13); font-weight: 600; }
+      .flux:focus-visible { outline: 2px solid #0072b2; outline-offset: 1px; }
+      .flux b { font-weight: inherit; flex: 1; }
       .flux .badge {
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         font-variant-numeric: tabular-nums;
-        padding: 1px 7px;
+        padding: 1px 6px;
         border-radius: 999px;
         background: rgba(28, 26, 23, 0.09);
         color: var(--encre-2);
         white-space: nowrap;
+        flex: none;
       }
+
+      #fiche .facteur {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-variant-numeric: tabular-nums;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(0, 114, 178, 0.14);
+        color: #005a8f;
+        margin-bottom: 10px;
+      }
+      #fiche .note {
+        margin: 0 0 14px;
+        padding: 9px 11px;
+        border-left: 2px solid rgba(28, 26, 23, 0.18);
+        font-size: 0.8rem;
+        color: var(--encre-2);
+        background: rgba(28, 26, 23, 0.035);
+        border-radius: 0 6px 6px 0;
+      }
+      #fiche .note:empty { display: none; }
 
       /* ── Étiquette au survol ────────────────────────────────── */
       #survol {
@@ -242,7 +296,8 @@
         #fiche { width: auto; left: 16px; right: 16px; top: auto; bottom: 96px; max-height: 46vh; }
         #fiche.ouverte { transform: none; }
         #fiche:not(.ouverte) { transform: translateY(calc(100% + 120px)); }
-        #legende { max-height: 30vh; left: 16px; bottom: 90px; }
+        #legende { max-height: 24vh; left: 16px; bottom: 90px; }
+        #flux { display: none; }
         #titre { left: 16px; top: 16px; }
         #echelle { display: none; }
       }
@@ -270,7 +325,9 @@
       <button class="fermer" aria-label="Fermer la fiche">✕</button>
       <h2></h2>
       <p class="role"></p>
+      <span class="facteur"></span>
       <p class="desc"></p>
+      <p class="note"></p>
       <dl></dl>
     </aside>
 

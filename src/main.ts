@@ -15,6 +15,8 @@ import { creerPoresNucleaires } from './cellule/organites/poresNucleaires.js'
 import { creerMatrices } from './cellule/organites/matrices.js'
 import { creerChromatineDense } from './cellule/organites/chromatineDense.js'
 import { creerFlux } from './cellule/vie.js'
+import type { Mecanisme } from './cellule/mecanismes/contrat.js'
+import { creerMecanismes } from './cellule/mecanismes/tous.js'
 
 const vue = creerVue(document.body)
 
@@ -36,23 +38,125 @@ poser(vue, creerPoresNucleaires())
 poser(vue, creerMatrices())
 poser(vue, creerChromatineDense())
 
-// ── Les flux vivants ──────────────────────────────────────────────────────
+// ── Les mécanismes ────────────────────────────────────────────────────────
+// Les trois flux d'ambiance restent : ils occupent le fond de la cellule.
 const flux = creerFlux()
 for (const f of flux) vue.scene.add(f.objet)
 
-const bandeauFlux = document.getElementById('flux')!
-for (const f of flux) {
-  const ligne = document.createElement('div')
-  ligne.className = 'flux'
-  const nom = document.createElement('b')
-  nom.textContent = f.nom
-  const badge = document.createElement('span')
-  badge.className = 'badge'
-  // Le facteur de temps est affiché en permanence : sans lui, une animation
-  // qui montre quatre phénomènes aux échelles incompatibles ment par omission.
-  badge.textContent = f.facteur
-  ligne.append(nom, badge)
-  bandeauFlux.appendChild(ligne)
+const mecanismes = creerMecanismes()
+for (const m of mecanismes) vue.scene.add(m.objet)
+
+/**
+ * Panneau des mécanismes, groupés par organite.
+ *
+ * Neuf mécanismes dispersés dans une cellule de 20 µm seraient introuvables sans
+ * cette liste : chaque entrée emmène la caméra sur place et ouvre la fiche.
+ */
+const panneauFlux = document.getElementById('flux')!
+const titrePanneau = document.createElement('h2')
+titrePanneau.textContent = 'Mécanismes'
+panneauFlux.appendChild(titrePanneau)
+
+const parSiege = new Map<string, Mecanisme[]>()
+for (const m of mecanismes) {
+  const liste = parSiege.get(m.siege)
+  if (liste) liste.push(m)
+  else parSiege.set(m.siege, [m])
+}
+
+const boutonsMecanisme = new Map<string, HTMLButtonElement>()
+
+for (const [siege, liste] of parSiege) {
+  const entete = document.createElement('div')
+  entete.className = 'siege'
+  entete.textContent = siege
+  panneauFlux.appendChild(entete)
+
+  for (const m of liste) {
+    const bouton = document.createElement('button')
+    bouton.type = 'button'
+    bouton.className = 'flux'
+    bouton.setAttribute('aria-pressed', 'false')
+
+    const nom = document.createElement('b')
+    nom.textContent = m.nom
+    const badge = document.createElement('span')
+    badge.className = 'badge'
+    // Le facteur est affiché en permanence : sans lui, une animation qui montre
+    // des phénomènes aux échelles incompatibles ment par omission.
+    badge.textContent = m.facteur
+    bouton.append(nom, badge)
+
+    bouton.addEventListener('click', () => allerAuMecanisme(m))
+    panneauFlux.appendChild(bouton)
+    boutonsMecanisme.set(m.cle, bouton)
+  }
+}
+
+/** Mécanisme actuellement mis en avant, ou null quand on regarde la cellule entière. */
+let mecanismeChoisi: Mecanisme | null = null
+
+/**
+ * Met un mécanisme en avant et efface le reste.
+ *
+ * Sans ça, un mécanisme observé de près disparaît sous l'encombrement du cytosol
+ * et sous les seize autres. On ne masque pas : on estompe, pour que le contexte
+ * reste lisible — c'est la même règle que pour l'isolement des organites.
+ */
+function mettreEnAvant(choisi: Mecanisme | null): void {
+  mecanismeChoisi = choisi
+
+  for (const autre of mecanismes) {
+    const enAvant = choisi === null || autre.cle === choisi.cle
+    autre.objet.visible = enAvant
+  }
+  // Les flux d'ambiance encombrent le champ de près : on les coupe aussi.
+  for (const f of flux) f.objet.visible = choisi === null
+
+  // L'encombrement moléculaire est superbe de loin et illisible de près.
+  if (curseurDensite) {
+    curseurDensite.value = choisi === null ? '100' : '12'
+    reglerDensite(choisi === null ? 1 : 0.12)
+  }
+
+  for (const [cle, bouton] of boutonsMecanisme) {
+    bouton.setAttribute('aria-pressed', String(choisi !== null && cle === choisi.cle))
+  }
+}
+
+function allerAuMecanisme(m: Mecanisme): void {
+  // Recliquer le mécanisme déjà choisi revient à la vue d'ensemble.
+  if (mecanismeChoisi?.cle === m.cle) {
+    mettreEnAvant(null)
+    fiche.classList.remove('ouverte')
+    revenirVueEnsemble()
+    return
+  }
+
+  // L'ancre est donnée en coordonnées de la scène, mais la scène tourne sur
+  // elle-même : il faut la passer en coordonnées monde, sinon la caméra vise un
+  // point que le mécanisme a quitté depuis longtemps.
+  vue.scene.updateMatrixWorld(true)
+  const cible = m.ancre.clone().applyMatrix4(vue.scene.matrixWorld)
+
+  const distance = (m.rayonCadrage * 1.6) / Math.tan((vue.camera.fov * Math.PI) / 360)
+  const recul = new THREE.Vector3(0.5, 0.36, 0.79).normalize().multiplyScalar(distance)
+  vue.controles.target.copy(cible)
+  vue.camera.position.copy(cible).add(recul)
+
+  // De près, l'écorché ne ferait que retirer de la matière sans rien révéler.
+  curseurCoupe.value = '100'
+  reglerCoupe(1)
+
+  mettreEnAvant(m)
+  ouvrirFicheMecanisme(m)
+}
+
+function revenirVueEnsemble(): void {
+  vue.camera.position.set(5, 5, 24)
+  vue.controles.target.set(0, 0, 0)
+  curseurCoupe.value = '58'
+  reglerCoupe(0.58)
 }
 
 // ── Légende ───────────────────────────────────────────────────────────────
@@ -143,9 +247,48 @@ const ficheChiffres = fiche.querySelector('dl')!
 
 let sousCurseur: Organite | null = null
 
+const ficheFacteur = fiche.querySelector('.facteur') as HTMLElement
+const ficheNote = fiche.querySelector('.note') as HTMLElement
+
+function remplirChiffres(chiffres: Array<{ valeur: string; quoi: string }>): void {
+  ficheChiffres.replaceChildren(
+    ...chiffres.flatMap((c) => {
+      const dt = document.createElement('dt')
+      dt.textContent = c.valeur
+      const dd = document.createElement('dd')
+      dd.textContent = c.quoi
+      return [dt, dd]
+    }),
+  )
+}
+
+/**
+ * Fiche d'un mécanisme.
+ *
+ * Elle porte deux champs qu'une fiche d'organite n'a pas : le facteur temporel
+ * avec sa justification, et l'ellision — ce qui a été sauté. Couper n'est pas
+ * ralentir, et le taire ferait raconter deux histoires différentes au badge et
+ * à ce qu'on voit.
+ */
+function ouvrirFicheMecanisme(m: Mecanisme): void {
+  ficheTitre.textContent = m.nom
+  ficheRole.textContent = m.siege
+  ficheFacteur.textContent = m.facteur
+  ficheFacteur.style.display = ''
+  ficheDesc.textContent = m.description
+  ficheNote.textContent = m.ellision
+    ? `${m.justificationFacteur} ${m.ellision}`
+    : m.justificationFacteur
+  remplirChiffres(m.chiffres)
+  fiche.classList.add('ouverte')
+}
+
 function ouvrirFiche(organite: Organite): void {
   ficheTitre.textContent = organite.nom
   ficheRole.textContent = organite.role
+  ficheFacteur.textContent = ''
+  ficheFacteur.style.display = 'none'
+  ficheNote.textContent = ''
   ficheDesc.textContent = organite.description
   ficheChiffres.replaceChildren(
     ...organite.chiffres.flatMap((c) => {
@@ -162,7 +305,7 @@ function ouvrirFiche(organite: Organite): void {
 fiche.querySelector('.fermer')!.addEventListener('click', () => fiche.classList.remove('ouverte'))
 
 window.addEventListener('pointermove', (e) => {
-  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche')) {
+  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux')) {
     survol.classList.remove('visible')
     return
   }
@@ -188,7 +331,7 @@ window.addEventListener('pointermove', (e) => {
 })
 
 window.addEventListener('click', (e) => {
-  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche')) return
+  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux')) return
   if (sousCurseur) ouvrirFiche(sousCurseur)
 })
 
@@ -280,8 +423,9 @@ boutonRotation.addEventListener('click', () => {
 })
 
 document.getElementById('recadrer')!.addEventListener('click', () => {
-  vue.camera.position.set(5, 5, 24)
-  vue.controles.target.set(0, 0, 0)
+  revenirVueEnsemble()
+  mettreEnAvant(null)
+  fiche.classList.remove('ouverte')
   familleIsolee = null
   appliquerIsolement()
   for (const b of legende.querySelectorAll('button')) b.setAttribute('aria-pressed', 'false')
@@ -331,6 +475,7 @@ function boucle(): void {
 
   tempsVie += dt
   for (const f of flux) f.animer(tempsVie)
+  for (const m of mecanismes) m.animer(tempsVie)
 
   vue.controles.update()
   majEchelle()
