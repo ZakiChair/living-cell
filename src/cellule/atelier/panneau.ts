@@ -12,6 +12,7 @@ import {
 import { acideAminePourCodon, anticodon } from '../../noyau/codeGenetique.js'
 import {
   ATP_REPOS,
+  FLUX_REPOS,
   type EtatCellule,
   consommation,
   production,
@@ -180,6 +181,18 @@ export function creerPanneauAtelier(
     },
   ]
 
+  const boutonsLevier: HTMLButtonElement[] = []
+
+  /** Redessine l'explication : celle de TOUS les leviers encore tirés. */
+  function majExplication(): void {
+    const actifs = LEVIERS.filter((l) => etat.inhibiteurs[l.cle])
+    explication.textContent = actifs.map((l) => l.quoiRegarder).join(' ')
+    for (const [i, b] of boutonsLevier.entries()) {
+      b.setAttribute('aria-pressed', String(etat.inhibiteurs[LEVIERS[i]!.cle]))
+    }
+    bRepos.disabled = actifs.length === 0
+  }
+
   for (const levier of LEVIERS) {
     const bouton = element('button', 'levier', levier.nom)
     bouton.type = 'button'
@@ -187,15 +200,30 @@ export function creerPanneauAtelier(
     bouton.title = levier.quoiRegarder
     bouton.addEventListener('click', () => {
       etat.inhibiteurs[levier.cle] = !etat.inhibiteurs[levier.cle]
-      bouton.setAttribute('aria-pressed', String(etat.inhibiteurs[levier.cle]))
-      // On affiche l'explication du DERNIER levier encore tiré, et non celle
-      // de celui qu'on vient de toucher : relever un inhibiteur alors qu'un
-      // autre agit toujours effaçait le texte qui explique ce qu'on voit.
-      const actifs = LEVIERS.filter((l) => etat.inhibiteurs[l.cle])
-      explication.textContent = actifs.map((l) => l.quoiRegarder).join(' ')
+      majExplication()
     })
     leviers.appendChild(bouton)
+    boutonsLevier.push(bouton)
   }
+
+  /**
+   * Rétablir le repos.
+   *
+   * La spec l'exige — « un bouton rétablir le repos réinitialise l'état
+   * complet » — et il manquait : une cellule laissée sous oligomycine ET sous
+   * ouabaïne ne se relevait que levier par levier, et rien ne disait comment
+   * revenir au point de comparaison. Une perturbation qu'on ne peut pas annuler
+   * d'un geste n'est pas réversible pour l'utilisateur, quoi qu'en dise le
+   * moteur.
+   */
+  const bRepos = element('button', 'levier repos', 'Rétablir le repos')
+  bRepos.type = 'button'
+  bRepos.disabled = true
+  bRepos.addEventListener('click', () => {
+    for (const l of LEVIERS) etat.inhibiteurs[l.cle] = false
+    majExplication()
+  })
+  leviers.appendChild(bRepos)
 
   const explication = element('p', 'atelier-explication')
   racine.appendChild(explication)
@@ -322,17 +350,27 @@ export function creerPanneauAtelier(
     // Le régime affiché est CELUI qui gouverne le ribosome : même fonction, une
     // seule définition. Le recalculer ici ferait deux vérités possibles.
     const regime = Math.round(regimeTraduction(e.atp) * 100)
+    // L'ATP au repos est une donnée de CONFIANCE [B] — la fourchette mesurée va
+    // de 1 à 5 mM selon le type cellulaire et la méthode. Afficher « 3,00 mM »
+    // lui prêtait trois chiffres significatifs qu'elle n'a pas, ce que la spec
+    // interdit nommément. On montre donc le RAPPORT au repos, qui est une sortie
+    // du modèle et se lit à un pour cent près, et l'ancrage à un seul chiffre.
     lignes.get('atp')!.textContent =
-      `${e.atp.toFixed(2)} mM (repos : ${ATP_REPOS.toFixed(1)} mM)`
+      `${Math.round((e.atp / ATP_REPOS) * 100)} % du repos (~${ATP_REPOS.toFixed(0)} mM)`
     // Les deux gradients sont en fractions de leur valeur de repos : ce sont
     // des rapports, pas des concentrations, et les afficher en pourcentage
     // évite de leur inventer une unité qu'ils n'ont pas.
     lignes.get('fpm')!.textContent = `${(e.forceProtonMotrice * 100).toFixed(0)} % du repos`
     lignes.get('gradient')!.textContent = `${(e.gradientNa * 100).toFixed(0)} % du repos`
     lignes.get('regime')!.textContent = `${regime} %`
+    // Même règle : la production dérive de deux valeurs [B] — l'ATP de repos et
+    // son temps de renouvellement. On la donne en part du régime de repos, qui
+    // est une sortie du modèle, plutôt qu'en µM/s prêtant une précision fausse.
+    const partProduction = production(e).totale / FLUX_REPOS
+    const partDepense = consommation(e).totale / FLUX_REPOS
     lignes.get('production')!.textContent =
-      `${(production(e).totale * 1000).toFixed(1)} µM/s ` +
-      `(dépense ${(consommation(e).totale * 1000).toFixed(1)} µM/s)`
+      `${Math.round(partProduction * 100)} % du repos ` +
+      `(dépense ${Math.round(partDepense * 100)} %)`
     lignes.get('cout')!.textContent =
       `${a.liaisons} liaisons riches sur ${coutTotal(a.gene)}`
 

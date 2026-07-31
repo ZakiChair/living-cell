@@ -464,6 +464,9 @@
         background: rgba(213, 94, 0, 0.22);
         font-weight: 600;
       }
+      /* Le retour au repos n'est pas un inhibiteur de plus : il les annule
+         tous. Il reste désactivé tant qu'il n'y a rien à annuler. */
+      #atelier button.repos { margin-left: auto; }
       .atelier-explication {
         margin: 9px 0 0;
         font-size: 0.77rem;
@@ -537,9 +540,21 @@
     </aside>
 
     <div id="reglages">
+      <!-- « Grain du cytosol » et non « Densité » : le curseur éclaircit le
+           peuplement du cytoplasme, et il ne touche PAS à la boîte de vérité,
+           dont la densité est le sujet. L'appeler « densité » laissait croire
+           qu'il montrait un fait de biologie alors qu'il montre un arbitrage
+           de dessin. -->
       <label>
-        Densité
-        <input id="densite" type="range" min="0" max="100" value="100" aria-label="Densité moléculaire affichée" />
+        Grain du cytosol
+        <input
+          id="densite"
+          type="range"
+          min="0"
+          max="100"
+          value="100"
+          aria-label="Grain du cytosol affiché, hors boîte de vérité"
+        />
       </label>
       <span class="sep"></span>
       <label>

@@ -14,6 +14,7 @@ import { creerEncombrement } from './cellule/organites/encombrement.js'
 import { creerPoresNucleaires } from './cellule/organites/poresNucleaires.js'
 import { creerMatrices } from './cellule/organites/matrices.js'
 import { creerChromatineDense } from './cellule/organites/chromatineDense.js'
+import { recenserAmas, reglerGrain, CLE_BOITE_DE_VERITE } from './cellule/grain.js'
 import { creerFlux } from './cellule/vie.js'
 import type { Mecanisme } from './cellule/mecanismes/contrat.js'
 import { creerMecanismes } from './cellule/mecanismes/tous.js'
@@ -141,6 +142,10 @@ function mettreEnAvant(choisi: Mecanisme | null): void {
   for (const [cle, bouton] of boutonsMecanisme) {
     bouton.setAttribute('aria-pressed', String(choisi !== null && cle === choisi.cle))
   }
+
+  // Après avoir posé `mecanismeChoisi` : c'est lui qui décide de la profondeur
+  // du fondu appliqué aux organites.
+  appliquerIsolement()
 }
 
 /**
@@ -460,9 +465,36 @@ for (const [racine, { organite, membres }] of familles) {
  * On garde le contexte — donc l'encombrement — tout en détachant la cible.
  * Masquer donnerait une cellule vide, exactement le mensonge qu'on combat.
  */
+/**
+ * Fondu appliqué aux organites quand un mécanisme est observé de près.
+ *
+ * Un mécanisme se déroule DANS son organite : c'est l'invariant que le contrat
+ * pose, et il a fallu du travail pour l'obtenir. Mais une fois obtenu, la
+ * caméra descend à trente-cinq nanomètres et se retrouve à L'INTÉRIEUR de la
+ * capsule qui contient la scène. Une membrane translucide vue de dedans, avec
+ * ses deux faces, remplit alors tout le cadre : la chaîne respiratoire ne
+ * montrait plus qu'un aplat orange, une seule teinte sur tout le centre.
+ *
+ * On estompe donc les organites tant qu'un mécanisme est en avant. Ce n'est pas
+ * les masquer — à 8 % ils restent lisibles comme un voile de contexte — et ça
+ * ne coûte rien, puisque le fondu passe par les mêmes matériaux que
+ * l'isolement de la légende.
+ */
+const OPACITE_ORGANITE_EN_GROS_PLAN = 0.08
+
+/**
+ * Ajuste l'opacité de chaque organite selon les DEUX états qui la commandent :
+ * la famille isolée depuis la légende, et le mécanisme observé de près.
+ *
+ * Les deux doivent être décidés au même endroit. Deux fonctions qui écrivent
+ * tour à tour dans `material.opacity` se reprendraient mutuellement leur
+ * réglage, et la dernière appelée gagnerait — un couplage silencieux de plus.
+ */
 function appliquerIsolement(): void {
   for (const organite of vue.organites) {
-    const enAvant = familleIsolee === null || organite.cle.replace(/-\d+$/, '') === familleIsolee
+    const dansLaFamille =
+      familleIsolee === null || organite.cle.replace(/-\d+$/, '') === familleIsolee
+    const enAvant = dansLaFamille && mecanismeChoisi === null
     organite.objet.traverse((noeud) => {
       const maillage = noeud as THREE.Mesh
       if (!maillage.isMesh) return
@@ -480,7 +512,10 @@ function appliquerIsolement(): void {
           materiau.color.copy(couleur)
           materiau.transparent = base < 1
         } else {
-          materiau.opacity = base * 0.22
+          // En gros plan sur un mécanisme, le fondu est bien plus profond : la
+          // capsule qui entoure la caméra doit devenir un voile, pas un mur.
+          materiau.opacity =
+            base * (mecanismeChoisi === null ? 0.22 : OPACITE_ORGANITE_EN_GROS_PLAN)
           materiau.color.copy(couleur).lerp(new THREE.Color(0x9c9384), 0.75)
           materiau.transparent = true
         }
@@ -607,36 +642,21 @@ window.addEventListener('click', (e) => {
  * Techniquement, `InstancedMesh.count` limite le nombre d'instances dessinées sans
  * rien réallouer : le curseur ne coûte donc rien.
  */
-const amasDenses: Array<{ maillage: THREE.InstancedMesh; plein: number }> = []
-const CLES_DENSES = new Set([
-  'boite-de-verite',
-  'voile-cytosol',
-  'matrice-mitochondriale',
-  'ribosomes-libres',
-  'nucleosomes',
-  'machinerie-nucleaire',
-])
-
-for (const organite of vue.organites) {
-  if (!CLES_DENSES.has(organite.cle)) continue
-  organite.objet.traverse((noeud) => {
-    const maillage = noeud as THREE.InstancedMesh
-    if (maillage.isInstancedMesh) amasDenses.push({ maillage, plein: maillage.count })
-  })
-}
+// La règle — et surtout ce qu'elle n'a PAS le droit de toucher — vit dans
+// `grain.ts`, où un test la vérifie sur la géométrie réelle. Elle était ici, et
+// la boîte de vérité s'y trouvait éclaircie par trois gestes différents.
+const amasDenses = recenserAmas(vue.organites)
 
 const curseurDensite = document.getElementById('densite') as HTMLInputElement | null
 function reglerDensite(fraction: number): void {
-  for (const { maillage, plein } of amasDenses) {
-    maillage.count = Math.max(0, Math.round(plein * fraction))
-  }
+  reglerGrain(amasDenses, fraction)
 }
 if (curseurDensite) {
   curseurDensite.addEventListener('input', () => reglerDensite(Number(curseurDensite.value) / 100))
 }
 
 // ── Aller à la boîte de vérité ────────────────────────────────────────────
-const boiteVerite = vue.organites.find((o) => o.cle === 'boite-de-verite')
+const boiteVerite = vue.organites.find((o) => o.cle === CLE_BOITE_DE_VERITE)
 const boutonVerite = document.getElementById('verite')
 if (boutonVerite && boiteVerite) {
   boutonVerite.addEventListener('click', () => {

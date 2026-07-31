@@ -91,9 +91,15 @@ Un pas de temps fixe, une intégration explicite, aucune allocation. Le pas est 
 l'affichage : la boucle accumule le temps réel et consomme des pas de 1/60 s, si bien que le
 comportement ne dépend pas de la cadence d'images.
 
-**Les débits sont sourcés et déclarés**, ce qui est la première application du critère D5 de la
-spec d'origine (« un fichier de données sourcé est l'origine unique de tout chiffre affiché »),
-que la revue §3.4 relevait comme inversé — 178 chiffres en dur, zéro citation.
+Les débits portent leur source et leur niveau de confiance **en commentaire**.
+
+> ⚠️ **Correction apportée après audit.** Cette section affirmait d'abord que c'était « la première
+> application du critère D5 ». C'est faux, et il faut le dire ici plutôt qu'ailleurs : D5 exige un
+> fichier de données `contenu/` comme origine unique, des identifiants BNID affichés en infobulle,
+> et l'interdiction d'afficher une valeur de confiance [B] avec plus d'un chiffre significatif.
+> Sept commentaires ne sont aucun des trois — un commentaire n'atteint jamais l'écran de
+> l'étudiant. **D5 reste non honoré.** Ce qui est vrai, et plus modeste : ce module est le premier
+> du projet à *déclarer* d'où viennent ses chiffres.
 
 ### 3.4 Les trois leviers, et pourquoi ceux-là
 

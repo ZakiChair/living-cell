@@ -28,8 +28,10 @@ import {
  *
  * La cellule entière à densité vraie demanderait 10⁸ à 10¹⁰ objets, contre les
  * 2 × 10⁵ que la carte graphique tient à 60 images par seconde. L'écart n'est
- * pas rattrapable : il est déclaré, dans la fiche et par le liseré qui borne la
- * boîte.
+ * pas rattrapable : il est déclaré dans la fiche de chaque amas, et nulle part
+ * ailleurs — le liseré qui bornait la boîte a été retiré, pour la raison écrite
+ * plus bas. Rien, en revanche, ne réduit jamais la densité DANS la boîte : ni le
+ * curseur, ni le gros plan sur un mécanisme, ni l'atelier.
  */
 
 /** Le hasard est figé : le peuplement est le même à chaque chargement. */
