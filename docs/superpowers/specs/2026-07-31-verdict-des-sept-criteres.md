@@ -78,14 +78,19 @@ mécanisme déclare un *nombre*, `MecanismeBrut` interdit le champ texte, et un 
 d'écrire « ralenti » ou « accéléré ». L'inversion qui a traîné des mois dans la bêta-oxydation est
 devenue une erreur de compilation.
 
-**Ce qui ne l'est pas :** le NOMBRE lui-même. Deux mécanismes sur seize confrontent leur facteur à
-une mesure de l'animation — la chaîne respiratoire, dont la période du rotor et le débit d'ATP sont
-tous deux mesurés, et l'atelier, dont le badge est calculé depuis la vitesse effective. Les quatorze
-autres pourraient annoncer 5 pour un facteur de 50 sans que rien ne bronche.
+**Ce qui ne l'est pas :** le NOMBRE lui-même. **Trois** mécanismes sur seize confrontent leur
+facteur à une mesure de l'animation — la chaîne respiratoire, dont la période du rotor et le débit
+d'ATP sont tous deux mesurés ; la pompe Na⁺/K⁺, dont les traversées sont comptées dans les matrices
+et dont le rapport 3:2 est ainsi verrouillé ; et l'atelier, dont le badge est calculé depuis la
+vitesse effective. Les treize autres pourraient annoncer 5 pour un facteur de 50 sans que rien ne
+bronche.
+
+Un **filet générique** couvre les seize depuis le 1ᵉʳ août : aucune matrice non finie sur une heure
+d'animation échantillonnée. Il ne dit rien du facteur, mais il attrape la classe de défaut qui rend
+une scène invisible sans un mot d'erreur.
 
 **Décision : le critère est tenu, la couverture est un chantier ouvert et chiffré.** Le patron
-existe (`respiration.test.ts`) ; le décliner coûte environ une journée. La prochaine cible est la
-pompe Na⁺/K⁺, qui montre dix-huit sodiums pour trois annoncés.
+existe et a servi deux fois ; décliner les treize restants coûte environ une journée.
 
 **Une interdiction du critère est violée, et assumée :** « le passage de accéléré à ralenti dans un
 même plan est interdit ». `endoExocytose` porte « deux temps : accéléré ×5, puis ralenti ×5 000 »
@@ -114,16 +119,26 @@ Le critère demandait trois choses. Elles ne se valent pas.
   respiratoire annonce son débit parce qu'un test le compte dans ses matrices. C'est la version qui
   marche, et elle est plus forte que l'origine unique.
 - **Les identifiants BNID affichés en infobulle.** **REPORTÉ**, sans échéance. Aucun n'est affiché
-  aujourd'hui.
+  aujourd'hui. Ce qui existe désormais à la place, et qui sert le même but : `npm run relecture`
+  génère `docs/relecture-scientifique.md`, qui rassemble tout ce que l'étudiant lit, avec les
+  chiffres de chaque fiche relevés, les niveaux de confiance du modèle énergétique, et la séquence
+  du gène à collationner. Un test compare le dossier commité à ce que le générateur produit : il ne
+  peut pas périmer.
 - **« Aucune valeur de confiance [B] affichée avec plus d'un chiffre significatif. »** **TENU**
   depuis aujourd'hui. C'était violé par le code le plus récent — le panneau affichait « 3,00 mM »
   pour une valeur que son propre module déclare [B] — et c'est corrigé : les concentrations sont
   données en part du repos, avec l'ancrage à un chiffre.
 
-**La relecture par un biologiste reste une condition de livraison, et elle n'a pas eu lieu.** Un
-audit a collationné la séquence de l'insuline sur GenBank et y a trouvé une base fausse sur
-quatre-vingt-dix ; c'est le genre de chose qu'une relecture humaine trouve, et le genre de chose
-qu'aucun test du projet n'aurait vue.
+**La relecture par un biologiste reste une condition de livraison, et elle n'a pas eu lieu** — mais
+elle est désormais PRÊTE à avoir lieu. Le dossier de 427 lignes ci-dessus est ce qui manquait : le
+texte affiché vit dans vingt-huit modules mêlés à de la géométrie, et personne ne pouvait
+raisonnablement demander à un biologiste de les ouvrir.
+
+Un audit a collationné la séquence de l'insuline sur GenBank et y a trouvé une base fausse sur
+quatre-vingt-dix, silencieuse pour tous les tests parce que le codon était synonyme. C'est le genre
+de chose qu'une relecture humaine trouve, et qu'aucun test du projet n'aurait vue. Le dossier a
+d'ailleurs servi dès sa première génération : la fiche de la glycolyse affirmait encore « un
+glucose fait 1 nm » là où il est tracé sur 3.
 
 ### D6 — tenu
 
@@ -165,7 +180,7 @@ que la revue a trouvé.
 | §3.5 et §6.1, `contenu/` et les quatre chapitres | Aucun mode découverte, aucune question d'auto-contrôle |
 | §1 et lot 3, topoisomérase et CRISPR | Aucun mécanisme correspondant. Les pièges « science » du §14 sur Cas9 sont donc sans objet |
 | §11, découpage en lots 1 à 4 | Le produit ne le suit pas et n'a jamais été jugé sur pièce lot par lot |
-| §7, accessibilité | Le canvas porte désormais un rôle et une description, mais la couche DOM focalisable, l'alternative textuelle et les raccourcis n'existent pas. **C'est la seule ligne de cette table qui reste une VRAIE dette**, et une condition de publication |
+| §7, accessibilité | ✅ **FAIT le 1ᵉʳ août.** Lighthouse accessibilité : 100. Lien d'évitement, repère `main`, écran de chargement retiré de l'arbre, fiche inerte quand fermée, focus porté sur son titre à l'ouverture et rendu au bouton d'origine à la fermeture, Échap qui ferme puis quitte l'atelier, alternative textuelle annonçant que le contenu de la scène est disponible en texte. Reste hors périmètre : la couche DOM projetée sur la scène du §7, dont les deux listes tiennent lieu |
 
 ---
 
@@ -178,3 +193,17 @@ que la revue a trouvé.
 
 Ce n'est pas la simulation que la spec d'origine décrivait. C'est plus que l'atlas que la revue
 constatait. Et c'est, désormais, ce que les deux documents disent.
+
+---
+
+## 6. Ce qui reste, au 1ᵉʳ août
+
+Trois choses, et aucune n'est une dette d'honnêteté.
+
+1. **La relecture par un biologiste.** C'est la seule condition de livraison encore ouverte. Le
+   dossier qui la rend possible existe (`npm run relecture`) ; il manque le relecteur.
+2. **La mesure D3 pour treize mécanismes.** Le patron a servi deux fois, le chiffrage tient : une
+   journée. Le badge, lui, ne peut déjà plus se tromper de sens.
+3. **La boîte de vérité en dalle plutôt qu'en cube.** Le calcul est écrit et testé
+   (`areteTenable`) ; le cube de 680 nm ne ment plus, une dalle porterait simplement plus large au
+   même budget.
