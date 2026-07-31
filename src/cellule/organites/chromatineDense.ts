@@ -17,10 +17,9 @@ import {
   materiauOrganite,
   pointDansCoquille,
   type Organite,
+  CENTRE_NOYAU,
 } from '../contrat.js'
 
-/** Centre du noyau, repris de son module : les deux nuages doivent se superposer. */
-const CENTRE_NOYAU = new THREE.Vector3(-1, 0.5, 0)
 /** Le noyau fait 3 µm de rayon : on s'arrête franchement avant l'enveloppe. */
 const RAYON_UTILE = 2.74
 

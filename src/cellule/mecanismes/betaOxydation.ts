@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Mecanisme } from './contrat.js'
+import { siegeMitochondrie, type Mecanisme } from './contrat.js'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 /**
@@ -33,14 +33,21 @@ import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 // ── Position et étendue, en micromètres (1 unité = 1 µm) ────────────────────
 
-/** Matrice mitochondriale, à côté du cycle de Krebs. */
-const SIEGE = new THREE.Vector3(6.8, 2.0, -0.2)
+/**
+ * Matrice mitochondriale : une VRAIE mitochondrie, et non des coordonnées
+ * littérales. Elles plaçaient la scène à 6,7 µm de la capsule la plus proche.
+ */
+const SIEGE = siegeMitochondrie(2)
 /** Visé légèrement à gauche du centre géométrique : la porte compte autant que la roue. */
-const ANCRE = new THREE.Vector3(6.66, 1.9, -0.2)
+const ANCRE = SIEGE.clone().add(new THREE.Vector3(-0.14, -0.1, 0))
 
-/** Vers le cycle de Krebs, en (5.4, 1.4, -1.2) — repère local. */
+/**
+ * Les deux directions ci-dessous désignent le cycle de Krebs et la chaîne
+ * respiratoire, qui se déroulent dans d'autres mitochondries. Elles ne pointent
+ * donc plus une position précise, mais indiquent le sens du flux dans le repère
+ * local de cette scène — ce qui est tout ce que la figure en demande.
+ */
 const DIR_KREBS = new THREE.Vector3(-1.4, -0.6, -1.0).normalize()
-/** Vers la chaîne respiratoire, en (5.4, 2.6, -1.2) — repère local. */
 const DIR_CHAINE = new THREE.Vector3(-1.4, 0.6, -1.0).normalize()
 
 /** La boucle des quatre enzymes. */

@@ -1,5 +1,12 @@
 import * as THREE from 'three'
-import { creerAlea, materiauOrganite, TEINTES, UM, type Organite } from '../contrat.js'
+import {
+  CENTRE_NOYAU,
+  creerAlea,
+  materiauOrganite,
+  TEINTES,
+  UM,
+  type Organite,
+} from '../contrat.js'
 
 /**
  * Les pores nucléaires, en panier.
@@ -15,8 +22,6 @@ import { creerAlea, materiauOrganite, TEINTES, UM, type Organite } from '../cont
  * sites de pore.
  */
 
-/** Centre du noyau, repris tel quel du module noyau : ce module ne le déplace pas. */
-const CENTRE_NOYAU = new THREE.Vector3(-1, 0.5, 0)
 /**
  * Rayon de pose : 20 nm au-dessus de la membrane externe (rayon 3). L'anneau
  * cytoplasmique coiffe l'enveloppe, il ne s'y enfonce pas.

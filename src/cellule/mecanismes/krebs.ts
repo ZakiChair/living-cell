@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite, pointDansCoquille } from '../contrat.js'
-import type { Mecanisme } from './contrat.js'
+import { siegeMitochondrie, type Mecanisme } from './contrat.js'
 
 /**
  * LE CYCLE DE KREBS, DANS LA MATRICE MITOCHONDRIALE.
@@ -23,7 +23,8 @@ import type { Mecanisme } from './contrat.js'
 
 // ── Repères et échelle ────────────────────────────────────────────────────
 /** Sous la mitochondrie de démonstration, posée à (5,4 ; 2,6 ; −1,2). */
-const CENTRE = new THREE.Vector3(5.4, 1.4, -1.2)
+/** Posé sur une vraie mitochondrie, et non à des coordonnées littérales. */
+const CENTRE = siegeMitochondrie(1)
 /**
  * Normale de l'anneau. Le cadrage des mécanismes recule la caméra selon
  * (0,5 ; 0,36 ; 0,79) : en orientant l'anneau à peu près face à cette direction,

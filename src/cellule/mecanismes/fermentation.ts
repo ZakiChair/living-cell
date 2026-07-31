@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Mecanisme } from './contrat.js'
+import { siegeMitochondrie, type Mecanisme } from './contrat.js'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 /**
@@ -26,7 +26,8 @@ import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 // ── Repères, en micromètres (1 unité = 1 µm) ───────────────────────────────
 
 /** Cytosol, contre la glycolyse que le module voisin place à (-6.5, -4.2, -1.5). */
-const SIEGE = new THREE.Vector3(-7.6, -5.6, 0.6)
+/** Posé sur une vraie mitochondrie, et non à des coordonnées littérales. */
+const SIEGE = siegeMitochondrie(3)
 
 /** Rayon du champ : au-delà, tout est renvoyé vers le centre. */
 const RAYON_CHAMP = 1.25

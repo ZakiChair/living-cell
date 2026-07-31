@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import {
   UM,
+  CENTRE_NOYAU,
+  RAYON_NOYAU,
   TEINTES,
   creerAlea,
   materiauOrganite,
@@ -40,14 +42,20 @@ const ECART = 0.25 * UM
 const INCLINAISON = 1.15
 
 /**
- * Rayon (dans le plan xy) auquel la pile rejoint le noyau.
+ * De combien la pile s'enfonce derrière l'enveloppe nucléaire.
  *
- * Volontairement court : l'attache est glissée SOUS l'enveloppe nucléaire. Le
- * noyau mesurant 5 à 6 µm de diamètre, son rayon exact n'est pas connu d'ici ;
- * un léger recouvrement se cache derrière la membrane, alors qu'un jour entre
- * les deux contredirait la continuité qu'on veut justement montrer.
+ * Le module ignorait où était le noyau — « son rayon exact n'est pas connu
+ * d'ici », disait le commentaire — et comptait sa portée depuis l'origine de la
+ * CELLULE. Comme le noyau est décentré et fait 3 µm de rayon, la pile se
+ * retrouvait plantée dedans : 56,5 % de ses sommets dans le nucléoplasme, à
+ * 1,98 µm de profondeur, là où le texte annonçait « un léger recouvrement ».
+ *
+ * L'attache se calcule désormais depuis la surface du noyau, dont
+ * `contrat.ts` est la source unique. Le recouvrement voulu est ce chiffre-ci, et
+ * lui seul : assez pour que la continuité entre les deux compartiments se voie,
+ * assez peu pour que la pile reste dans le cytoplasme.
  */
-const RAYON_ATTACHE = 0.95 * UM
+const RECOUVREMENT_ENVELOPPE = 0.12 * UM
 
 /** Retrait sous le plan de coupe : la pile affleure sans se faire trancher. */
 const MARGE_COUPE = 0.05 * UM
@@ -225,8 +233,15 @@ export function creerReticulumRugueux(): Organite[] {
     for (let i = 0; i < sommets.count; i += 1) crete = Math.max(crete, sommets.getZ(i))
   }
 
-  const portee = RAYON_ATTACHE + LONGUEUR / 2
-  groupe.position.set(AXE.x * portee, AXE.y * portee, -MARGE_COUPE - crete)
+  // La portée part de la SURFACE du noyau, non de l'origine de la cellule : le
+  // bord proche de la pile affleure l'enveloppe et s'y enfonce de ce qu'on a
+  // décidé, plutôt que de traverser tout le nucléoplasme.
+  const portee = RAYON_NOYAU - RECOUVREMENT_ENVELOPPE + LONGUEUR / 2
+  groupe.position.set(
+    CENTRE_NOYAU.x + AXE.x * portee,
+    CENTRE_NOYAU.y + AXE.y * portee,
+    CENTRE_NOYAU.z - MARGE_COUPE - crete,
+  )
   groupe.updateMatrixWorld(true)
 
   // Étiquette accrochée au-dessus de la citerne supérieure, dans la moitié

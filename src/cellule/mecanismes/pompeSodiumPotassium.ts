@@ -266,6 +266,17 @@ export function creerPompeSodiumPotassium(): Mecanisme[] {
         "débiter cent mille ions par seconde d'écran : il est donc physiquement " +
         'indessinable en billes, et c\'est pourquoi il est rendu en jet. Ce contraste ' +
         "n'est pas un effet de style, c'est la mesure de l'écart.",
+      ellision:
+        "Les EFFECTIFS sont multipliés par six : dix-huit sodiums et douze potassiums " +
+        "traversent par cycle, là où la pompe réelle en déplace trois et deux. Le " +
+        "rapport 3:2 est conservé — c'est lui qui fait de la pompe une pompe " +
+        "électrogénique, et c'est le fait qui porte —, mais un étudiant qui compte les " +
+        "billes compte un échantillon, pas un cycle. À trois et deux, la scène ne " +
+        'montrerait presque rien entre deux conformations. Le jet du canal, lui, est ' +
+        "coupé et non ralenti : cent mille ions par seconde d'écran ne se dessinent " +
+        'pas. Une seule pompe et un seul canal sont montrés là où un micromètre carré ' +
+        "de membrane en porte des centaines, et l'ATP consommé — un par cycle — est " +
+        'figuré sans son cortège de phosphorylations intermédiaires.',
       description:
         'La pompe traverse quatre conformations. En E1 elle est ouverte vers ' +
         "l'intérieur et lie trois ions sodium ; l'ATP la phosphoryle et la ferme ; " +

@@ -40,14 +40,33 @@ export const UM = 1
 export const RAYON_CELLULE = 10 * UM
 
 /**
- * Plans de coupe de l'écorché.
+ * ANATOMIE PARTAGÉE — la source unique des positions.
  *
- * Un seul plan ne suffit pas : une sphère tranchée par un plan qui fait face à
- * la caméra se projette toujours en disque, et la coupe reste invisible. On
- * retire donc un QUARTIER, comme sur une planche d'anatomie — deux plans
- * perpendiculaires, et le rendu conserve un fragment dès qu'il est du bon côté
- * de l'un OU de l'autre (`clipIntersection = true`). Seul le quart commun
- * disparaît, ce qui ouvre la cellule sur une arête franche.
+ * Le centre du noyau était redéclaré à l'identique dans cinq fichiers
+ * (`noyau.ts`, `poresNucleaires.ts`, `chromatineDense.ts`, `matrices.ts`,
+ * `mecanismes/contrat.ts`), et `matrices.ts` documentait la recopie au lieu de
+ * la supprimer. Un module qui ignore où est le noyau ne peut pas savoir qu'il
+ * plante ses citernes dedans — c'est exactement ce qui est arrivé au réticulum
+ * rugueux, dont 56 % se trouvait dans le nucléoplasme.
+ *
+ * Décalé du centre géométrique : dans une vraie cellule le noyau n'est jamais
+ * pile au milieu.
+ */
+export const CENTRE_NOYAU = new THREE.Vector3(-1, 0.5, 0)
+export const RAYON_NOYAU = 3 * UM
+
+/**
+ * Plan de coupe de l'écorché.
+ *
+ * UN SEUL PLAN, et une normale oblique. Le commentaire décrivait ici deux plans
+ * perpendiculaires retirant un quartier, avec `clipIntersection = true` — rien
+ * de tout cela n'était dans le code, et ne l'a jamais été. Le tableau
+ * `PLANS_COUPE` existe pour que tous les matériaux partagent la même instance,
+ * pas pour en contenir plusieurs.
+ *
+ * L'obliquité suffit : une coupe frontale se projetterait en disque et
+ * resterait invisible, tandis que de biais elle dégage une ellipse franche qui
+ * se lit en volume.
  */
 export const PLAN_COUPE = new THREE.Plane(
   // Normale oblique : une coupe frontale se projetterait en disque et resterait

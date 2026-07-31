@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { CENTRE_NOYAU, RAYON_NOYAU as RAYON_NOYAU_PARTAGE } from '../contrat.js'
+import { placementsMitochondries } from '../organites/mitochondries.js'
 
 /**
  * Contrat commun à tous les mécanismes cellulaires.
@@ -51,14 +53,33 @@ export interface Mecanisme {
 }
 
 /**
+ * Le siège d'un mécanisme mitochondrial : une vraie mitochondrie.
+ *
+ * L'invariant ci-dessous — « un mécanisme qui se déroule ailleurs que son
+ * organite est pire qu'un mécanisme absent » — était posé et violé : les quatre
+ * mécanismes mitochondriaux écrivaient des coordonnées littérales pendant que
+ * les six capsules étaient tirées au hasard, si bien qu'ils se déroulaient à
+ * 3,8–5,6 µm de la mitochondrie la plus proche. Ils lisent maintenant le
+ * placement publié par `mitochondries.ts`.
+ *
+ * Chaque mécanisme prend une capsule différente. Dans la cellule, toutes les
+ * mitochondries font tout ; les répartir évite qu'ils se superposent, et c'est
+ * un échantillonnage, pas une division du travail.
+ */
+export function siegeMitochondrie(index: number): THREE.Vector3 {
+  const placements = placementsMitochondries()
+  return placements[index % placements.length]!.position.clone()
+}
+
+/**
  * Positions de référence partagées par les mécanismes.
  *
  * Elles doivent rester cohérentes avec les organites : un mécanisme qui se
  * déroule ailleurs que son organite est pire qu'un mécanisme absent.
  */
 export const SIEGES = {
-  /** Centre du noyau. */
-  noyau: new THREE.Vector3(-1, 0.5, 0),
+  /** Centre du noyau, lu depuis la source unique de `contrat.ts`. */
+  noyau: CENTRE_NOYAU.clone(),
   /** Centre de l'appareil de Golgi. */
   golgi: new THREE.Vector3(3.2, -1.5, 0.5),
   /** Cœur du réticulum endoplasmique rugueux. */
@@ -69,5 +90,5 @@ export const SIEGES = {
   centrosome: new THREE.Vector3(1.5, 2.2, 0).normalize().multiplyScalar(3.2),
 } as const
 
-/** Rayon du noyau, en micromètres. */
-export const RAYON_NOYAU = 3
+/** Rayon du noyau, en micromètres. Réexporté depuis la source unique. */
+export const RAYON_NOYAU = RAYON_NOYAU_PARTAGE

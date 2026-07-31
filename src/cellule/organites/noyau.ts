@@ -6,6 +6,8 @@ import {
   TEINTES,
   UM,
   type Organite,
+  CENTRE_NOYAU,
+  RAYON_NOYAU,
 } from '../contrat.js'
 
 /**
@@ -18,9 +20,8 @@ import {
  * qui la remplit.
  */
 
-/** Décalé du centre géométrique : dans une vraie cellule le noyau n'est jamais pile au milieu. */
-const CENTRE = new THREE.Vector3(-1, 0.5, 0)
-const RAYON_NOYAU = 3 * UM
+/** Position et taille du noyau : `contrat.ts` en est la source unique. */
+const CENTRE = CENTRE_NOYAU
 /** Espace périnucléaire réel : 20 à 40 nm entre les deux membranes. */
 const ESPACE_PERINUCLEAIRE = 0.04 * UM
 const RAYON_INTERNE = RAYON_NOYAU - ESPACE_PERINUCLEAIRE

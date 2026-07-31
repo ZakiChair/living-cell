@@ -16,35 +16,30 @@ import {
   TEINTES,
   creerAlea,
   materiauOrganite,
+  CENTRE_NOYAU,
   pointDansCoquille,
   type Organite,
 } from '../contrat.js'
+import { placementsMitochondries } from './mitochondries.js'
 
 /* ------------------------------------------------------------------------- */
 /* Recalage sur les capsules existantes                                       */
 /* ------------------------------------------------------------------------- */
 
 /**
- * ⚠️ Les six repères ci-dessous sont RECONSTRUITS, pas lus.
+ * Les repères sont LUS, désormais.
  *
- * `mitochondries.ts` ne publie pas les positions de ses capsules : chaque
- * exemplaire est un `Group` anonyme dans son propre `Organite`. On rejoue donc
- * la même graine et, surtout, la même SÉQUENCE de tirages — y compris les
- * tirages qu'on n'utilise pas (phase du profil, crêtes), car c'est leur
- * consommation qui maintient le générateur en phase. Un tirage oublié et tous
- * les exemplaires suivants sont décalés.
+ * Ils étaient reconstruits : ce module rejouait la graine ET la séquence de
+ * tirages de `mitochondries.ts`, y compris les trente-neuf tirages qu'il
+ * n'utilisait pas, car c'est leur consommation qui maintenait le générateur en
+ * phase. Quatre constantes traversaient la frontière des modules, et toute
+ * modification de l'ordre des tirages là-bas désalignait les six matrices ici,
+ * en silence, de 2,9 à 8,3 µm.
  *
- * Conséquence : toute modification de `mitochondries.ts` qui change le nombre
- * ou l'ordre de ses appels à `alea()` désaligne ce module en silence. La marge
- * de sécurité du remplissage (voir PORTEE_MATRICE) est là pour ça — un léger
- * décalage laisse le contenu dedans, il ne le vide pas dans le cytoplasme.
+ * `mitochondries.ts` publie maintenant `placementsMitochondries()`, calculé sur
+ * son propre flux aléatoire. Le couplage a disparu avec le rejeu.
  */
 const NOMBRE_MITOCHONDRIES = 6
-const GRAINE_CAPSULES = 31_415
-/** Grand axe local d'une capsule, tel que `mitochondries.ts` le pose. */
-const AXE_LONG = new THREE.Vector3(0, 1, 0)
-/** Tirages consommés par crête dans `creerCretes` : jeu, décalage, diamètre, z, deux angles. */
-const TIRAGES_PAR_CRETE = 6
 
 const GRAINE_CONTENU = 27_182
 const GRAINE_RIBOSOMES = 16_180
@@ -98,11 +93,11 @@ const ECART_SOUS_UNITES = 0.014
 const COQUILLE_MIN = 3.6
 const COQUILLE_MAX = 9.4
 /**
- * Recopiés de `noyau.ts`, qui les garde privés : le noyau est décentré, si bien
- * qu'il déborde jusqu'à 4,1 µm du centre et mord franchement dans la coquille.
- * Le rayon d'exclusion ajoute de quoi passer au large des anneaux de pores.
+ * Le noyau est décentré : il déborde jusqu'à 4,1 µm du centre et mord
+ * franchement dans la coquille. Son centre vient de `contrat.ts`, source
+ * unique ; le rayon d'exclusion ajoute de quoi passer au large des anneaux de
+ * pores.
  */
-const CENTRE_NOYAU = new THREE.Vector3(-1, 0.5, 0)
 const RAYON_EXCLUSION_NOYAU = 3.15
 /** Au-delà, on repousse au lieu de retirer : la boucle se termine toujours. */
 const TIRAGES_MAX = 24
@@ -140,46 +135,6 @@ const _local = new THREE.Vector3()
 const _monde = new THREE.Vector3()
 const _direction = new THREE.Vector3()
 const _matrice = new THREE.Matrix4()
-const _pivot = new THREE.Object3D()
-
-/** Position et orientation d'une capsule, en coordonnées monde. */
-interface RepereCapsule {
-  position: THREE.Vector3
-  quaternion: THREE.Quaternion
-}
-
-/**
- * Rejoue tirage pour tirage la boucle de `creerMitochondries`, et n'en retient
- * que le placement. Les valeurs jetées ne sont pas du gaspillage : elles sont
- * le mécanisme du recalage.
- */
-function reconstruireCapsules(): RepereCapsule[] {
-  const alea = creerAlea(GRAINE_CAPSULES)
-  const reperes: RepereCapsule[] = []
-
-  for (let index = 0; index < NOMBRE_MITOCHONDRIES; index++) {
-    alea() // phase du profil de révolution
-    const nombreCretes = 8 + Math.floor(alea() * 5)
-    for (let tirage = 0; tirage < nombreCretes * TIRAGES_PAR_CRETE; tirage++) alea()
-
-    const position = pointDansCoquille(alea, 4, 8.5, new THREE.Vector3())
-    // Même rabattement que dans `mitochondries.ts` : tout du côté ouvert.
-    position.z = -Math.abs(position.z)
-
-    // On repasse par l'API de Three plutôt que de composer la rotation à la
-    // main : `rotateY` est une multiplication à droite, et un signe inversé
-    // ferait tourner le contenu à l'envers dans sa capsule sans rien casser.
-    // Le pivot est réutilisé d'un tour à l'autre sans remise à zéro, et c'est
-    // sûr : `setFromUnitVectors` écrase le quaternion au lieu de l'accumuler.
-    pointDansCoquille(alea, 1, 1, _direction).normalize()
-    _pivot.quaternion.setFromUnitVectors(AXE_LONG, _direction)
-    _pivot.rotateY(alea() * Math.PI * 2)
-
-    reperes.push({ position, quaternion: _pivot.quaternion.clone() })
-  }
-
-  return reperes
-}
 
 /** Tire un point dans l'ellipsoïde de remplissage, en coordonnées locales. */
 function pointDansMatrice(alea: () => number, portee: number): THREE.Vector3 {
@@ -199,7 +154,7 @@ function courbeNucleoide(alea: () => number): THREE.CatmullRomCurve3 {
 }
 
 function creerMatriceMitochondriale(): Organite {
-  const reperes = reconstruireCapsules()
+  const reperes = placementsMitochondries()
   const alea = creerAlea(GRAINE_CONTENU)
   const groupe = new THREE.Group()
 

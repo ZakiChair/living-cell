@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import type { Mecanisme } from './contrat.js'
+import { siegeMitochondrie, type Mecanisme } from './contrat.js'
 
 /**
  * La chaîne respiratoire et l'ATP synthase.
@@ -16,7 +16,8 @@ import type { Mecanisme } from './contrat.js'
  * 20. Rien n'est grossi — c'est la caméra qui descend à cette échelle.
  */
 
-const CENTRE = new THREE.Vector3(5.4, 2.6, -1.2)
+/** Posé sur une vraie mitochondrie, et non à des coordonnées littérales. */
+const CENTRE = siegeMitochondrie(0)
 
 /** Demi-longueur de la crête représentée, en unités de scène. */
 const DEMI_LONGUEUR = 0.62
