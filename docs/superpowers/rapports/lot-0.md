@@ -75,8 +75,95 @@ Un seuil en millisecondes ne veut rien dire hors d'une charge donnée, et une me
 
 ## 0b — Dalle à densité vraie
 
-*À compléter — tâches 9 et 10.*
+Profondeur de dalle 300 nm, occupation 25 %, unité rendue = complexe reconnaissable de 2 750 nm³. La caméra est placée pour que l'arête remplisse toujours la hauteur du champ : on compare donc la même surface à l'écran, seule la finesse des objets change.
+
+### Mesures sur ordinateur
+
+| Arête | Instances | GPU | images/s | Porte bureau (≥ 55) |
+|---|---|---|---|---|
+| 300 nm | 2 454 | 0,73 ms | 120 | passée |
+| 500 nm | 6 818 | 1,04 ms | 120 | passée |
+| 700 nm | 13 363 | 1,87 ms | 120 | passée |
+| 1 000 nm | 27 272 | 3,53 ms | 120 | passée |
+| 1 500 nm | 61 363 | 2,20 ms | 120 | passée |
+| 2 000 nm | 109 090 | 4,83 ms | 120 | passée |
+| 3 000 nm | 245 454 | 7,02 ms | 120 | passée |
+| 4 000 nm | 436 363 | 11,96 ms | 80 | passée |
+| 6 000 nm | 981 818 | 30,15 ms | 32 | **échouée** |
+
+**Arête retenue sur ordinateur : environ 4 900 nm**, par interpolation entre 4 000 et 6 000 nm. C'est plus de trois fois la borne haute de 1,5 µm que retenait la spec.
+
+### La spec était trop prudente, et on sait maintenant pourquoi
+
+La table D7 annonçait une arête tenable de 1,3 à 1,5 µm. Ce chiffre est juste — **pour un cube**. La boîte de vérité n'est pas un cube : c'est une dalle à profondeur bornée, et borner la profondeur est justement ce qui rend l'encombrement finançable, puisqu'au-delà de la première couche plus de 99 % des instances sont occultées.
+
+À budget d'instances égal, une dalle de 300 nm de profondeur est environ deux fois plus large qu'un cube. Les deux calculs vivent désormais dans des fonctions distinctes et testées, et les tests reproduisent la table D7 à l'identique — elle devient auditable plutôt que déclarative.
+
+### Un second résultat qui corrige l'échelle de dégradation
+
+En divisant le nombre de pixels par trois — de 4,54 à 1,50 Mpx — le temps GPU passe de 11,96 à 10,45 ms à l'arête de 4 000 nm. **Presque rien.**
+
+La scène est donc limitée par la **géométrie**, pas par le remplissage : les complexes ne font que quelques pixels à l'écran, et c'est le traitement des sommets qui domine. Le premier échelon de l'échelle de dégradation du §9.4 de la spec, qui réduit le ratio de pixels, serait donc quasiment sans effet ici. Le seul levier utile est le nombre d'instances, c'est-à-dire l'arête de la dalle.
+
+Cela ne contredit pas la recherche, qui désignait le taux de remplissage comme plafond : c'était pour de grands halos additifs, un cas différent de celui-ci.
+
+### Mesures sur téléphone : **non faites**
+
+Elles demandent du matériel physique. L'émulation d'appareil du navigateur redimensionne la fenêtre et ralentit le processeur mais **ne simule pas le GPU**, et cette scène est limitée par le GPU. Une valeur extrapolée serait inventée.
+
+Le protocole, l'adresse et les repères de comparaison sont prêts dans `mesure-mobile.md`. **C'est le seul point du lot 0 qui reste ouvert.**
+
+---
 
 ## 0c — Production d'une silhouette
 
-*À compléter — tâche 11.*
+### Productions réelles, chronométrées
+
+| Molécule | Code | Carbones α | Chaînes | Poids | Source | Durée |
+|---|---|---|---|---|---|---|
+| Na⁺/K⁺-ATPase | 2ZXE | 1 296 | 3 | 15,2 Ko | PDB, 0,88 Mo | 0,9 s |
+| Grande sous-unité ribosomique | 1FFK | 3 656 | 27 | 42,8 Ko | PDB, 5,10 Mo | 1,2 s |
+| Ribosome humain 80S | 6EK0 | 11 725 | 76 | 137,4 Ko | mmCIF, 24,4 Mo | 2,5 s |
+| Ribosome humain 80S | 4V6X | 13 338 | 84 | 156,3 Ko | mmCIF, 27,5 Mo | 2,6 s |
+
+### Le mur que le plan n'avait pas vu
+
+Le plan ne prévoyait que le format PDB. **Le ribosome eucaryote n'existe pas au format PDB** : au-delà de 99 999 atomes, une structure n'est publiée qu'en mmCIF. C'est également le cas du spliceosome et du pore nucléaire, soit les vedettes de trois des quatre lots.
+
+Un lecteur mmCIF a donc été ajouté. Il n'est pas interchangeable avec le lecteur PDB : le mmCIF n'a pas de colonnes fixes, l'ordre des champs est déclaré par l'en-tête de la boucle `_atom_site.` et il faut le lire. C'est un coût ponctuel, désormais payé.
+
+### Coût réel
+
+Le temps machine est négligeable — une à trois secondes. **Le coût est humain** : identifier la bonne structure, et décider quelles chaînes garder. Pour la pompe Na⁺/K⁺, la spec demande d'omettre les sous-unités β et FXYD, soit deux des trois chaînes du fichier ; pour le ribosome, il y en a 76.
+
+Estimation à environ **trois à cinq minutes par molécule** une fois le pipeline en place, dominées par ces deux décisions. Le site couvre de l'ordre de 35 familles moléculaires distinctes sur les quatre lots, soit **deux à trois heures de travail humain au total**.
+
+### Réserve, qui doit figurer
+
+Ce qui est mesuré va du code PDB au **nuage de points Cα normalisé**. Le passage du nuage à une **surface rendue** n'est pas mesuré.
+
+Il n'est pas nécessaire aux bandes 1 et 2, où un complexe fait quelques pixels et se rend en sphères instanciées — c'est exactement ce que fait le banc 0b. Il l'est à la bande 3, où une seule molécule remplit l'écran et où il faut une vraie silhouette. Ce coût-là reste inconnu.
+
+### Verdict : **tenable**
+
+Deux à trois heures de production humaine ne justifient pas de réduire le nombre de familles. La crainte de la critique de complétude, qui voyait là « probablement le plus gros coût caché du projet », n'est pas confirmée pour la partie mesurée.
+
+---
+
+## Conséquences pour la spec
+
+| Section | Changement |
+|---|---|
+| §3.4, bande 2 | L'arête de la boîte de vérité passe de « 0,3 – 1,5 µm » à **« jusqu'à 4 µm sur ordinateur »**. La valeur mobile reste à mesurer. |
+| §5.3 | Le contour n'est plus un risque ouvert : **détection de bord retenue**. La coque inversée reste utilisable ponctuellement sur quelques objets mis en avant. |
+| §9.2 | Ajouter que la dalle est limitée par la géométrie, pas par le remplissage. |
+| §9.4 | Le premier échelon — réduction du ratio de pixels — est **presque sans effet** sur cette scène. Le levier est l'arête de la dalle. |
+| §9.5 | Inchangé : aucun appareil mobile n'a été mesuré. |
+| §14 | Ajouter deux pièges : `vertexColors: true` avec `setColorAt` rend tout noir sans erreur ; le ribosome, le spliceosome et le pore nucléaire n'existent qu'en mmCIF. |
+| §16 | Retirer les portes 0a et 0c. La porte 0b reste ouverte pour sa moitié mobile. |
+
+## Défauts de méthode à retenir
+
+1. **Un seuil en millisecondes ne veut rien dire hors d'une charge donnée.** La porte 0a demandait « moins de 2 ms » sans dire à combien d'instances ; la coque inversée coûte 0,5 ms à 100 000 et 10 ms à 400 000.
+2. **Une mesure prise sous le budget d'image ne veut rien dire du tout.** Le GPU sous-cadence, et un surcoût négatif en est le symptôme.
+3. **Un banc qui mélange la charge et l'objet à juger ne permet ni l'un ni l'autre.** Il a fallu une bascule pour séparer les deux.

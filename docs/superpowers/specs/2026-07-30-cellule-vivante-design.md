@@ -189,7 +189,7 @@ Trois « mondes » se substituent en fondu pendant le zoom. Budget GPU constant 
 | Bande | Champ | Statut de vérité | Ce qu'on voit |
 |---|---|---|---|
 | 1 — Cellule | ~20 µm | **schématique, badge d'ellision permanent** | organites en volumes, membrane comme surface, protéines en silhouettes de quelques pixels |
-| 2 — Boîte de vérité | 0,3 – 1,5 µm | **densité vraie, dalle à profondeur bornée** | bicouche épaisse, pompes et canaux reconnaissables à leur silhouette, encombrement réel, curseur de densité |
+| 2 — Boîte de vérité | **jusqu'à 4 µm** sur ordinateur, à mesurer sur téléphone | **densité vraie, dalle à profondeur bornée** | bicouche épaisse, pompes et canaux reconnaissables à leur silhouette, encombrement réel, curseur de densité |
 | 3 — Macromolécule | ~25 nm | densité vraie, voisinage immédiat | un ribosome, un complexe de pompe, l'ADN à 2 nm, codons lisibles |
 
 Le fondu se déclenche sur un seuil de distance caméra, avec hystérésis pour éviter le battement. Une seule bande est instanciée à la fois ; la suivante se prépare pendant le fondu.
@@ -294,22 +294,22 @@ Contraintes dérivées de la validation :
 - **Jamais rouge/vert** comme couple porteur d'information.
 - Toute palette ajoutée plus tard repasse par le validateur.
 
-### 5.3 Le contour — risque ouvert, à lever avant de figer la DA
+### 5.3 Le contour — mesuré, technique retenue
 
-Le validateur donne un avertissement de contraste sur trois teintes sur six (`#E69F00` à 2,19:1, `#56B4E9` à 2,25:1, `#CC79A7` à 2,98:1, sous le seuil de 3:1 sur fond clair). Cet avertissement impose un encodage secondaire, et la doctrine Goodsell le fournit : contour systématique, silhouette distincte, étiquette au survol.
+Le validateur donne un avertissement de contraste sur trois teintes sur six (`#E69F00` à 2,19:1, `#56B4E9` à 2,25:1, `#CC79A7` à 2,98:1, sous le seuil de 3:1 sur fond clair). Cet avertissement impose un encodage secondaire, et la doctrine Goodsell le fournit : contour systématique, silhouette distincte, étiquette au survol. Le contour n'est donc pas un choix esthétique, c'est une obligation d'accessibilité.
 
-**Le contour n'est donc pas un choix esthétique, c'est une obligation d'accessibilité — et il n'a jamais été mesuré.** Deux pièges connus :
+**Technique retenue : détection de bord en post-traitement**, sur la profondeur, quatre voisins. Mesurée à **0,15 ms**, indépendamment du nombre d'instances, puisqu'elle ne dépend que de la résolution.
 
-- **Coque inversée sur `InstancedMesh`** : l'offset est en espace objet. Sur un icosaèdre détail 1, le contour est facetté et **sa largeur varie avec la distance** — épais au premier plan, disparu au fond. Or il faut une largeur constante à l'écran. Ce n'est pas un réglage, c'est un shader à écrire.
-- **Détection de bord en post-traitement** : exige une passe normale et profondeur en pleine résolution, soit la classe de coût du SSAO mesuré à 5,63 ms — la totalité du budget de bureau.
-- Et **aucune des deux voies ne donne le contour intérieur entre instances de même teinte qui se recouvrent**, c'est-à-dire précisément ce dont dépend la lisibilité dans un amas.
+La coque inversée, un temps pressentie, a été écartée : elle redessine chaque instance et coûte donc **100 % de la passe géométrique** — 4,58 ms à 200 000 instances, 10,06 ms à 400 000. Elle reste utilisable ponctuellement sur quelques objets mis en avant, où son coût est négligeable et où sa largeur réglable en pixels est un avantage.
 
-**Ce risque est chaîné** : si les deux voies échouent, la direction artistique tombe *et* la palette doit être revalidée sans dépendre du contour. Il devient donc la **porte 0** du lot 1 (§11).
+Deux affirmations de cette spec ont été **réfutées par la mesure** :
 
-**Repli nommé, pour qu'un banc raté ne redevienne pas un brainstorming.** Deux options dans l'ordre de préférence :
+- La détection de bord ne coûte pas la classe du SSAO. Le chiffre de 5,63 ms valait pour un effet bien plus lourd, à échantillonnage en hémisphère et flou, pas pour une détection de silhouette.
+- Les deux techniques donnent bien le contour intérieur entre instances de même teinte qui se recouvrent, à condition que celles-ci ne s'interpénètrent pas — ce qui est le cas réel d'un encombrement moléculaire.
 
-1. **Séparer les six familles par la luminosité et la silhouette seules**, sans contour. C'est de toute façon ce que la palette devra faire si la porte 0a échoue, puisque son accessibilité ne pourra plus s'appuyer sur un encodage secondaire graphique. Reste dans la même direction artistique, coût faible.
-2. **Basculer sur la direction « coupe optique »** — fond `#07080B`, quatre canaux fluorescents `#3B6FD4`, `#22A05A`, `#C93E9E`, `#C08420`, **déjà validée intégralement** (bande de luminosité, chroma, séparation daltonienne, contraste ≥ 3:1). Elle assume la suppression en la justifiant par le protocole : dans une image de fluorescence, ce qui n'est pas marqué n'est réellement pas visible. Changement de direction artistique, mais sans revalidation à refaire.
+**Coût induit** : la détection de bord impose une cible de rendu et une conversion colorimétrique explicite. Sans elle, la cible restant en linéaire, l'image finale est nettement assombrie. C'est un défaut rencontré en séance, pas une hypothèse.
+
+Détail des mesures dans `docs/superpowers/rapports/lot-0.md`.
 
 ### 5.4 Rendu
 
@@ -402,7 +402,9 @@ Mesuré sur MacBook Pro M4 Max, Chrome, WebGL 2, 4,54 Mpx :
 - **Le taux de remplissage est le vrai plafond.** 300 000 points additifs à 38 px coûtent 3,4 ms de GPU ; les mêmes à 115 px coûtent 19,9 ms. Multiplier le diamètre par 3 multiplie le coût par 5,9. Les gros halos additifs sont l'ennemi.
 - **Le bloom est presque gratuit** (+0,30 ms) parce qu'il travaille sur une pyramide sous-échantillonnée. **La profondeur de champ (+5,40 ms) et le SSAO (+5,63 ms) coûtent dix-huit fois plus.**
 
-Décisions : **bloom oui, SSAO non, profondeur de champ simulée** dans le shader des particules en modulant opacité et taille selon la distance. Le contour reste à mesurer (§5.3) et concourt au même budget.
+Décisions : **bloom oui, SSAO non, profondeur de champ simulée** dans le shader des particules en modulant opacité et taille selon la distance. Le contour par détection de bord ajoute 0,15 ms au même budget (§5.3).
+
+**Nuance mesurée sur la boîte de vérité, qui vaut correction.** Le taux de remplissage est bien le plafond pour de grands halos additifs, mais **pas pour la dalle à densité vraie** : là, les complexes ne font que quelques pixels et c'est le traitement des sommets qui domine. Diviser le nombre de pixels par trois n'a fait passer le temps GPU que de 11,96 à 10,45 ms. La dalle est donc **limitée par la géométrie**, et son seul levier de réglage est le nombre d'instances, c'est-à-dire son arête.
 
 ### 9.3 Simulation
 
@@ -414,7 +416,7 @@ En dessous de 20 000 entités visibles, le processeur en JavaScript suffit large
 
 Échelle de dégradation, du moins au plus visible :
 
-1. Ratio de pixels 2 → 1,5 → 1,25 → 1 (le plus efficace, le moins visible)
+1. **Arête de la dalle réduite** — mesuré comme le seul levier réellement efficace (§9.2)
 2. Profondeur de champ coupée
 3. **Arête de la dalle réduite**, avec le badge mis à jour en conséquence — jamais la densité (voir ci-dessous)
 4. Bloom sur mip plus bas, puis coupé
@@ -549,6 +551,10 @@ Versions vérifiées sur le registre npm au 2026-07-30.
 - `InstancedMesh` ne trie pas ses instances : sur une scène transparente dense, cela crée de l'overdraw.
 - Créer des `Vector3` ou des matériaux dans la boucle de rendu = pression GC et chute de framerate.
 - Sur iOS, la panne typique est une perte de contexte WebGL par dépassement mémoire, silencieuse sans gestionnaire.
+- **`vertexColors: true` avec `setColorAt` rend tout noir, sans la moindre erreur.** Three.js définit `USE_COLOR` dans le vertex shader dès que `vertexColors` est vrai, ce qui déclare un attribut `color` que la géométrie n'a pas ; son défaut est (0,0,0) et il annule la couleur. `instanceColor` seul suffit : le fragment shader définit `USE_COLOR` de lui-même quand il existe.
+- **Une mesure prise sous le budget d'image ne vaut rien.** Le GPU sous-cadence quand il a de la marge, et les écarts sous la milliseconde deviennent irrésolubles — au point de produire des surcoûts négatifs. Il faut saturer pour comparer.
+- **Une cible de rendu reste en linéaire.** Sans conversion colorimétrique explicite dans la passe finale, l'image est nettement assombrie.
+- **Le ribosome, le spliceosome et le pore nucléaire n'existent pas au format PDB.** Au-delà de 99 999 atomes, seul le mmCIF est publié, et il n'a pas de colonnes fixes : l'ordre des champs se lit dans l'en-tête de la boucle `_atom_site.`.
 
 **Science**
 - **Toujours étiqueter le type cellulaire.** « Un million de pompes par cellule » est vrai pour un néphron et faux d'un facteur 10⁵ pour un globule rouge (471 ± 70 pompes). Aucune moyenne inter-organismes.
@@ -593,8 +599,7 @@ Versions vérifiées sur le registre npm au 2026-07-30.
 
 ## 16. Ce qui reste ouvert
 
-- **Le contour n'est pas mesuré** et la direction artistique en dépend. Porte 0a.
-- **Aucun appareil mobile n'est mesuré.** Les budgets mobiles sont des extrapolations. Porte 0b.
-- **Le coût de production des silhouettes est inconnu** et c'est probablement le plus gros poste caché. Porte 0c.
+- **Aucun appareil mobile n'est mesuré.** Les budgets mobiles restent des extrapolations. C'est la moitié encore ouverte de la porte 0b, et le seul point du lot 0 qui reste à faire — protocole prêt dans `rapports/mesure-mobile.md`.
+- **Le passage d'un nuage de points Cα à une surface rendue n'est pas mesuré.** Il n'est pas nécessaire aux bandes 1 et 2, où les complexes se rendent en sphères instanciées ; il l'est à la bande 3.
 - **Le paramétrage des conductances** du modèle de membrane est une calibration, pas une donnée. À ajuster et à documenter comme tel.
 - **Les lots 2 à 4 ne sont pas spécifiés en détail.** Ils recevront leur propre cycle une fois le lot 1 jugé sur pièce.
