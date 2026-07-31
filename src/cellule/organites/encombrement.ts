@@ -57,16 +57,6 @@ const RAYON_NOYAU_EVITE = 3.2
 /** Le voile s'arrête sous le cortex, que le cytosquelette occupe déjà. */
 const RAYON_VOILE_MAX = 9.6
 
-/** Arêtes du cube : 4 nm de rayon, à peine plus qu'un filament d'actine. */
-const RAYON_LISERE = 0.004
-
-const AXE_Y = new THREE.Vector3(0, 1, 0)
-const AXES = [
-  new THREE.Vector3(1, 0, 0),
-  new THREE.Vector3(0, 1, 0),
-  new THREE.Vector3(0, 0, 1),
-]
-
 // Temporaires hissés au niveau du module : rien ne s'alloue instance par instance.
 const _position = new THREE.Vector3()
 const _quaternion = new THREE.Quaternion()
@@ -90,8 +80,7 @@ function desaturer(teinte: number): number {
 /**
  * Concatène plusieurs géométries en une seule.
  *
- * Sert deux fois : le ribosome doit garder ses deux sous-unités dans UNE
- * instance, et les douze arêtes du liseré doivent former UN maillage. Les
+ * Le ribosome doit garder ses deux sous-unités dans UNE instance. Les
  * géométries indexées sont dépliées d'abord — on ne recolle alors que des
  * tableaux de sommets, sans décalage d'index à tenir.
  */
@@ -313,8 +302,10 @@ export function creerEncombrement(): Organite[] {
         'pourquoi la GFP y diffuse trois fois plus lentement que dans l’eau. ' +
         "Cette densité ne peut pas être tenue partout : à l'échelle de la cellule " +
         "entière il faudrait des centaines de millions d'objets, contre les deux " +
-        'cent mille que la carte graphique dessine à 60 images par seconde. Le ' +
-        "liseré qui borne le cube dit exactement où s'arrête la vérité.",
+        'cent mille que la carte graphique dessine à 60 images par seconde. ' +
+        "Partout ailleurs dans cette cellule, le cytosol est éclairci d'environ " +
+        'trois ordres de grandeur : le grain que vous y voyez est un ' +
+        "échantillon, pas un inventaire.",
       objet: boite,
       // Le bouton « aller à la boîte » recopie cette ancre dans la cible de la
       // caméra : elle doit être le centre du cube, pas un point flottant à côté.

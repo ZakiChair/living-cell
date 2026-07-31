@@ -8,8 +8,13 @@
       :root {
         --ivoire: #f2eee4;
         --encre: #1c1a17;
-        --encre-2: rgba(28, 26, 23, 0.62);
-        --encre-3: rgba(28, 26, 23, 0.38);
+        /* Les deux encres secondaires tiennent le minimum WCAG AA de 4,5:1 sur
+           l'ivoire : mesuré 5,4:1 et 4,6:1. L'ancienne --encre-3 à 0,38
+           plafonnait à 2,28:1, et elle porte les intitulés qui groupent la
+           liste des mécanismes — ce ne sont pas des ornements. La hiérarchie
+           passe désormais par la graisse et le corps, pas par l'effacement. */
+        --encre-2: rgba(28, 26, 23, 0.68);
+        --encre-3: rgba(28, 26, 23, 0.62);
         --voile: rgba(242, 238, 228, 0.9);
         --trait: rgba(28, 26, 23, 0.14);
       }
@@ -63,11 +68,33 @@
       }
       #titre p { margin: 0; font-size: 0.83rem; color: var(--encre-2); }
 
-      /* ── Légende ────────────────────────────────────────────── */
-      #legende {
+      /* ── Colonne de gauche ──────────────────────────────────────
+         Les mécanismes et la légende étaient deux blocs `fixed` ancrés l'un en
+         haut, l'autre en bas, avec des hauteurs maximales indépendantes : rien
+         ne les empêchait de se croiser, et à 752 px de haut ils se
+         recouvraient sur 139 px, la légende passant devant six boutons.
+
+         Une colonne bornée en haut ET en bas rend le recouvrement impossible
+         par construction. Le `min-height: 0` des enfants est ce qui les
+         autorise à descendre sous leur hauteur de contenu et à défiler ; sans
+         lui un enfant flex déborde au lieu de se comprimer. */
+      #colonne {
         position: fixed;
         left: 30px;
+        top: 122px;
         bottom: 26px;
+        width: 19rem;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+      }
+      #colonne > * { pointer-events: auto; }
+
+      /* ── Légende ────────────────────────────────────────────── */
+      #legende {
+        flex: 0 1 auto;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         gap: 1px;
@@ -76,7 +103,6 @@
         border: 1px solid var(--trait);
         border-radius: 9px;
         padding: 9px;
-        max-height: 52vh;
         overflow-y: auto;
       }
       #legende button {
@@ -108,11 +134,8 @@
 
       /* ── Mécanismes ─────────────────────────────────────────── */
       #flux {
-        position: fixed;
-        top: 122px;
-        left: 30px;
-        width: 19rem;
-        max-height: calc(100vh - 400px);
+        flex: 1 1 auto;
+        min-height: 0;
         overflow-y: auto;
         background: var(--voile);
         backdrop-filter: blur(8px);
@@ -259,7 +282,10 @@
         font-size: 0.83rem;
       }
       #reglages label { display: flex; align-items: center; gap: 9px; color: var(--encre-2); }
-      #reglages input[type="range"] { width: 130px; accent-color: #0072b2; }
+      /* 24 px de haut : le minimum de cible tactile de WCAG 2.2 (2.5.8). Les
+         curseurs en faisaient 16, et ce sont les deux commandes les plus
+         utilisées de la page. */
+      #reglages input[type="range"] { width: 130px; height: 24px; accent-color: #0072b2; }
       #reglages .sep { width: 1px; height: 18px; background: var(--trait); }
       #reglages button {
         border: 0;
@@ -293,8 +319,7 @@
         #fiche { width: auto; left: 16px; right: 16px; top: auto; bottom: 96px; max-height: 46vh; }
         #fiche.ouverte { transform: none; }
         #fiche:not(.ouverte) { transform: translateY(calc(100% + 120px)); }
-        #legende { max-height: 24vh; left: 16px; bottom: 90px; }
-        #flux { display: none; }
+        #colonne { left: 16px; right: 16px; width: auto; top: 96px; bottom: 90px; }
         #titre { left: 16px; top: 16px; }
         #echelle { display: none; }
       }
@@ -312,9 +337,10 @@
       <p>Écorché d'une cellule eucaryote animale. Survolez un organite pour l'identifier, cliquez pour la fiche.</p>
     </header>
 
-    <nav id="legende" aria-label="Organites"></nav>
-
-    <section id="flux" aria-label="Processus vivants"></section>
+    <div id="colonne">
+      <section id="flux" aria-label="Processus vivants"></section>
+      <nav id="legende" aria-label="Organites"></nav>
+    </div>
 
     <div id="survol" role="status" aria-live="polite"></div>
 

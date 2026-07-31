@@ -91,7 +91,7 @@ const RAYON_NAVETTE = 0.024
 const RAYON_ACETYL = 0.017
 const RAYON_JETON = 0.019
 
-// ── Durées d'écran, à l'accéléré ×5 ─────────────────────────────────────────
+// ── Durées d'écran, au ralenti ×5 ───────────────────────────────────────────
 
 /** La porte : activation, échange contre la carnitine, passage, restitution du CoA. */
 const T_ACTIVATION_FIN = 0.8
@@ -1138,7 +1138,7 @@ export function creerBetaOxydation(): Mecanisme[] {
       cle: 'beta-oxydation',
       nom: 'Bêta-oxydation des acides gras',
       siege: 'Matrice mitochondriale',
-      facteur: 'accéléré ×5',
+      facteur: 'ralenti ×5',
       justificationFacteur:
         "Les quatre enzymes de la spirale tournent une dizaine de fois par seconde : un tour complet, " +
         "diffusions comprises, prend environ un tiers de seconde, soit 1,8 s à l'écran. Les sept tours " +
@@ -1151,7 +1151,8 @@ export function creerBetaOxydation(): Mecanisme[] {
         "avant de trouver CPT1, et c'est justement pour cela que la porte est le point de contrôle. " +
         "L'agitation thermique, elle, est RALENTIE d'environ ×10 000 — à cette échelle une molécule " +
         "traverserait le champ en une fraction de milliseconde. La densité est réduite d'un facteur " +
-        "cent : cette matrice contient des milliers de molécules par µm³. Enfin le FAD de l'acyl-CoA " +
+        "cent : à 500 g de protéines par litre, cette matrice contient des MILLIONS de molécules par " +
+        "µm³. Enfin le FAD de l'acyl-CoA " +
         "déshydrogénase est en réalité un cofacteur PROSTHÉTIQUE, lié à demeure : ses électrons partent " +
         "par la flavoprotéine ETF, pas la molécule. On le dessine en navette pour que le trajet de " +
         "l'énergie se voie. Sont absents la lipase qui libère l'acide gras, l'albumine qui le transporte " +

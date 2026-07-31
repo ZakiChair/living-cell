@@ -967,10 +967,13 @@ export function creerTranscription(): Mecanisme[] {
       siege: 'Noyau',
       facteur: 'ralenti ×20',
       justificationFacteur:
-        "L'ARN polymérase II avance à 60 nucléotides par seconde en médiane chez l'humain, " +
-        "soit 17 ms par nucléotide : à l'écran chaque nucléotide prend 0,33 s, et un tour " +
-        "d'hélice de 10,5 paires de bases 3,5 s. Même facteur que la traduction, pour que " +
-        'les deux vitesses se comparent directement.',
+        "L'ARN polymérase II avance ici à 60 nucléotides par seconde, soit 17 ms par " +
+        "nucléotide : à l'écran chaque nucléotide prend 0,33 s, et un tour d'hélice de " +
+        '10,5 paires de bases 3,5 s. Même facteur que la traduction, pour que les deux ' +
+        'vitesses se comparent directement. Ces 60 nt/s font 3,6 kb/min : la vitesse ' +
+        "mesurée in vivo va de 1 à 6 kb/min selon le gène, et la fiche de l'épissage " +
+        "prend 2 kb/min, l'autre bout de la même fourchette. Ce n'est pas une " +
+        "contradiction, c'est une dispersion réelle.",
       ellision:
         "Le gène montré ne fait que 500 pb : un gène humain en fait dix à cent mille, et " +
         "la polymérase mettrait plus de vingt minutes d'écran à en parcourir quatre mille. " +

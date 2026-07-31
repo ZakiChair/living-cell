@@ -29,7 +29,37 @@ const INTERMEMBRANAIRE = 1
 
 const NB_ELECTRONS = 14
 const NB_PROTONS = 120
-const NB_ATP = 26
+
+/** Un tour de rotor à l'écran, en secondes. */
+const DUREE_TOUR = 1.5
+
+/**
+ * La stœchiométrie commande le débit, et non l'inverse.
+ *
+ * La tête F1 a trois sites catalytiques et fabrique un ATP par tiers de tour :
+ * trois par tour complet, donc deux par seconde d'écran. C'est le seul chiffre
+ * choisi ici ; le nombre de molécules en vol s'en déduit.
+ *
+ * Le compte précédent était faux d'un facteur trois — vingt-six molécules à
+ * 0,24 tour par seconde faisaient 9,4 ATP par tour là où la fiche en annonçait
+ * trois. Écrire le débit et laisser l'effectif suivre rend l'écart impossible :
+ * un réglage visuel ne peut plus déplacer la stœchiométrie en silence.
+ */
+const ATP_PAR_TOUR = 3
+const ATP_PAR_SECONDE = ATP_PAR_TOUR / DUREE_TOUR
+/** Huit en vol, chacun visible quatre secondes : le débit tombe juste. */
+const NB_ATP = 8
+const VITESSE_ATP = ATP_PAR_SECONDE / NB_ATP
+
+/**
+ * L'eau suit la même règle.
+ *
+ * Un NADH cède deux électrons, qui réduisent un demi-O₂ en une molécule d'eau,
+ * et rapportent environ 2,5 ATP. Il naît donc une eau pour 2,5 ATP.
+ */
+const EAU_PAR_SECONDE = ATP_PAR_SECONDE / 2.5
+const NB_EAU = 4
+const VITESSE_EAU = EAU_PAR_SECONDE / NB_EAU
 
 /** Teintes tenues dans tout le métabolisme. */
 const TEINTE_ELECTRON = 0x56b4e9
@@ -215,7 +245,7 @@ export function creerRespiration(): Mecanisme[] {
   const eau = new THREE.InstancedMesh(
     new THREE.IcosahedronGeometry(0.012, 0),
     materiauOrganite(TEINTE_EAU),
-    10,
+    NB_EAU,
   )
   eau.frustumCulled = false
   groupe.add(eau)
@@ -245,11 +275,8 @@ export function creerRespiration(): Mecanisme[] {
     derveAtp[i * 2 + 1] = (alea() - 0.5) * 0.36
   }
 
-  const phaseEau = new Float32Array(10)
-  for (let i = 0; i < 10; i++) phaseEau[i] = alea()
-
-  /** Un tour de rotor à l'écran, en secondes. */
-  const DUREE_TOUR = 1.5
+  const phaseEau = new Float32Array(NB_EAU)
+  for (let i = 0; i < NB_EAU; i++) phaseEau[i] = alea()
 
   const animer = (temps: number): void => {
     // ── Le rotor tourne, et c'est le cœur de la démonstration ─────────────
@@ -331,7 +358,7 @@ export function creerRespiration(): Mecanisme[] {
 
     // ── L'ATP sort de la tête F1 et diffuse dans la matrice ───────────────
     for (let i = 0; i < NB_ATP; i++) {
-      const t = (temps * 0.24 + phaseAtp[i]!) % 1
+      const t = (temps * VITESSE_ATP + phaseAtp[i]!) % 1
       // Un ATP naît à chaque tiers de tour : trois par tour complet.
       const naissance = Math.min(1, t * 8)
       _position.set(
@@ -346,8 +373,8 @@ export function creerRespiration(): Mecanisme[] {
     atp.instanceMatrix.needsUpdate = true
 
     // ── L'eau produite au complexe IV, là où l'oxygène accepte les électrons ─
-    for (let i = 0; i < 10; i++) {
-      const t = (temps * 0.24 + phaseEau[i]!) % 1
+    for (let i = 0; i < NB_EAU; i++) {
+      const t = (temps * VITESSE_EAU + phaseEau[i]!) % 1
       _position.set(
         POSTES.complexeIV + (phaseEau[i]! - 0.5) * 0.2 * t,
         MATRICE * (0.12 + t * 0.34),
@@ -377,6 +404,13 @@ export function creerRespiration(): Mecanisme[] {
         'portion de crête représentée fait 160 nm, un complexe I en fait 20, et il ' +
         "faut donc descendre à cette échelle pour les voir — c'est ce que fait la " +
         'caméra, et la barre en bas à droite dit où on en est.',
+      ellision:
+        "Le débit d'ATP est juste — trois par tour, deux par seconde d'écran — mais les EFFECTIFS " +
+        "sont échantillonnés : huit ATP et quatre molécules d'eau en vol à la fois, là où une crête " +
+        "réelle en libère un flot continu. Les quatorze électrons et les cent vingt protons sont de " +
+        "même des représentants, pas un inventaire. Une seule crête est montrée sur les quelques " +
+        "dizaines d'une mitochondrie, et les complexes y sont espacés régulièrement alors qu'ils " +
+        "sont en réalité rassemblés en supercomplexes mobiles.",
       description:
         "La chaîne ne fabrique pas d'ATP : elle pompe des protons. Les électrons " +
         "arrivés du NADH descendent une pente de potentiel rédox, de −320 mV jusqu'à " +

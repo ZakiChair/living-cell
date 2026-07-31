@@ -124,6 +124,42 @@ function mettreEnAvant(choisi: Mecanisme | null): void {
   }
 }
 
+/**
+ * Dernière position monde visée, pour mesurer la dérive d'une image à l'autre.
+ *
+ * Viser l'ancre une seule fois au moment du clic ne suffit pas : la scène
+ * continue de tourner sur elle-même, et la caméra reste où elle est. À 5,5 µm
+ * de l'axe, la dérive tangentielle est de 304 nm/s ; en vue rapprochée le champ
+ * fait 92 nm de haut. Le mécanisme quitte donc le cadre en 0,30 s, alors que
+ * l'amortissement d'OrbitControls met deux secondes à y amener la caméra —
+ * autrement dit, il en était sorti avant qu'elle n'arrive.
+ */
+const cibleSuivie = new THREE.Vector3()
+const deriveTemp = new THREE.Vector3()
+
+/** Position monde de l'ancre d'un mécanisme, à l'instant présent. */
+function cibleMonde(m: Mecanisme, sortie: THREE.Vector3): THREE.Vector3 {
+  vue.scene.updateMatrixWorld(true)
+  return sortie.copy(m.ancre).applyMatrix4(vue.scene.matrixWorld)
+}
+
+/**
+ * Fait suivre à la caméra la dérive du mécanisme choisi.
+ *
+ * On applique à la caméra le MÊME déplacement qu'à la cible, et non une
+ * position calculée : l'écart caméra ↔ cible reste donc intact, et l'utilisateur
+ * garde son orbite, son zoom et son angle de vue. Une caméra rigidement
+ * réattachée à chaque image les lui reprendrait.
+ */
+function suivreLeMecanisme(): void {
+  if (!mecanismeChoisi) return
+  cibleMonde(mecanismeChoisi, deriveTemp).sub(cibleSuivie)
+  if (deriveTemp.lengthSq() === 0) return
+  cibleSuivie.add(deriveTemp)
+  vue.controles.target.add(deriveTemp)
+  vue.camera.position.add(deriveTemp)
+}
+
 function allerAuMecanisme(m: Mecanisme): void {
   // Recliquer le mécanisme déjà choisi revient à la vue d'ensemble.
   if (mecanismeChoisi?.cle === m.cle) {
@@ -133,16 +169,12 @@ function allerAuMecanisme(m: Mecanisme): void {
     return
   }
 
-  // L'ancre est donnée en coordonnées de la scène, mais la scène tourne sur
-  // elle-même : il faut la passer en coordonnées monde, sinon la caméra vise un
-  // point que le mécanisme a quitté depuis longtemps.
-  vue.scene.updateMatrixWorld(true)
-  const cible = m.ancre.clone().applyMatrix4(vue.scene.matrixWorld)
+  cibleMonde(m, cibleSuivie)
 
   const distance = (m.rayonCadrage * 1.6) / Math.tan((vue.camera.fov * Math.PI) / 360)
   const recul = new THREE.Vector3(0.5, 0.36, 0.79).normalize().multiplyScalar(distance)
-  vue.controles.target.copy(cible)
-  vue.camera.position.copy(cible).add(recul)
+  vue.controles.target.copy(cibleSuivie)
+  vue.camera.position.copy(cibleSuivie).add(recul)
 
   // De près, l'écorché ne ferait que retirer de la matière sans rien révéler.
   curseurCoupe.value = '100'
@@ -282,12 +314,36 @@ function ouvrirFiche(organite: Organite): void {
 
 fiche.querySelector('.fermer')!.addEventListener('click', () => fiche.classList.remove('ouverte'))
 
+/**
+ * Le survol est GROUPÉ, pas traité au fil des événements.
+ *
+ * Une souris émet bien plus de sorties que l'écran n'affiche d'images : lancer
+ * un rayon à chacune revenait à en jeter la majorité après les avoir payées.
+ * On retient donc la dernière position et on ne teste qu'une fois par image.
+ * Avec la liste blanche de `scene.ts`, c'est ce qui ramène le geste que la page
+ * demande en en-tête sous le budget d'une image.
+ */
+let pointeurX = 0
+let pointeurY = 0
+let survolARecalculer = false
+
 window.addEventListener('pointermove', (e) => {
-  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux')) {
+  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux, #atelier')) {
     survol.classList.remove('visible')
+    survolARecalculer = false
+    sousCurseur = null
     return
   }
-  const trouve = organiteSous(vue, e.clientX, e.clientY)
+  pointeurX = e.clientX
+  pointeurY = e.clientY
+  survolARecalculer = true
+})
+
+function majSurvol(): void {
+  if (!survolARecalculer) return
+  survolARecalculer = false
+
+  const trouve = organiteSous(vue, pointeurX, pointeurY)
   sousCurseur = trouve
   if (!trouve) {
     survol.classList.remove('visible')
@@ -301,15 +357,19 @@ window.addEventListener('pointermove', (e) => {
   role.textContent = trouve.role
   survol.replaceChildren(nom, role)
   // On décale l'étiquette pour qu'elle ne masque jamais ce qu'elle nomme.
-  const x = Math.min(e.clientX + 16, window.innerWidth - survol.offsetWidth - 12)
-  const y = Math.min(e.clientY + 16, window.innerHeight - survol.offsetHeight - 12)
+  const x = Math.min(pointeurX + 16, window.innerWidth - survol.offsetWidth - 12)
+  const y = Math.min(pointeurY + 16, window.innerHeight - survol.offsetHeight - 12)
   survol.style.left = `${x}px`
   survol.style.top = `${y}px`
   survol.classList.add('visible')
-})
+}
 
 window.addEventListener('click', (e) => {
-  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux')) return
+  if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux, #atelier')) return
+  // Le survol n'est calculé qu'une fois par image : un clic qui suit
+  // immédiatement un déplacement doit donc réclamer son propre calcul, sinon
+  // il ouvrirait la fiche de l'organite précédent.
+  if (survolARecalculer) majSurvol()
   if (sousCurseur) ouvrirFiche(sousCurseur)
 })
 
@@ -452,10 +512,17 @@ function boucle(): void {
   }
 
   tempsVie += dt
-  for (const f of flux) f.animer(tempsVie)
-  for (const m of mecanismes) m.animer(tempsVie)
+  // On n'anime que ce qui se voit. `mettreEnAvant` masque quinze mécanismes sur
+  // seize dès qu'on en choisit un ; les animer quand même dépensait du budget
+  // d'image exactement là où il manque — en vue rapprochée.
+  for (const f of flux) if (f.objet.visible) f.animer(tempsVie)
+  for (const m of mecanismes) if (m.objet.visible) m.animer(tempsVie)
 
+  // Avant `controles.update()` : la cible doit être à jour quand l'amortissement
+  // calcule le déplacement de cette image.
+  suivreLeMecanisme()
   vue.controles.update()
+  majSurvol()
   majEchelle()
   vue.renderer.render(vue.scene, vue.camera)
 }

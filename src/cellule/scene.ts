@@ -10,7 +10,28 @@ export interface Vue {
   organites: Organite[]
   /** Correspondance objet 3D → organite, pour retrouver la fiche au survol. */
   proprietaire: Map<THREE.Object3D, Organite>
+  /**
+   * Les seuls maillages que le rayon de survol teste.
+   *
+   * Le raycaster de Three.js n'a aucune accélération spatiale sur les
+   * `InstancedMesh` : il les parcourt instance par instance. Lancer un rayon sur
+   * toute la scène coûtait 9,7 ms par mouvement de souris, soit davantage qu'une
+   * image entière à 120 par seconde. On tient donc une liste blanche, dressée à
+   * la pose, d'où les grands amas sont exclus.
+   */
+  designables: THREE.Object3D[]
 }
+
+/**
+ * Au-delà de ce nombre d'instances, un amas n'est plus désignable.
+ *
+ * Ce n'est pas qu'un compromis de vitesse : un grain de cytosol parmi soixante
+ * mille n'a pas d'identité propre, et l'étiquette qu'il ouvrirait serait celle
+ * de la famille entière — que la légende donne déjà. `encombrement.ts` avait
+ * d'ailleurs déjà pris cette décision pour ses propres amas ; on la généralise
+ * au lieu de la laisser à chaque module.
+ */
+const SEUIL_INSTANCES_DESIGNABLES = 400
 
 export function creerVue(conteneur: HTMLElement): Vue {
   const renderer = new THREE.WebGLRenderer({
@@ -24,6 +45,18 @@ export function creerVue(conteneur: HTMLElement): Vue {
   renderer.setSize(window.innerWidth, window.innerHeight)
   // Sans ça, les plans de coupe des matériaux sont ignorés et l'écorché n'existe pas.
   renderer.localClippingEnabled = true
+  // La scène EST la totalité du contenu de la page : sans rôle ni description,
+  // un lecteur d'écran n'en reçoit rien du tout. Ce n'est pas une alternative
+  // complète — il n'en existe pas — mais l'annoncer vaut mieux que le silence,
+  // et la légende comme la liste des mécanismes, elles, sont du texte lisible.
+  renderer.domElement.setAttribute('role', 'img')
+  renderer.domElement.setAttribute(
+    'aria-label',
+    "Écorché en trois dimensions d'une cellule eucaryote animale : noyau, " +
+      'mitochondries, réticulum endoplasmique, appareil de Golgi, vésicules et ' +
+      'cytosquelette, à leurs proportions réelles. La légende et la liste des ' +
+      'mécanismes, à gauche, donnent le même contenu en texte.',
+  )
   conteneur.appendChild(renderer.domElement)
 
   renderer.domElement.addEventListener('webglcontextlost', (e) => {
@@ -78,7 +111,15 @@ export function creerVue(conteneur: HTMLElement): Vue {
     renderer.setSize(window.innerWidth, window.innerHeight)
   })
 
-  return { renderer, scene, camera, controles, organites: [], proprietaire: new Map() }
+  return {
+    renderer,
+    scene,
+    camera,
+    controles,
+    organites: [],
+    proprietaire: new Map(),
+    designables: [],
+  }
 }
 
 /** Ajoute un organite à la scène et l'inscrit pour le survol. */
@@ -87,7 +128,12 @@ export function poser(vue: Vue, organites: Organite[]): void {
     vue.scene.add(organite.objet)
     vue.organites.push(organite)
     organite.objet.traverse((noeud) => {
-      if ((noeud as THREE.Mesh).isMesh) vue.proprietaire.set(noeud, organite)
+      const maillage = noeud as THREE.Mesh
+      if (!maillage.isMesh) return
+      vue.proprietaire.set(noeud, organite)
+      const amas = noeud as THREE.InstancedMesh
+      if (amas.isInstancedMesh && amas.count > SEUIL_INSTANCES_DESIGNABLES) return
+      vue.designables.push(noeud)
     })
   }
 }
@@ -111,7 +157,9 @@ const pointeur = new THREE.Vector2()
 export function organiteSous(vue: Vue, x: number, y: number): Organite | null {
   pointeur.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1)
   rayon.setFromCamera(pointeur, vue.camera)
-  const touches = rayon.intersectObjects(vue.scene.children, true)
+  // Liste blanche et non récursif : les enfants sont déjà tous dans la liste,
+  // et `true` les ferait tester deux fois.
+  const touches = rayon.intersectObjects(vue.designables, false)
   for (const touche of touches) {
     // Un point retiré par l'écorché est visuellement absent, mais le raycaster
     // l'atteindrait quand même : on refait donc le test du plan de coupe.

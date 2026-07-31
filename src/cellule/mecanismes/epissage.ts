@@ -535,7 +535,9 @@ export function creerEpissage(): Mecanisme[] {
       facteur: 'accéléré ×50',
       justificationFacteur:
         "L'épissage d'un intron prend 5 à 10 minutes ; à ×50 il tient en 9 secondes. " +
-        'La transcription des 16 737 pb du transcrit, 8,4 minutes à 2 kb/min, en occupe 10.',
+        'La transcription des 16 737 pb du transcrit, 8,4 minutes à 2 kb/min, en occupe 10. ' +
+        "Ces 2 kb/min sont le bas de la fourchette mesurée in vivo, 1 à 6 kb/min ; la fiche " +
+        'de la transcription prend 60 nt/s, soit 3,6 kb/min, plus haut dans la même fourchette.',
       ellision:
         'Intron raccourci ×3,4 : 5 419 pb feraient 1,63 µm, il en est dessiné 0,48. ' +
         "L'exon garde sa longueur vraie (120 pb, 0,036 µm). " +

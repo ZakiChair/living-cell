@@ -697,9 +697,9 @@ export function creerExportNucleaire(): Mecanisme[] {
         "la traversée dure deux secondes, juste au-dessus du seuil où l'œil décroche. Le " +
         "mRNP, lui, met 50 à 350 ms, soit dix à soixante-dix secondes à l'écran — c'est " +
         "pourquoi il reste si longtemps en travers du canal alors que les navettes le " +
-        "doublent. Attention : c'est un RALENTI, à l'inverse du trafic vésiculaire qui est " +
-        "accéléré ×100. Les deux plans sont dans la même cellule et n'ont pas la même " +
-        "horloge : d'où le badge, propre à chaque mécanisme.",
+        "doublent. Attention : c'est un RALENTI, à l'inverse de l'endocytose et de " +
+        "l'exocytose, dont le badge annonce un accéléré. Les plans sont dans la même " +
+        "cellule et n'ont pas la même horloge : d'où le badge, propre à chaque mécanisme.",
       ellision:
         "Un noyau porte des milliers de pores et chacun laisse passer plusieurs centaines " +
         "de molécules par seconde ; on en montre un seul, et une trentaine de molécules. " +

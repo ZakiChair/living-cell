@@ -150,7 +150,7 @@ export function creerMembrane(): Organite[] {
       role: 'Ferme la cellule et trie tout ce qui entre et sort.',
       description:
         "La membrane plasmique n'est pas une paroi mais un film : deux couches de " +
-        'lipides dos à dos, cinq nanomètres en tout, mille deux cents fois plus ' +
+        'lipides dos à dos, cinq nanomètres en tout, quatre mille fois plus ' +
         'fin que la cellule est large. La moitié de sa masse est faite de ' +
         'protéines plantées de part en part — pompes, canaux, récepteurs — si ' +
         'nombreuses que la surface tient de la mosaïque plutôt que du ballon. ' +
