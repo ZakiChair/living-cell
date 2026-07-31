@@ -13,7 +13,13 @@ export interface Vue {
 }
 
 export function creerVue(conteneur: HTMLElement): Vue {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' })
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    powerPreference: 'high-performance',
+    // La scène couvre du nanomètre à la dizaine de micromètres. Un tampon de
+    // profondeur linéaire y ferait vibrer les surfaces lointaines.
+    logarithmicDepthBuffer: true,
+  })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.setSize(window.innerWidth, window.innerHeight)
   // Sans ça, les plans de coupe des matériaux sont ignorés et l'écorché n'existe pas.
@@ -34,7 +40,10 @@ export function creerVue(conteneur: HTMLElement): Vue {
   const camera = new THREE.PerspectiveCamera(
     42,
     window.innerWidth / window.innerHeight,
-    0.05,
+    // 2 nm de plan proche : sans ça, s'approcher d'une ATP synthase la
+    // trancherait. Le rapport près/loin atteint 10⁵, d'où le tampon de
+    // profondeur logarithmique activé sur le renderer.
+    0.002,
     200,
   )
   // Assez près pour que les organites soient lisibles, assez loin pour que la
@@ -45,7 +54,11 @@ export function creerVue(conteneur: HTMLElement): Vue {
   const controles = new OrbitControls(camera, renderer.domElement)
   controles.enableDamping = true
   controles.dampingFactor = 0.06
-  controles.minDistance = 1.2
+  // 5 nm : la cellule fait 20 µm et une ATP synthase 10 nm. Sans cette borne
+  // très basse, la caméra ne peut pas descendre à l'échelle où les mécanismes
+  // se passent réellement, et il faudrait les grossir pour les montrer — c'est
+  // exactement ce qu'on refuse de faire.
+  controles.minDistance = 0.005
   controles.maxDistance = 45
   controles.target.set(0, 0, 0)
 

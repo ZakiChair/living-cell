@@ -1,4 +1,5 @@
 import type { Mecanisme } from './contrat.js'
+import { mettreAEchelleReelle } from './echelleReelle.js'
 import { creerRespiration } from './respiration.js'
 import { creerTraductionReticulum } from './traductionReticulum.js'
 import { creerTranscription } from './transcription.js'
@@ -12,7 +13,6 @@ import { creerGlycolyse } from './glycolyse.js'
 import { creerKrebs } from './krebs.js'
 import { creerBetaOxydation } from './betaOxydation.js'
 import { creerFermentation } from './fermentation.js'
-import { creerBilanEnergetique } from './bilanEnergetique.js'
 
 /**
  * Tous les mécanismes de la cellule.
@@ -24,7 +24,7 @@ import { creerBilanEnergetique } from './bilanEnergetique.js'
  * choisit entre l'oxygène et la fermentation, les acides gras entrent par une
  * autre porte, tout converge sur le cycle de Krebs qui ne produit presque pas
  * d'ATP mais des transporteurs d'électrons, et ceux-ci finissent sur la chaîne
- * respiratoire qui fournit les neuf dixièmes du total. Le bilan ferme la boucle.
+ * respiratoire qui fournit les neuf dixièmes du total.
  *
  * Ensuite l'INFORMATION, dans le sens où elle circule : transcrire, épisser,
  * exporter, traduire. Puis ce qui bouge la matière : transporter, faire entrer
@@ -32,14 +32,16 @@ import { creerBilanEnergetique } from './bilanEnergetique.js'
  * d'une protéine.
  */
 export function creerMecanismes(): Mecanisme[] {
-  return [
+  // Tout passe par la remise à l'échelle réelle : plusieurs modules ont été
+  // construits agrandis, et c'est ce qui les faisait ressembler à des planches
+  // de manuel posées dans le cytoplasme plutôt qu'à la cellule elle-même.
+  return mettreAEchelleReelle([
     // Énergie
     ...creerGlycolyse(),
     ...creerFermentation(),
     ...creerBetaOxydation(),
     ...creerKrebs(),
     ...creerRespiration(),
-    ...creerBilanEnergetique(),
     // Information
     ...creerTranscription(),
     ...creerEpissage(),
@@ -50,5 +52,5 @@ export function creerMecanismes(): Mecanisme[] {
     ...creerEndoExocytose(),
     ...creerPompeSodiumPotassium(),
     ...creerProteasome(),
-  ]
+  ])
 }

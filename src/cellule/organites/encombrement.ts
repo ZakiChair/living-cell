@@ -269,39 +269,6 @@ function semer(
   })
 }
 
-/**
- * Les douze arêtes du cube, en un seul maillage.
- *
- * Un seul maillage et non des instances : le curseur de densité coupe le compte
- * de tout InstancedMesh qu'il trouve sous la boîte, et le liseré perdrait ses
- * arêtes une à une. Or c'est justement lui qui dit que la densité vraie est
- * déclarée sur une région, pas sur la cellule entière.
- */
-function creerLisere(): THREE.Mesh {
-  const arete = new THREE.CylinderGeometry(RAYON_LISERE, RAYON_LISERE, ARETE_BOITE, 6, 1, true)
-  const morceaux: THREE.BufferGeometry[] = []
-
-  for (let k = 0; k < 3; k++) {
-    const axe = AXES[k]!
-    const lateral1 = AXES[(k + 1) % 3]!
-    const lateral2 = AXES[(k + 2) % 3]!
-    for (const signe1 of [-1, 1]) {
-      for (const signe2 of [-1, 1]) {
-        _position
-          .copy(lateral1)
-          .multiplyScalar(signe1 * DEMI_BOITE)
-          .addScaledVector(lateral2, signe2 * DEMI_BOITE)
-        _quaternion.setFromUnitVectors(AXE_Y, axe)
-        _matrice.compose(_position, _quaternion, ECHELLE_UNITE)
-        morceaux.push(arete.clone().applyMatrix4(_matrice))
-      }
-    }
-  }
-
-  const lisere = new THREE.Mesh(fusionner(morceaux), materiauOrganite(TEINTES.cytosquelette))
-  lisere.name = 'lisere-boite'
-  return lisere
-}
 
 export function creerEncombrement(): Organite[] {
   const alea = creerAlea(GRAINE)
@@ -312,7 +279,10 @@ export function creerEncombrement(): Organite[] {
   boite.name = 'boite-de-verite'
   boite.position.copy(CENTRE_BOITE)
   boite.add(...semer(familles, INSTANCES_BOITE, alea, placerDansBoite))
-  boite.add(creerLisere())
+  // Le liseré de boîte a été retiré : un cube filaire flottant dans le cytoplasme
+  // ne ressemble à rien de biologique, et cette page doit montrer la cellule, pas
+  // un schéma d'elle. Ce que le liseré déclarait — l'endroit où la densité est
+  // exacte — est désormais dit dans la fiche et nulle part ailleurs.
 
   // Cible de survol de la région : un cube que le raycaster voit et que le
   // rendu ignore. Sans lui la boîte ne serait désignable que par ses arêtes de

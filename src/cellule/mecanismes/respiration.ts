@@ -11,11 +11,9 @@ import type { Mecanisme } from './contrat.js'
  * c'est le retour de ces protons qui fait tourner un rotor, lequel fabrique
  * l'ATP. L'énergie transite par un gradient, pas par une molécule.
  *
- * La vue est un gros plan sur une crête, à l'échelle du complexe protéique. Les
- * objets sont dessinés à leur taille relative correcte les uns par rapport aux
- * autres, mais l'ensemble est agrandi d'environ trente fois par rapport au reste
- * de la cellule : un complexe I fait 20 nm et serait invisible autrement. C'est
- * un choix de représentation, déclaré dans la fiche.
+ * La vue est un gros plan sur une crête, à l'échelle du complexe protéique, et
+ * à la taille vraie : la portion représentée fait 160 nm, un complexe I en fait
+ * 20. Rien n'est grossi — c'est la caméra qui descend à cette échelle.
  */
 
 const CENTRE = new THREE.Vector3(5.4, 2.6, -1.2)
@@ -375,10 +373,10 @@ export function creerRespiration(): Mecanisme[] {
       facteur: 'ralenti ×200',
       justificationFacteur:
         "L'ATP synthase tourne à environ 130 tours par seconde : un tour prend 8 ms, " +
-        "ce qui devient 1,5 s à l'écran et se suit à l'œil. Les complexes et les " +
-        'molécules sont dessinés à leur taille relative correcte, mais la scène est ' +
-        "agrandie d'environ trente fois par rapport au reste de la cellule — un " +
-        'complexe I fait 20 nm et serait invisible autrement.',
+        "ce qui devient 1,5 s à l'écran et se suit à l'œil. Rien n'est agrandi : la " +
+        'portion de crête représentée fait 160 nm, un complexe I en fait 20, et il ' +
+        "faut donc descendre à cette échelle pour les voir — c'est ce que fait la " +
+        'caméra, et la barre en bas à droite dit où on en est.',
       description:
         "La chaîne ne fabrique pas d'ATP : elle pompe des protons. Les électrons " +
         "arrivés du NADH descendent une pente de potentiel rédox, de −320 mV jusqu'à " +

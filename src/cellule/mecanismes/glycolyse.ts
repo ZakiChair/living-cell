@@ -1044,10 +1044,10 @@ export function creerGlycolyse(): Mecanisme[] {
         'récupération rend quatre ATP et deux NADH, soit un bilan NET de +2 ATP. Ces quatre ATP ne ' +
         "sortent d'aucun moteur rotatif : le phosphate saute directement d'un intermédiaire très " +
         "énergétique sur une ADP de passage — c'est la phosphorylation au niveau du substrat, l'exact " +
-        "contraire de l'ATP synthase, qui exige une membrane et un gradient de protons. Choix de " +
-        'représentation et non échelle : les dix enzymes sont grossies une quinzaine de fois et les ' +
-        'molécules bien davantage (un glucose fait 1 nm), et la chaîne est rangée en arc alors que ces ' +
-        'enzymes sont en réalité dispersées dans le cytosol — le substrat les trouve par collision, et ' +
+        "contraire de l'ATP synthase, qui exige une membrane et un gradient de protons. Les " +
+        'tailles sont vraies : les dix enzymes tiennent dans 90 nm et un glucose fait 1 nm. Seule ' +
+        'la disposition est une convention — la chaîne est rangée en arc alors que ces enzymes sont ' +
+        'en réalité dispersées dans le cytosol ; le substrat les trouve par collision, et ' +
         "l'on montre aussi les rencontres qui ne donnent rien. Les deux pyruvates sortent du cadre vers " +
         "la mitochondrie s'il y a de l'oxygène, et vers la fermentation s'il n'y en a pas ; les deux " +
         'NADH, eux, emportent leurs électrons vers la chaîne respiratoire, et ce sont eux qui relient ' +
