@@ -189,12 +189,6 @@ export function creerMitochondries(): Organite[] {
         "l'ATP assemblée. Plus une cellule travaille, plus ses crêtes sont serrées — " +
         'un muscle cardiaque en est bourré. Elle garde un ADN circulaire à elle, ' +
         "vestige de la bactérie qu'elle a été.",
-      chiffres: [
-        { valeur: '1 à 2 µm', quoi: "de long, la taille d'une bactérie" },
-        { valeur: 'quelques centaines à plus de 2 000', quoi: 'par cellule, selon le tissu' },
-        { valeur: '~90 %', quoi: "de l'ATP de la cellule produite ici" },
-        { valeur: 'ADN circulaire', quoi: "propre à l'organite, hérité de la mère" },
-      ],
       objet: groupe,
       ancre,
       couleur: TEINTES.mitochondrie,

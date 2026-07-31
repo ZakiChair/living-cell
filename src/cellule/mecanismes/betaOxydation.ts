@@ -1165,15 +1165,6 @@ export function creerBetaOxydation(): Mecanisme[] {
         "perd DEUX carbones à chaque tour : le palmitate, seize carbones, fait sept tours et donne huit " +
         "acétyl-CoA, avec sept FADH₂ et sept NADH. La mitochondrie est à l'échelle vraie, les molécules " +
         "sont dessinées environ deux cents fois trop grosses pour qu'on puisse compter leurs carbones.",
-      chiffres: [
-        { valeur: '16 C', quoi: 'le palmitate : seize carbones, la graisse la plus courante' },
-        { valeur: '7 tours', quoi: 'sept coupures pour huit acétyl-CoA' },
-        { valeur: '1 + 1 + 1', quoi: 'par tour : 1 FADH₂, 1 NADH, 1 acétyl-CoA' },
-        { valeur: '~106 ATP', quoi: 'par palmitate, contre 30 à 32 pour un glucose' },
-        { valeur: '9 kcal/g', quoi: 'pour un lipide, contre 4 pour un glucide' },
-        { valeur: '2 ATP', quoi: "le seul coût : l'activation en acyl-CoA, avant la porte" },
-        { valeur: 'CPT1', quoi: "la navette carnitine, étape limitante et point de contrôle" },
-      ],
       objet: groupe,
       ancre: ANCRE.clone(),
       // Mesuré : la traîne de la chaîne va jusqu'à 1,02 pendant ses transits

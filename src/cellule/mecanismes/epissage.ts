@@ -551,15 +551,6 @@ export function creerEpissage(): Mecanisme[] {
         "à l'adénosine du branchement, les exons sont soudés, et le lasso est débranché " +
         "puis digéré. L'épissage du premier intron commence — et forme son lasso — bien " +
         'avant que la polymérase ait fini de transcrire le gène.',
-      chiffres: [
-        { valeur: '120 pb', quoi: "exon médian humain" },
-        { valeur: '5 419 pb', quoi: 'intron moyen, soit 45 fois un exon' },
-        { valeur: '8,8 / 7,8', quoi: 'exons et introns par gène humain' },
-        { valeur: '5', quoi: 'snRNP : U1, U2, U4, U5, U6' },
-        { valeur: '5 à 10 min', quoi: 'par intron épissé' },
-        { valeur: 'largement', quoi: 'co-transcriptionnel : on épisse avant la fin' },
-        { valeur: '~11×', quoi: 'raccourcissement du transcrit une fois mûr' },
-      ],
       objet: groupe,
       ancre: groupe.position.clone(),
       rayonCadrage: 0.8,

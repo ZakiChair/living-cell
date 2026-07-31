@@ -1054,30 +1054,6 @@ export function creerGlycolyse(): Mecanisme[] {
         'cette voie à toutes les autres. La réglette du haut compte le tour en cours : deux ATP ' +
         'dépensés en anneaux creux, quatre produits, deux NADH, deux pyruvates, et en bas le solde net ' +
         'de deux ATP.',
-      chiffres: [
-        { valeur: '+2 ATP', quoi: 'bilan net par glucose : quatre produits moins deux investis' },
-        { valeur: '+2 NADH', quoi: 'transporteurs d\'électrons chargés, produits par GAPDH' },
-        {
-          valeur: '2 pyruvates',
-          quoi: 'de trois carbones : les six carbones du glucose sont tous conservés, la glycolyse ne dégage aucun CO₂',
-        },
-        { valeur: '10', quoi: 'étapes enzymatiques, toutes dans le cytosol' },
-        {
-          valeur: '0 O₂',
-          quoi: 'ni oxygène ni organite : la seule voie énergétique qui ne demande ni l\'un ni l\'autre',
-        },
-        {
-          valeur: 'PFK',
-          quoi: 'la phosphofructokinase est l\'étape limitante et le point de contrôle de toute la voie',
-        },
-        { valeur: '~5 %', quoi: 'de l\'énergie du glucose : 2 ATP nets sur la trentaine du bilan complet' },
-        {
-          valeur: '~10⁴ s⁻¹',
-          quoi: 'triose-phosphate isomérase : une molécule d\'enzyme en traite près de dix mille par seconde, à la limite de ce que permet la rencontre',
-        },
-        { valeur: '2,5 mmol/L/h', quoi: 'consommation de glucose d\'une hématie, qui vit uniquement de glycolyse' },
-        { valeur: '~3,5 milliards d\'années', quoi: 'voie présente chez presque tous les êtres vivants connus' },
-      ],
       objet: groupe,
       ancre,
       rayonCadrage: 1.4,

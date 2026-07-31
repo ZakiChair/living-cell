@@ -237,12 +237,6 @@ export function creerNoyau(): Organite[] {
         "où les gènes se lisent, compacté ailleurs. La masse dense qu'on aperçoit " +
         "dedans est le nucléole, l'atelier où les ribosomes sont assemblés avant de " +
         'sortir travailler dans le cytoplasme.',
-      chiffres: [
-        { valeur: '6 µm', quoi: 'de diamètre, soit près du tiers de la cellule' },
-        { valeur: '2 000 à 5 000', quoi: 'pores nucléaires par noyau, selon le type de cellule' },
-        { valeur: '2 m', quoi: "d'ADN replié dans ces 6 micromètres" },
-        { valeur: 'des centaines', quoi: 'molécules par seconde et par pore, dans les deux sens' },
-      ],
       objet: groupe,
       // Ancre en coordonnées monde, posée au-dessus du noyau et du côté conservé
       // par la coupe pour que le trait d'étiquette ne parte pas d'un vide.

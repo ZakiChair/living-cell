@@ -292,16 +292,6 @@ export function creerChromatineDense(): Organite[] {
         "l'euchromatine relâchée laisse lire les gènes. Enfin chaque chromosome " +
         'reste groupé dans son territoire au lieu de se disperser — ce sont les ' +
         'régions de teintes différentes.',
-      chiffres: [
-        { valeur: '11 nm', quoi: 'de diamètre pour un nucléosome, ADN compris' },
-        {
-          valeur: '147 paires de bases',
-          quoi: "enroulées 1,7 fois autour d'un octamère d'histones",
-        },
-        { valeur: '~30 millions', quoi: 'de nucléosomes dans un noyau humain' },
-        { valeur: '2 m', quoi: "d'ADN repliés dans 6 µm de noyau" },
-        { valeur: '46 territoires', quoi: 'un par chromosome ; aucun ne se promène' },
-      ],
       objet: nucleosomes,
       // Du côté conservé par l'écorché : sinon le trait d'étiquette part d'un vide.
       ancre: CENTRE_NOYAU.clone().add(new THREE.Vector3(0.6, 2.3, -1.6)),
@@ -320,12 +310,6 @@ export function creerChromatineDense(): Organite[] {
         'compactée ne se lit pas. Les grosses masses sombres sont des corps ' +
         "nucléaires : taches d'épissage et corps de Cajal, où les facteurs sont " +
         'stockés et remis en état entre deux usages.',
-      chiffres: [
-        { valeur: '20 à 40 nm', quoi: 'selon le complexe : polymérase, facteur, spliceosome' },
-        { valeur: 'des dizaines de milliers', quoi: "d'ARN polymérases II par noyau" },
-        { valeur: '1 à 4 kb/min', quoi: 'la vitesse de transcription de la polymérase II' },
-        { valeur: '20 à 50', quoi: "taches nucléaires par noyau, réserves d'épissage" },
-      ],
       objet: machinerie,
       ancre: CENTRE_NOYAU.clone().add(new THREE.Vector3(0.5, -2.5, -2.2)),
       couleur: TEINTES.reticulumLisse,

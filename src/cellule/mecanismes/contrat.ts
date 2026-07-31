@@ -38,8 +38,6 @@ export interface Mecanisme {
   ellision?: string
   /** Deux à quatre phrases sur ce qui se passe réellement. */
   description: string
-  /** Chiffres marquants, chacun avec son unité. */
-  chiffres: Array<{ valeur: string; quoi: string }>
   /** Le contenu 3D. */
   objet: THREE.Object3D
   /** Où poser la caméra pour observer : point visé et distance de recul. */

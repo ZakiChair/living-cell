@@ -821,16 +821,6 @@ export function creerTransportMoteur(): Mecanisme[] {
         "Le pas lui-même dure moins de 100 µs, contre une dizaine de millisecondes d'attente d'ATP : il est étiré au quart du cycle, sinon il tiendrait dans une seule image. L'ATP n'est pas dessinée — 1 nm de large, elle ferait moins d'un pixel. Le damier de tubuline n'est posé que sur 0,9 µm de rail : les 52 000 tubulines d'un tube entier coûteraient dix fois le budget. Enfin, le décrochage est arrangé deux fois : un moteur libre quitterait le cadre en un dixième de seconde d'écran, sa promenade est donc fortement ralentie ; et c'est la MÊME molécule qu'on voit revenir se poser plus loin, alors que dans la cellule celle qui lâche est perdue et c'en est une autre, parmi le millier qui traînent là, qui prend sa place.",
       description:
         "Vue rapprochée d'un tronçon de microtubule, à trois micromètres du centrosome ; les tubes sont ceux de cette démonstration, un peu plus épais que ceux du cytosquelette parce que les tubulines y sont dessinées en relief. Le rail n'est pas lisse : treize protofilaments de dimères α/β y forment un damier hélicoïdal, et c'est sur ce damier que les moteurs posent leurs pieds. La kinésine marche main sur main vers l'extrémité plus, à la périphérie, en tirant sa vésicule ; la dynéine, reconnaissable à ses anneaux AAA+ au bout de longues tiges, la croise en sens inverse vers le centre — c'est le trafic à double sens de l'axone. Aucun des deux ne sait où il va : la tête libre cherche son site en diffusant et manque son coup une fois sur trois, et après une centaine de pas le moteur lâche, part en promenade brownienne et se raccroche ailleurs par collision.",
-      chiffres: [
-        { valeur: '8 nm', quoi: 'longueur d’un pas, exactement un dimère de tubuline' },
-        { valeur: '≈ 100 pas/s', quoi: 'cadence PRODUCTIVE de la kinésine, soit 800 nm par seconde' },
-        { valeur: '1 sur 3', quoi: 'tentatives qui échouent : la tête libre cherche son site en diffusant' },
-        { valeur: '1 ATP', quoi: 'consommée par pas' },
-        { valeur: '≈ 100 pas', quoi: 'avant décrochage : 800 nm, pas la longueur du tube' },
-        { valeur: '6 pN', quoi: 'force qu’une kinésine peut tirer' },
-        { valeur: '13', quoi: 'protofilaments dans un microtubule de 25 nm de diamètre' },
-        { valeur: '+ et −', quoi: 'la kinésine va vers le plus, la dynéine vers le moins' },
-      ],
       objet: groupeTransport,
       ancre: ancreRail,
       rayonCadrage: 0.45,
@@ -848,13 +838,6 @@ export function creerTransportMoteur(): Mecanisme[] {
         "La FRÉQUENCE, elle, est comprimée : dans la cellule une catastrophe survient toutes les minutes ou deux, ici toutes les cinq secondes — parce que la fenêtre gravée ne fait que 0,38 µm et que le tube la remplit aussitôt. Le damier de tubuline n'est dessiné qu'autour de l'extrémité plus ; au-delà le tube est lisse. Le pool libre est réduit à 160 dimères là où la cellule en compte des dizaines de millions, leur diffusion est fortement ralentie — à l'échelle réelle ils traverseraient le cadre en un millième de seconde — et un seul est absorbé par image alors que cent quarante-six s'ajoutent chaque seconde. L'hydrolyse du GTP en GDP n'est pas figurée : le vert du capuchon devient gris quand la tubuline s'enfonce dans le réseau, et c'est tout.",
       description:
         "La même charpente, mais par son bout, à huit micromètres et demi du centre. Les dimères de tubuline libres — en vert, chargés de GTP — cognent contre l'extrémité plus au hasard : presque tous repartent, quelques-uns s'ajoutent, et le tube pousse par pas de 8 nm, un protofilament à la fois, ce qui lui donne un bout effiloché et jamais plat. Tant que la couronne de GTP tient au sommet, l'édifice tient ; dès qu'elle est perdue, les treize protofilaments s'écartent en cornes de bélier et le tube se défait près de dix fois plus vite qu'il n'a poussé. C'est l'instabilité dynamique : un microtubule ne se raccourcit pas, il s'effondre — puis repart.",
-      chiffres: [
-        { valeur: '≈ 1,8 µm/min', quoi: 'vitesse de croissance de l’extrémité plus' },
-        { valeur: '≈ 17 µm/min', quoi: 'vitesse d’effondrement, dix fois plus rapide' },
-        { valeur: '≈ 1/min', quoi: 'fréquence réelle des catastrophes — comprimée ici à une toutes les cinq secondes' },
-        { valeur: '8 nm', quoi: 'taille du dimère αβ ajouté à chaque fois' },
-        { valeur: '13', quoi: 'protofilaments qui s’écartent en cornes de bélier' },
-      ],
       objet: groupePointe,
       ancre: ancrePointe,
       rayonCadrage: 0.34,

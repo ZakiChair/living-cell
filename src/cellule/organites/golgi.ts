@@ -230,12 +230,6 @@ export function creerGolgi(): Organite[] {
         "trans sous forme de vésicules. À chaque étage, des enzymes différentes taillent et " +
         "complètent leurs chaînes de sucres : c'est la glycosylation. Le Golgi est le bureau de " +
         "tri de la cellule, il décide de la destination finale de chaque protéine.",
-      chiffres: [
-        { valeur: '4 à 8', quoi: 'citernes empilées dans un dictyosome' },
-        { valeur: '≈ 25 min', quoi: "séjour moyen d'une protéine dans la pile" },
-        { valeur: '60 à 100 nm', quoi: 'diamètre des vésicules de transport' },
-        { valeur: 'cis → trans', quoi: 'sens du tri et de la glycosylation' },
-      ],
       objet: groupe,
       // Au-dessus de la pile : les citernes atteignent 0,8 µm de rayon.
       ancre: CENTRE.clone().add(new THREE.Vector3(0.15, 1.05, 0)),

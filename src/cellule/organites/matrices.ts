@@ -285,12 +285,6 @@ function creerMatriceMitochondriale(): Organite {
       "nucléoïdes : la mitochondrie possède son propre ADN, circulaire comme celui " +
       "d'une bactérie, souvenir de l'organisme libre qu'elle a été. Cet ADN ne vient " +
       'que de la mère, ce qui en fait la trace la plus lisible des lignées humaines.',
-    chiffres: [
-      { valeur: 'cycle de Krebs', quoi: 'ses enzymes baignent librement dans la matrice' },
-      { valeur: '16 569', quoi: "paires de bases de l'ADN mitochondrial humain" },
-      { valeur: '37', quoi: 'gènes portés par cet ADN, contre ~20 000 dans le noyau' },
-      { valeur: '100 % maternel', quoi: 'cet ADN est hérité de la mère seule' },
-    ],
     objet: groupe,
     ancre,
     couleur: TEINTES.mitochondrieCrete,
@@ -353,12 +347,6 @@ function creerRibosomesLibres(): Organite {
       'sont libres : ils fabriquent les protéines qui resteront dans le cytosol, ' +
       'tandis que leurs jumeaux accrochés au réticulum produisent les protéines ' +
       'destinées à être exportées ou insérées dans une membrane.',
-    chiffres: [
-      { valeur: '25 à 30 nm', quoi: 'de diamètre : la plus petite machine de cette scène' },
-      { valeur: 'des millions', quoi: 'par cellule en croissance active' },
-      { valeur: '5 à 10 %', quoi: 'de la masse protéique totale de la cellule' },
-      { valeur: '2 sous-unités', quoi: "qui se referment sur l'ARN puis se séparent" },
-    ],
     objet: groupe,
     ancre: ANCRE_RIBOSOMES.clone(),
     couleur: TEINTES.ribosome,

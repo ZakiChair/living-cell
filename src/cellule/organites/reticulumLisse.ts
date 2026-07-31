@@ -184,12 +184,6 @@ export function creerReticulumLisse(): Organite[] {
       role: 'Fabrique les lipides et neutralise les toxiques.',
       description:
         "Le réticulum lisse prolonge le rugueux, mais sa membrane ne porte aucun ribosome : elle est nue, et le voisin grenu s'arrête net à la frontière. Au lieu de citernes aplaties, il forme un lacis de tubules ramifiés qui se rejoignent en carrefours renflés. Ses enzymes y assemblent les lipides des membranes et les hormones stéroïdes, et y dégradent alcool et médicaments. Il sert enfin de coffre à calcium, qu'il relâche dans le cytosol au moment voulu.",
-      chiffres: [
-        { valeur: '50 à 100 nm', quoi: 'diamètre des tubules' },
-        { valeur: 'lipides et stéroïdes', quoi: 'ce que ses enzymes synthétisent' },
-        { valeur: 'hépatocytes', quoi: 'cellules du foie, où la détoxication le rend énorme' },
-        { valeur: '× 10 000', quoi: 'calcium stocké, par rapport à la concentration du cytosol' },
-      ],
       objet: groupe,
       ancre,
       couleur: TEINTES.reticulumLisse,

@@ -191,12 +191,6 @@ function creerFamilleLysosomes(): Organite {
       "sont actives que là, si bien qu'une fuite ne digère pas la cellule. Le contenu " +
       "granuleux visible ici par transparence est ce matériel en cours de digestion — " +
       "c'est lui qui a valu à ces vésicules leur premier nom, corps denses.",
-    chiffres: [
-      { valeur: '0,1 à 1,2 µm', quoi: 'diamètre, très variable selon le contenu' },
-      { valeur: 'pH 4,5 à 5', quoi: 'acidité interne (cytosol : 7,2)' },
-      { valeur: '≈ 60', quoi: 'enzymes hydrolytiques différentes' },
-      { valeur: 'ATPase à protons', quoi: "pompe qui acidifie, alimentée par l'ATP" },
-    ],
     objet: groupe,
     ancre: vedette.clone().add(new THREE.Vector3(0, RAYON_LYSOSOME + 0.4, 0)),
     couleur: TEINTES.lysosome,
@@ -272,11 +266,6 @@ function creerFamillePeroxysomes(): Organite {
       "sa signature en microscopie — décrit chez le rat et beaucoup de mammifères, mais " +
       "le gène est inactivé chez l'humain. Il ne vient pas du Golgi : il se divise, ou " +
       "bourgeonne du réticulum.",
-    chiffres: [
-      { valeur: '0,1 à 1 µm', quoi: 'diamètre' },
-      { valeur: 'quelques centaines', quoi: 'par cellule' },
-      { valeur: '> C22', quoi: 'acides gras à très longue chaîne pris en charge' },
-    ],
     objet: groupe,
     ancre: vedette.clone().add(new THREE.Vector3(0, RAYON_PEROXYSOME + 0.4, 0)),
     couleur: teintePeroxysome,
@@ -364,11 +353,6 @@ function creerFamilleVesicules(): Organite {
       "Golgi le portent ici, en cage polyédrique translucide ; les autres l'ont déjà perdu. " +
       "C'est ce détail que les vulgarisations oublient, et sans lui on ne comprend pas " +
       "comment une membrane plate devient une bulle.",
-    chiffres: [
-      { valeur: '60 à 80 nm', quoi: 'vésicules COPII, du réticulum vers le Golgi' },
-      { valeur: '20 à 200 nm', quoi: 'vésicules à manteau de clathrine' },
-      { valeur: '3', quoi: 'familles de manteaux : COPII, COPI, clathrine' },
-    ],
     objet: groupe,
     ancre: vedette.clone().add(new THREE.Vector3(0, 0.5, 0)),
     couleur: TEINTES.vesicule,

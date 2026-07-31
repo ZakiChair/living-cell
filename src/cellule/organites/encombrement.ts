@@ -315,12 +315,6 @@ export function creerEncombrement(): Organite[] {
         "entière il faudrait des centaines de millions d'objets, contre les deux " +
         'cent mille que la carte graphique dessine à 60 images par seconde. Le ' +
         "liseré qui borne le cube dit exactement où s'arrête la vérité.",
-      chiffres: [
-        { valeur: '157 000', quoi: 'complexes dessinés dans 1,7 µm³, à densité réelle' },
-        { valeur: '20 à 30 %', quoi: 'du volume du cytoplasme occupé par des macromolécules' },
-        { valeur: '300 mg/mL', quoi: 'de protéines dans le cytosol' },
-        { valeur: '27 µm²/s', quoi: "diffusion de la GFP ici, contre 87 dans l'eau" },
-      ],
       objet: boite,
       // Le bouton « aller à la boîte » recopie cette ancre dans la cible de la
       // caméra : elle doit être le centre du cube, pas un point flottant à côté.
@@ -342,12 +336,6 @@ export function creerEncombrement(): Organite[] {
         'microscopie électronique ; en zoomant il se résout en objets isolés, là ' +
         'où le vrai cytosol serait un mur. Pour voir cette densité vraie, il faut ' +
         'entrer dans la boîte de vérité.',
-      chiffres: [
-        { valeur: '60 000', quoi: 'objets pour 3 500 µm³ : le semis, pas la réalité' },
-        { valeur: '10⁸ à 10¹⁰', quoi: 'objets qu’il faudrait pour la cellule entière' },
-        { valeur: '×3', quoi: 'ralentissement de la diffusion dû à cet encombrement' },
-        { valeur: '20 à 30 %', quoi: 'du volume occupé par des macromolécules' },
-      ],
       objet: voile,
       ancre: new THREE.Vector3(-6.2, 3.6, -2.4),
       couleur: desaturer(TEINTES.golgi),

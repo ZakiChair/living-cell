@@ -156,16 +156,6 @@ export function creerMembrane(): Organite[] {
         'nombreuses que la surface tient de la mosaïque plutôt que du ballon. ' +
         'Le lipide isole, les protéines choisissent : la cellule reste chimiquement ' +
         "distincte du monde tout en négociant avec lui.",
-      chiffres: [
-        { valeur: '5 nm', quoi: "épaisseur de la bicouche, 1 200 fois moins que le diamètre de la cellule" },
-        { valeur: '~50 %', quoi: 'de la masse de la membrane est protéique' },
-        {
-          valeur: '10 000 à 30 000',
-          quoi: 'protéines par µm² dans une membrane réelle ; 48 sont dessinées ici, soit un semis 300 fois trop clair',
-        },
-        { valeur: '10⁹', quoi: "une bicouche pure laisse passer l'eau un milliard de fois plus vite que les ions sodium" },
-        { valeur: '100 000 V/cm', quoi: "champ électrique qui traverse l'épaisseur de la membrane" },
-      ],
       objet: groupe,
       // Ancre posée sur la membrane, du côté conservé par la coupe (z négatif).
       ancre: new THREE.Vector3(-0.45, 0.72, -0.53).normalize().multiplyScalar(RAYON_CELLULE),

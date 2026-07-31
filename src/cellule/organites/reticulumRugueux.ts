@@ -248,12 +248,6 @@ export function creerReticulumRugueux(): Organite[] {
         'fur et à mesure qu’ils la lisent. Les protéines y sont repliées, contrôlées, puis ' +
         'expédiées vers l’appareil de Golgi par vésicules. Une cellule qui sécrète beaucoup, ' +
         'comme un plasmocyte, en est presque entièrement remplie.',
-      chiffres: [
-        { valeur: '25 à 30 nm', quoi: 'diamètre d’un ribosome' },
-        { valeur: '5 à 6 par seconde', quoi: 'acides aminés enchaînés par un ribosome de mammifère' },
-        { valeur: 'continu', quoi: 'ses citernes prolongent l’enveloppe nucléaire' },
-        { valeur: 'toutes', quoi: 'les protéines exportées ou membranaires y sont fabriquées' },
-      ],
       objet: groupe,
       ancre,
       couleur: TEINTES.reticulumRugueux,

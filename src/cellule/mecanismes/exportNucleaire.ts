@@ -718,14 +718,6 @@ export function creerExportNucleaire(): Mecanisme[] {
         "RanGDP cytosolique, et c'est bien RanGTP qu'on voit percuter l'importine et lui " +
         "faire lâcher son cargo. Tout autour, des molécules abordent le pore et repartent : " +
         "les essais infructueux sont l'immense majorité.",
-      chiffres: [
-        { valeur: '2,5 ms', quoi: "temps de séjour de l'importine β dans le canal" },
-        { valeur: '5,8 ms', quoi: 'pour NTF2, 7,1 ms pour la transportine' },
-        { valeur: '50 à 350 ms', quoi: "pour un mRNP entier, cinquante fois plus lent" },
-        { valeur: '40 → 70 nm', quoi: 'canal central, dilatable pour les gros cargos' },
-        { valeur: 'des centaines', quoi: 'de molécules par seconde et par pore' },
-        { valeur: '~30', quoi: 'nucléoporines différentes, en huit exemplaires chacune' },
-      ],
       objet: groupe,
       ancre: CENTRE_MONDE.clone(),
       // De quoi tenir le panier (−0,17) et l'errance cytosolique (+0,14).

@@ -874,15 +874,6 @@ export function creerKrebs(): Mecanisme[] {
         "tours — les deux jetons du bas — et comme le cycle fournit aussi le squelette de " +
         "plusieurs acides aminés, de l'hème et du glucose, on le dit amphibolique : il brûle et " +
         'il construit.',
-      chiffres: [
-        { valeur: '3 NADH + 1 FADH₂ + 1 GTP', quoi: "récolte d'un tour, avec 2 CO₂ relâchés" },
-        { valeur: '2 tours', quoi: 'par glucose, puisque la glycolyse en donne deux pyruvates' },
-        { valeur: '8', quoi: "étapes enzymatiques, du citrate à l'oxaloacétate" },
-        { valeur: '2 CO₂', quoi: 'par tour : le carbone que vous expirez vient d\'ici' },
-        { valeur: '1 sur 10', quoi: "ATP produit directement ; les 9 autres viennent des transporteurs" },
-        { valeur: 'amphibolique', quoi: 'le cycle alimente aussi les biosynthèses' },
-        { valeur: '1937', quoi: 'Hans Krebs le décrit ; prix Nobel de médecine en 1953' },
-      ],
       objet: groupe,
       ancre: CENTRE.clone(),
       rayonCadrage: 0.9,

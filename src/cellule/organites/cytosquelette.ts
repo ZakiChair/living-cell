@@ -309,14 +309,6 @@ export function creerCytosquelette(): Organite[] {
       role: 'Charpente dynamique : elle tient la forme de la cellule et sert de rails au transport interne.',
       description:
         "Des réseaux de fibres protéiques traversent tout le cytoplasme et lui donnent sa tenue : sans eux, la cellule s'affaisserait comme une poche d'eau. Les microtubules, les plus épais, rayonnent du centrosome vers la périphérie et servent de rails aux moteurs moléculaires qui déplacent vésicules et chromosomes. Sous la membrane, un feutrage serré de filaments d'actine — le cortex — fixe la forme de la surface et permet à la cellule de ramper, de se contracter et de se diviser. L'ensemble se démonte et se reconstruit sans arrêt : c'est une charpente qui se réinvente en quelques minutes.",
-      chiffres: [
-        { valeur: '25 nm', quoi: "diamètre d'un microtubule" },
-        { valeur: '7 nm', quoi: "diamètre d'un filament d'actine" },
-        {
-          valeur: '≈ 1 µm/min',
-          quoi: 'vitesse à laquelle un microtubule pousse ou se raccourcit',
-        },
-      ],
       objet: reseau,
       ancre: new THREE.Vector3(-4.6, 5.9, -3.4),
       couleur: TEINTES.cytosquelette,
@@ -327,10 +319,6 @@ export function creerCytosquelette(): Organite[] {
       role: "Centre organisateur des microtubules : c'est de lui que part toute la charpente.",
       description:
         "Le centrosome est le point de départ des microtubules, un nuage de matériel péricentriolaire qui les amorce autour de deux centrioles disposés à angle droit. Chaque centriole est un barillet creux de neuf triplets de microtubules ; cette symétrie d'ordre 9 est conservée à l'identique de l'algue verte à l'être humain. Avant la division, le centrosome se duplique et les deux copies migrent aux pôles opposés de la cellule pour bâtir le fuseau qui séparera les chromosomes.",
-      chiffres: [
-        { valeur: '9', quoi: 'triplets de microtubules par centriole' },
-        { valeur: '0,4 µm', quoi: "longueur d'un centriole, pour 0,2 µm de diamètre" },
-      ],
       objet: centrosome,
       ancre: POSITION_CENTROSOME.clone().add(new THREE.Vector3(0, 0.35, -0.3)),
       couleur: TEINTES.centriole,

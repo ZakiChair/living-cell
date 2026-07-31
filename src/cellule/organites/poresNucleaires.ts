@@ -261,12 +261,6 @@ export function creerPoresNucleaires(): Organite[] {
         '70 pour laisser passer un ribosome en cours de sortie ; les petites molécules ' +
         'diffusent librement, les grosses ne franchissent le maillage que munies du bon ' +
         "signal d'adressage. Un cargo reconnu traverse en moins de dix millisecondes.",
-      chiffres: [
-        { valeur: '100 nm', quoi: 'de diamètre externe, pour un canal de 40 nm' },
-        { valeur: '~120 MDa', quoi: 'la plus grosse machine assemblée de la cellule' },
-        { valeur: 'ordre 8', quoi: 'symétrie du complexe, sa signature structurale' },
-        { valeur: 'des centaines', quoi: 'de molécules par seconde et par pore' },
-      ],
       objet: groupe,
       // Du côté que la coupe conserve en dernier : le trait d'étiquette ne part
       // jamais d'un vide, même écorché à fond.

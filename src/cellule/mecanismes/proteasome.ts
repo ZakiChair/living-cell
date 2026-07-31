@@ -854,16 +854,6 @@ export function creerProteasome(): Mecanisme[] {
         'pour la recycler, puis DÉPLIE la protéine et la fait passer en brin étiré dans le tonneau 20S, ' +
         'dont le pore de 1,3 nm est trop étroit pour une protéine repliée. Il en ressort des peptides ' +
         'de deux à trente acides aminés.',
-      chiffres: [
-        { valeur: '2,4 MDa', quoi: 'masse du protéasome 26S, soit environ 20 000 acides aminés' },
-        { valeur: '4 × 7', quoi: 'sous-unités du tonneau 20S : quatre anneaux empilés de sept' },
-        { valeur: '4', quoi: "ubiquitines en chaîne K48 : le seuil d'adressage au protéasome" },
-        { valeur: '~10⁶', quoi: 'protéasomes par cellule HeLa, soit 1 % de la masse protéique' },
-        { valeur: '1,3 nm', quoi: 'diamètre du pore : une protéine repliée en fait 5' },
-        { valeur: '2 à 30', quoi: 'acides aminés par peptide éjecté' },
-        { valeur: '50 à 80', quoi: 'ATP consommés par protéine dégradée' },
-        { valeur: '1 à 2 jours', quoi: "demi-vie moyenne d'une protéine" },
-      ],
       objet: groupe,
       ancre: SIEGE.clone(),
       rayonCadrage: 0.05,

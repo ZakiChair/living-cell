@@ -1811,32 +1811,6 @@ export function creerFermentation(): Mecanisme[] {
         "qu'il manque, la file se bloque de proche en proche jusqu'à la glycolyse, anneau par anneau. " +
         "Molécules et enzymes sont dessinées trente à cinquante fois trop grosses pour rester visibles à " +
         "côté d'une membrane : c'est un parti de représentation, pas une échelle.",
-      chiffres: [
-        { valeur: '2 ATP', quoi: 'par glucose en fermentation — et ils viennent tous de la glycolyse' },
-        { valeur: '30 à 32 ATP', quoi: 'par glucose quand la respiration va jusqu’au bout' },
-        {
-          valeur: '0 ATP',
-          quoi: 'produit par la fermentation elle-même : elle régénère le NAD⁺, rien d’autre',
-        },
-        {
-          valeur: 'O₂ + 4 e⁻ + 4 H⁺ → 2 H₂O',
-          quoi: 'la réaction du complexe IV : l’oxygène est l’accepteur final d’électrons',
-        },
-        {
-          valeur: '≈ 0,3 mM',
-          quoi: 'NAD⁺ cytosolique : le stock entier serait consommé en quelques secondes sans régénération',
-        },
-        { valeur: 'foie', quoi: 'le lactate y est reconverti en glucose : c’est le cycle de Cori' },
-        {
-          valeur: 'éthanol + CO₂',
-          quoi: 'ce que la levure produit à la place du lactate : la fermentation alcoolique',
-        },
-        {
-          valeur: '9,5 MDa',
-          quoi: 'la pyruvate déshydrogénase, une soixantaine de sous-unités : un des plus gros complexes de la cellule',
-        },
-        { valeur: '≈ 10 H⁺', quoi: 'pompés par NADH oxydé ; il en faut environ 4 pour un ATP' },
-      ],
       objet: groupe,
       ancre: SIEGE.clone(),
       rayonCadrage: 1.4,

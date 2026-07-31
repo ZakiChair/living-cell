@@ -388,16 +388,6 @@ export function creerRespiration(): Mecanisme[] {
         "statorique, voit sa tige tourner dedans et fabrique un ATP par tiers de tour. " +
         "C'est le plus petit moteur rotatif connu. Au bout de la chaîne, l'oxygène " +
         "accepte les électrons et devient de l'eau — il ne brûle rien, il tire.",
-      chiffres: [
-        { valeur: '~130 tours/s', quoi: "vitesse de rotation de l'ATP synthase" },
-        { valeur: '3 ATP', quoi: 'par tour complet du rotor, un par tiers de tour' },
-        { valeur: '10 H⁺', quoi: 'pompés par NADH oxydé, sur les complexes I, III et IV' },
-        { valeur: '~180 mV', quoi: 'gradient électrochimique à travers la membrane interne' },
-        { valeur: '2,5 ATP', quoi: 'rendement par NADH ; 1,5 seulement par FADH₂, qui entre plus bas' },
-        { valeur: '~90 %', quoi: "de l'ATP cellulaire vient d'ici" },
-        { valeur: 'O₂ + 4 e⁻ + 4 H⁺', quoi: "→ 2 H₂O au complexe IV : l'oxygène est l'accepteur final" },
-        { valeur: '~10⁷/s', quoi: "molécules d'ATP consommées et régénérées par seconde et par cellule" },
-      ],
       objet: groupe,
       ancre: CENTRE.clone(),
       rayonCadrage: 0.78,

@@ -794,14 +794,6 @@ function creerEndocytose(): Mecanisme {
       'Les récepteurs ne sont pas prélevés au hasard : ils sont retenus par le ' +
       'manteau à mesure que leur errance les y amène, et le fret se retrouve ' +
       'concentré dans la vésicule.',
-    chiffres: [
-      { valeur: '20 à 200 nm', quoi: 'diamètre d\'une vésicule à clathrine ; celle-ci fait 90 nm de membrane et 127 nm avec son manteau' },
-      { valeur: '3 bras', quoi: 'un triskèle de clathrine ; il mesure 90 nm d\'un bout de bras à l\'autre, aussi large que la vésicule qu\'il forme' },
-      { valeur: '12 pentagones', quoi: 'nombre invariant dans toute cage close, quel que soit le nombre d\'hexagones ; la cage complète compte ici 60 moyeux et 90 arêtes, dont 54 et 78 sont posées — le manteau laisse toujours une ouverture autour du col' },
-      { valeur: 'GTP', quoi: 'la dynamine en hydrolyse pour resserrer le col de 19 nm à moins de 2 nm, jusqu\'à la rupture' },
-      { valeur: '~50 %', quoi: 'des puits avortent avant de produire une vésicule ; deux en avortent ici pour un qui aboutit' },
-      { valeur: '1 heure', quoi: 'le temps qu\'il faut à une cellule pour internaliser l\'équivalent de toute sa surface — d\'où la nécessité de l\'exocytose pour la rendre' },
-    ],
     objet: groupe,
     ancre: DIR_ENDOCYTOSE.clone().multiplyScalar(RAYON_CELLULE - 0.04),
     rayonCadrage: 0.5,
@@ -1259,14 +1251,6 @@ function creerExocytose(): Mecanisme {
       'membrane plasmique. Sa membrane ne disparaît pas : elle S\'AJOUTE, et ses ' +
       'protéines se dispersent dans le plan — la surface de la cellule vient ' +
       "d'augmenter, et il faudra que l'endocytose la reprenne.",
-    chiffres: [
-      { valeur: '4 hélices', quoi: 'le complexe SNARE : trois de la membrane plasmique (vert), une de la vésicule (orange) ; long de 12 nm' },
-      { valeur: '< 1 ms', quoi: "durée réelle de la fermeture des SNARE et de l'ouverture du pore, contre 5 s à l'écran : ralenti ×5 000" },
-      { valeur: '1 à 2 nm', quoi: 'rayon du pore de fusion au moment où il s\'ouvre, avant de s\'élargir' },
-      { valeur: '100 nm', quoi: 'diamètre de la vésicule sécrétoire figurée ici' },
-      { valeur: '+0,031 µm²', quoi: "surface ajoutée à la membrane plasmique par une seule fusion ; il en faudrait 40 000 pour refaire les 1 257 µm² de la cellule" },
-      { valeur: '3 sur 4', quoi: 'les vésicules qui passent sans s\'amarrer, ici ; aucune ne connaît sa destination' },
-    ],
     objet: groupe,
     ancre: DIR_EXOCYTOSE.clone().multiplyScalar(RAYON_CELLULE - 0.04),
     rayonCadrage: 0.32,

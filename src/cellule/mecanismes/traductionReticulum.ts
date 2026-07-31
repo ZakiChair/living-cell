@@ -1132,15 +1132,6 @@ export function creerTraductionReticulum(): Mecanisme[] {
         'aminé, la liaison peptidique est formée par l’ARN ribosomique lui-même, les ' +
         'sous-unités pivotent, et la chaîne sort par le tunnel de dix nanomètres où elle ' +
         'commence déjà à se replier — le ribosome le plus avancé porte la plus longue.',
-      chiffres: [
-        { valeur: '5 à 6 par seconde', quoi: 'acides aminés posés, chez le mammifère' },
-        { valeur: '20 par seconde', quoi: 'chez la bactérie, quatre fois plus vite' },
-        { valeur: '10⁻³ à 10⁻⁴', quoi: 'taux d’erreur, obtenu par rejets massifs' },
-        { valeur: 'l’ARN', quoi: 'c’est l’ARN ribosomique qui catalyse la liaison, pas une protéine' },
-        { valeur: 'l’initiation', quoi: 'étape limitante de la traduction, pas l’élongation' },
-        { valeur: '10 nm', quoi: 'tunnel de sortie, où le repliement commence déjà' },
-        { valeur: '25 à 30 nm', quoi: 'diamètre d’un ribosome, deux sous-unités inégales' },
-      ],
       objet: groupe1,
       ancre: ancre1,
       rayonCadrage: 0.3,
@@ -1173,14 +1164,6 @@ export function creerTraductionReticulum(): Mecanisme[] {
         'font la même chose sur le même ARNm, et quelques-uns viennent cogner la ' +
         'membrane sans y trouver de canal et repartent : sans peptide signal, rien ne ' +
         'les retient.',
-      chiffres: [
-        { valeur: '5 nm', quoi: 'épaisseur de la bicouche que la chaîne traverse' },
-        { valeur: '6 nm', quoi: 'largeur du translocon Sec61, pore de 1 à 5 nm' },
-        { valeur: '10 nm', quoi: 'tunnel de sortie, aligné sur le pore' },
-        { valeur: '5 à 6 par seconde', quoi: 'acides aminés poussés dans la lumière' },
-        { valeur: 'toutes', quoi: 'les protéines exportées ou membranaires passent par là' },
-        { valeur: '~150', quoi: 'ribosomes sur ce seul fragment de 1,2 × 0,8 µm' },
-      ],
       objet: groupe2,
       ancre: groupe2.position.clone(),
       rayonCadrage: 0.3,

@@ -17,8 +17,6 @@ export interface Organite {
   role: string
   /** Deux à quatre phrases pour la fiche détaillée. */
   description: string
-  /** Chiffres marquants, chacun avec son unité et sa source. */
-  chiffres: Array<{ valeur: string; quoi: string }>
   /** Le contenu 3D. Son origine est le centre de l'organite. */
   objet: THREE.Object3D
   /** Point d'ancrage de l'étiquette, en coordonnées monde. */

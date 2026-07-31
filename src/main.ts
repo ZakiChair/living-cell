@@ -243,24 +243,12 @@ const fiche = document.getElementById('fiche')!
 const ficheTitre = fiche.querySelector('h2')!
 const ficheRole = fiche.querySelector('.role')!
 const ficheDesc = fiche.querySelector('.desc')!
-const ficheChiffres = fiche.querySelector('dl')!
 
 let sousCurseur: Organite | null = null
 
 const ficheFacteur = fiche.querySelector('.facteur') as HTMLElement
 const ficheNote = fiche.querySelector('.note') as HTMLElement
 
-function remplirChiffres(chiffres: Array<{ valeur: string; quoi: string }>): void {
-  ficheChiffres.replaceChildren(
-    ...chiffres.flatMap((c) => {
-      const dt = document.createElement('dt')
-      dt.textContent = c.valeur
-      const dd = document.createElement('dd')
-      dd.textContent = c.quoi
-      return [dt, dd]
-    }),
-  )
-}
 
 /**
  * Fiche d'un mécanisme.
@@ -279,7 +267,6 @@ function ouvrirFicheMecanisme(m: Mecanisme): void {
   ficheNote.textContent = m.ellision
     ? `${m.justificationFacteur} ${m.ellision}`
     : m.justificationFacteur
-  remplirChiffres(m.chiffres)
   fiche.classList.add('ouverte')
 }
 
@@ -290,15 +277,6 @@ function ouvrirFiche(organite: Organite): void {
   ficheFacteur.style.display = 'none'
   ficheNote.textContent = ''
   ficheDesc.textContent = organite.description
-  ficheChiffres.replaceChildren(
-    ...organite.chiffres.flatMap((c) => {
-      const dt = document.createElement('dt')
-      dt.textContent = c.valeur
-      const dd = document.createElement('dd')
-      dd.textContent = c.quoi
-      return [dt, dd]
-    }),
-  )
   fiche.classList.add('ouverte')
 }
 

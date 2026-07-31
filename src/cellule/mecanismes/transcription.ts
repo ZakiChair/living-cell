@@ -994,16 +994,6 @@ export function creerTranscription(): Mecanisme[] {
         'Les nucléotides libres, eux, ne savent pas où est le site actif : à chaque ' +
         "instant un seul des huit qui rôdent autour de l'enzyme est en train d'y être " +
         'incorporé, les sept autres se cognent pour rien.',
-      chiffres: [
-        { valeur: '30 à 100 nt/s', quoi: "vitesse de l'ARN pol II, médiane 60" },
-        { valeur: '12 à 14 pb', quoi: 'largeur de la bulle de transcription' },
-        { valeur: '2 nm', quoi: "diamètre de la double hélice" },
-        { valeur: '3,4 nm', quoi: "10,5 paires de bases par tour d'hélice" },
-        { valeur: '4 305 pb', quoi: 'segment montré, soit 1,39 µm de contour' },
-        { valeur: '20', quoi: 'nucléosomes, 147 pb enroulées chacun' },
-        { valeur: '2 mètres', quoi: "d'ADN repliés dans un noyau de 6 µm" },
-        { valeur: '25e nucléotide', quoi: 'la coiffe est posée dès là' },
-      ],
       objet: groupe,
       ancre: groupe.position.clone(),
       rayonCadrage: 0.12,

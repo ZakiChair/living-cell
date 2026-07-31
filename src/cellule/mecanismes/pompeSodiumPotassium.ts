@@ -277,16 +277,6 @@ export function creerPompeSodiumPotassium(): Mecanisme[] {
         'potassium, rendu possible par les canaux de fuite comme celui de droite. La ' +
         "pompe, elle, entretient les gradients contre la diffusion, et c'est un travail " +
         'permanent qui coûte le tiers du budget énergétique de la cellule.',
-      chiffres: [
-        { valeur: '3 Na⁺ / 2 K⁺', quoi: "sortis et entrés par molécule d'ATP hydrolysée" },
-        { valeur: '50 à 150/s', quoi: 'cycles de la pompe, selon température et tissu' },
-        { valeur: '10⁸ ions/s', quoi: 'débit maximal du canal ouvert, soit 10⁵ fois plus' },
-        { valeur: '1/3', quoi: "de l'ATP d'une cellule animale ; les 2/3 dans un neurone" },
-        { valeur: '145 / 12 mM', quoi: 'sodium dehors et dedans — ordre de grandeur' },
-        { valeur: '4 / 140 mM', quoi: 'potassium dehors et dedans — gradient inverse' },
-        { valeur: '471 ± 70', quoi: "pompes par globule rouge ; jusqu'à 5 × 10⁷ dans un tubule rénal" },
-        { valeur: '~1 ms', quoi: "durée d'ouverture d'un canal, qui est stochastique et non permanente" },
-      ],
       objet: groupe,
       ancre: CENTRE.clone(),
       rayonCadrage: 0.5,
