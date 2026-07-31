@@ -742,7 +742,14 @@ function boucle(): void {
   // ── L'état de la cellule, et l'atelier qu'il gouverne ────────────────────
   // Le moteur tourne EN PERMANENCE, même hors atelier : un levier tiré depuis la
   // vue d'ensemble doit avoir déjà produit son effet quand on descend voir.
-  avancerDe(etatCellule, dt)
+  //
+  // UNE SEULE HORLOGE. Le curseur de vitesse accélérait d'abord le seul
+  // ribosome, la cellule restant en temps réel : à ×4 la protéine était finie
+  // en vingt-cinq secondes quand l'ATP mettait quarante-cinq à s'effondrer, si
+  // bien que couper l'oxygène n'arrêtait jamais rien à l'écran. La boucle
+  // existait dans le code et restait invisible. Le multiplicateur porte donc
+  // sur les deux, et le badge dit le facteur qui en résulte.
+  avancerDe(etatCellule, dt * (atelierActif ? atelier.vitesse : 1))
   if (atelierActif) {
     avancerAtelier(atelier, dt, regimeTraduction(etatCellule.atp))
     sceneAtelier.animer(atelier, tempsVie)

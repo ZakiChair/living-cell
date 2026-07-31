@@ -198,8 +198,13 @@ l'histoire du dépôt à porter sur du code que la page exécute.
   une « correction » ultérieure.
 - **Atelier** : la machine à états refuse de traduire sans brin déposé ; le débit d'ATP par codon
   vaut 4 ; la traduction s'arrête quand le pool est vide et reprend quand il remonte.
-- **Badge contre animation** (exigence D3 de la spec d'origine, jamais honorée) : un test compare le
-  débit d'ATP annoncé par la fiche de la chaîne respiratoire à celui que le code produit.
+- **Badge contre animation** (exigence D3 de la spec d'origine, jamais honorée) : un test fait
+  tourner l'animation de la chaîne respiratoire sur trente secondes d'écran et **compte les
+  naissances d'ATP dans les matrices d'instances**, puis compare le débit obtenu à celui que la
+  fiche annonce. Une première version multipliait l'effectif par la vitesse de cycle : c'était une
+  tautologie, la vitesse étant définie comme le débit divisé par l'effectif. Le test mesuré, lui,
+  rend 9,35 ATP par tour si l'on rétablit les anciennes constantes fautives — vérifié par mutation —
+  contre les 3 annoncés.
 
 ## 6 bis. Ce que la construction a corrigé dans cette conception
 
@@ -231,6 +236,27 @@ Krebs, seulement du grain de cytosol.
 La livraison est donc conditionnée à un passage en navigateur réel, rotation **active**, réglages
 par défaut, où l'on vérifie que : le ribosome reste dans le cadre, le brin peut lui être donné, les
 codons défilent lisiblement, la jauge d'ATP bouge, et couper l'oxygène arrête la traduction.
+
+### Ce que la vérification a donné
+
+Chrome, fenêtre 1512 × 752, rotation active, réglages par défaut.
+
+| Ce qu'on vérifie | Résultat mesuré |
+|---|---|
+| Le brin refuse d'être déposé loin du ribosome | reste en attente à 64 nm ; seuil 30 nm |
+| Le brin déposé sur le ribosome | distance 0,5 nm, la traduction démarre |
+| Le premier codon lu | UUC, anticodon GAA, phénylalanine |
+| La protéine produite | `FVNQHLCGSHLVEALYLVCGERGFFYTPKT`, 300 liaisons riches |
+| Coût du survol, par événement | **0,003 ms**, contre 9,74 ms avant |
+| Oligomycine, après 9 s | force proton-motrice **1,238** — elle monte |
+| Ouabaïne | ATP en hausse, gradient qui s'effondre |
+| **Couper l'oxygène pendant la traduction** | régime 100 → 72 → 7 → **0 %**, le ribosome **se fige à 10 codons** et y reste ; oxygène rendu, il repart et atteint 22 |
+| Leviers atteignables sans défiler à 752 px | les trois, et cinq des six chiffres |
+
+Le dernier point est le seul qui démontre la boucle complète, et il a fallu corriger une
+incohérence pour l'obtenir : le curseur de vitesse n'accélérait que le ribosome, la cellule restant
+en temps réel. La protéine se terminait donc avant que l'ATP n'ait le temps de tomber. Un système
+couplé n'a qu'une horloge — c'est la même règle que celle des badges.
 
 ## 8. Hors périmètre
 

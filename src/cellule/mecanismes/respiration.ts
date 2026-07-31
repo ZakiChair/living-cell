@@ -31,7 +31,7 @@ const NB_ELECTRONS = 14
 const NB_PROTONS = 120
 
 /** Un tour de rotor à l'écran, en secondes. */
-const DUREE_TOUR = 1.5
+export const DUREE_TOUR = 1.5
 
 /**
  * La stœchiométrie commande le débit, et non l'inverse.
@@ -45,11 +45,14 @@ const DUREE_TOUR = 1.5
  * trois. Écrire le débit et laisser l'effectif suivre rend l'écart impossible :
  * un réglage visuel ne peut plus déplacer la stœchiométrie en silence.
  */
-const ATP_PAR_TOUR = 3
-const ATP_PAR_SECONDE = ATP_PAR_TOUR / DUREE_TOUR
+export const ATP_PAR_TOUR = 3
+export const ATP_PAR_SECONDE = ATP_PAR_TOUR / DUREE_TOUR
 /** Huit en vol, chacun visible quatre secondes : le débit tombe juste. */
-const NB_ATP = 8
-const VITESSE_ATP = ATP_PAR_SECONDE / NB_ATP
+export const NB_ATP = 8
+export const VITESSE_ATP = ATP_PAR_SECONDE / NB_ATP
+
+/** Tours du rotor par seconde dans la cellule : c'est ce que le badge ralentit. */
+export const TOURS_PAR_SECONDE_REELS = 130
 
 /**
  * L'eau suit la même règle.
@@ -240,6 +243,9 @@ export function creerRespiration(): Mecanisme[] {
     NB_ATP,
   )
   atp.frustumCulled = false
+  // Nommé pour que le test D3 puisse retrouver l'amas et COMPTER les naissances
+  // qu'`animer` produit, au lieu de relire les constantes qui les commandent.
+  atp.name = 'atp'
   groupe.add(atp)
 
   const eau = new THREE.InstancedMesh(

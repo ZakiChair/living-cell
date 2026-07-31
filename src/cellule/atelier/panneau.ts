@@ -139,62 +139,6 @@ export function creerPanneauAtelier(
     atelier.pasAPas = interrupteur.checked
   })
 
-  // ── La lecture du codon ─────────────────────────────────────────────────
-  const lecture = element('div', 'atelier-lecture')
-  const lectureCodon = element('div', 'codon')
-  const lectureAnti = element('div', 'anti')
-  const lectureResidu = element('div', 'residu')
-  lecture.append(lectureCodon, lectureAnti, lectureResidu)
-  racine.appendChild(lecture)
-
-  // ── La séquence ─────────────────────────────────────────────────────────
-  const titreSeq = element('h3', undefined, 'La protéine, résidu par résidu')
-  const sequence = element('div', 'atelier-sequence')
-  racine.append(titreSeq, sequence)
-
-  // Une pastille par résidu, créée une seule fois : rafraîchir n'a plus qu'à
-  // basculer une classe, et la boucle d'affichage ne construit pas de DOM.
-  const pastilles: HTMLElement[] = []
-  for (const [i, residu] of atelier.gene.residus.entries()) {
-    const pastille = element('span', `residu ${residu.classe}`, residu.lettre)
-    pastille.title = `${i + 1}. ${residu.nom} (${residu.abrege}) — ${residu.classe}`
-    sequence.appendChild(pastille)
-    pastilles.push(pastille)
-  }
-
-  const legendeClasses = element('div', 'atelier-classes')
-  for (const [classe, libelle] of [
-    ['apolaire', 'apolaire'],
-    ['polaire', 'polaire'],
-    ['basique', 'basique (+)'],
-    ['acide', 'acide (−)'],
-  ] as const) {
-    const entree = element('span', 'classe')
-    entree.append(element('i', classe), document.createTextNode(libelle))
-    legendeClasses.appendChild(entree)
-  }
-  racine.appendChild(legendeClasses)
-
-  // ── Les chiffres ────────────────────────────────────────────────────────
-  const titreBilan = element('h3', undefined, 'Le bilan énergétique')
-  const bilan = element('dl', 'atelier-bilan')
-  racine.append(titreBilan, bilan)
-
-  const lignes = new Map<string, HTMLElement>()
-  for (const [cle, libelle] of [
-    ['atp', 'ATP cytosolique'],
-    ['fpm', 'Force proton-motrice'],
-    ['gradient', 'Gradient Na⁺/K⁺'],
-    ['regime', 'Régime du ribosome'],
-    ['production', "Production d'ATP"],
-    ['cout', 'Coût de cette protéine'],
-  ] as const) {
-    const terme = element('dt', undefined, libelle)
-    const valeur = element('dd')
-    bilan.append(terme, valeur)
-    lignes.set(cle, valeur)
-  }
-
   // ── Les leviers ─────────────────────────────────────────────────────────
   /**
    * Trois inhibiteurs, et deux des trois effets sont contre-intuitifs.
@@ -236,7 +180,6 @@ export function creerPanneauAtelier(
     },
   ]
 
-  const boutonsLevier = new Map<string, HTMLButtonElement>()
   for (const levier of LEVIERS) {
     const bouton = element('button', 'levier', levier.nom)
     bouton.type = 'button'
@@ -245,14 +188,74 @@ export function creerPanneauAtelier(
     bouton.addEventListener('click', () => {
       etat.inhibiteurs[levier.cle] = !etat.inhibiteurs[levier.cle]
       bouton.setAttribute('aria-pressed', String(etat.inhibiteurs[levier.cle]))
-      explication.textContent = etat.inhibiteurs[levier.cle] ? levier.quoiRegarder : ''
+      // On affiche l'explication du DERNIER levier encore tiré, et non celle
+      // de celui qu'on vient de toucher : relever un inhibiteur alors qu'un
+      // autre agit toujours effaçait le texte qui explique ce qu'on voit.
+      const actifs = LEVIERS.filter((l) => etat.inhibiteurs[l.cle])
+      explication.textContent = actifs.map((l) => l.quoiRegarder).join(' ')
     })
     leviers.appendChild(bouton)
-    boutonsLevier.set(levier.cle, bouton)
   }
 
   const explication = element('p', 'atelier-explication')
   racine.appendChild(explication)
+
+  // ── Les chiffres ────────────────────────────────────────────────────────
+  const titreBilan = element('h3', undefined, 'Le bilan énergétique')
+  const bilan = element('dl', 'atelier-bilan')
+  racine.append(titreBilan, bilan)
+
+  const lignes = new Map<string, HTMLElement>()
+  for (const [cle, libelle] of [
+    ['atp', 'ATP cytosolique'],
+    ['fpm', 'Force proton-motrice'],
+    ['gradient', 'Gradient Na⁺/K⁺'],
+    ['regime', 'Régime du ribosome'],
+    ['production', "Production d'ATP"],
+    ['cout', 'Coût de cette protéine'],
+  ] as const) {
+    const terme = element('dt', undefined, libelle)
+    const valeur = element('dd')
+    bilan.append(terme, valeur)
+    lignes.set(cle, valeur)
+  }
+
+  // ── La lecture du codon ─────────────────────────────────────────────────
+  const lecture = element('div', 'atelier-lecture')
+  const lectureCodon = element('div', 'codon')
+  const lectureAnti = element('div', 'anti')
+  const lectureResidu = element('div', 'residu')
+  lecture.append(lectureCodon, lectureAnti, lectureResidu)
+  racine.appendChild(lecture)
+
+  // ── La séquence ─────────────────────────────────────────────────────────
+  const titreSeq = element('h3', undefined, 'La protéine, résidu par résidu')
+  const sequence = element('div', 'atelier-sequence')
+  racine.append(titreSeq, sequence)
+
+  // Une pastille par résidu, créée une seule fois : rafraîchir n'a plus qu'à
+  // basculer une classe, et la boucle d'affichage ne construit pas de DOM.
+  const pastilles: HTMLElement[] = []
+  for (const [i, residu] of atelier.gene.residus.entries()) {
+    const pastille = element('span', `residu ${residu.classe}`, residu.lettre)
+    pastille.title = `${i + 1}. ${residu.nom} (${residu.abrege}) — ${residu.classe}`
+    sequence.appendChild(pastille)
+    pastilles.push(pastille)
+  }
+
+  const legendeClasses = element('div', 'atelier-classes')
+  for (const [classe, libelle] of [
+    ['apolaire', 'apolaire'],
+    ['polaire', 'polaire'],
+    ['basique', 'basique (+)'],
+    ['acide', 'acide (−)'],
+  ] as const) {
+    const entree = element('span', 'classe')
+    entree.append(element('i', classe), document.createTextNode(libelle))
+    legendeClasses.appendChild(entree)
+  }
+  racine.appendChild(legendeClasses)
+
 
   const noteUnites = element(
     'p',
@@ -352,9 +355,13 @@ export const FICHE_ATELIER = {
     "c'est vous qui le donnez au ribosome, et rien ne se traduit avant. Ensuite " +
     'le ribosome lit un codon à la fois, trois à cinq ARN de transfert viennent ' +
     "cogner avant le bon, et l'acide aminé désigné s'ajoute à la chaîne. La " +
-    "séquence est celle de la chaîne B de l'insuline humaine : ce que vous lisez " +
-    'à droite est déterminé par les bases que vous voyez à gauche, par la table ' +
-    'standard du code génétique et par rien d’autre.',
+    "séquence est celle de la chaîne B de l'insuline humaine : la protéine qui " +
+    "s'affiche résidu par résidu est déterminée par les bases du gène, par la " +
+    'table standard du code génétique et par rien d’autre. Une réserve : ce ' +
+    "qui est vérifié, c'est que ces quatre-vingt-dix bases PRODUISENT bien la " +
+    'chaîne B. Le code étant redondant, plusieurs suites de bases donnent la ' +
+    "même protéine, et celle-ci reste à recollationner sur GenBank avant qu'on " +
+    "puisse affirmer que ce sont les codons exacts du gène INS.",
   ellision:
     "C'EST UN PLATEAU, pas une vue de la cellule : les organites sont retirés " +
     "le temps de la scène, car à trois cents nanomètres le noyau n'est plus un " +
