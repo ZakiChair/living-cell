@@ -243,7 +243,7 @@ function allerAuMecanisme(m: Mecanisme): void {
   // Recliquer le mécanisme déjà choisi revient à la vue d'ensemble.
   if (mecanismeChoisi?.cle === m.cle) {
     mettreEnAvant(null)
-    fiche.classList.remove('ouverte')
+    fermerLaFiche()
     revenirVueEnsemble()
     return
   }
@@ -286,7 +286,7 @@ function ouvrirFicheAtelier(): void {
   ficheFacteur.style.display = ''
   ficheDesc.textContent = FICHE_ATELIER.description
   ficheNote.textContent = FICHE_ATELIER.ellision
-  fiche.classList.add('ouverte')
+  montrerLaFiche()
 }
 
 const panneauAtelier = creerPanneauAtelier(atelier, etatCellule, {
@@ -327,7 +327,7 @@ function quitterAtelier(): void {
   panneauFlux.hidden = false
   legende.hidden = false
   boutonAtelier.setAttribute('aria-pressed', 'false')
-  fiche.classList.remove('ouverte')
+  fermerLaFiche()
   rendreLeGrainChoisi()
   mettreEnAvant(null)
   revenirVueEnsemble()
@@ -600,6 +600,15 @@ function appliquerIsolement(): void {
 }
 
 // ── Survol et fiche ───────────────────────────────────────────────────────
+
+/**
+ * Où rendre le focus quand la fiche se ferme.
+ *
+ * Une fiche qui prend le focus et le rend n'importe où renvoie l'utilisateur au
+ * début de la page : il doit alors retraverser les seize mécanismes pour
+ * reprendre où il en était.
+ */
+let focusAvantLaFiche: HTMLElement | null = null
 const survol = document.getElementById('survol')!
 const fiche = document.getElementById('fiche')!
 const ficheTitre = fiche.querySelector('h2')!
@@ -629,7 +638,33 @@ function ouvrirFicheMecanisme(m: Mecanisme): void {
   ficheNote.textContent = m.ellision
     ? `${m.justificationFacteur} ${m.ellision}`
     : m.justificationFacteur
+  montrerLaFiche()
+}
+
+/**
+ * Rend la fiche lisible ET atteignable, et y porte le focus.
+ *
+ * `inert` est retiré à l'ouverture seulement : la fiche reste dans le DOM pour
+ * son animation de glissement, et exposait donc en permanence un titre vide et
+ * un bouton « Fermer » alors qu'il n'y avait rien à fermer.
+ */
+function montrerLaFiche(): void {
+  if (!fiche.classList.contains('ouverte')) {
+    focusAvantLaFiche = document.activeElement as HTMLElement | null
+  }
+  fiche.removeAttribute('inert')
   fiche.classList.add('ouverte')
+  // Le titre porte le focus plutôt que la croix : un lecteur d'écran annonce
+  // alors ce qu'on vient d'ouvrir, et non le moyen de le refermer.
+  ficheTitre.setAttribute('tabindex', '-1')
+  ficheTitre.focus({ preventScroll: true })
+}
+
+function fermerLaFiche(): void {
+  fiche.classList.remove('ouverte')
+  fiche.setAttribute('inert', '')
+  focusAvantLaFiche?.focus?.({ preventScroll: true })
+  focusAvantLaFiche = null
 }
 
 function ouvrirFiche(organite: Organite): void {
@@ -639,10 +674,27 @@ function ouvrirFiche(organite: Organite): void {
   ficheFacteur.style.display = 'none'
   ficheNote.textContent = ''
   ficheDesc.textContent = organite.description
-  fiche.classList.add('ouverte')
+  montrerLaFiche()
 }
 
-fiche.querySelector('.fermer')!.addEventListener('click', () => fiche.classList.remove('ouverte'))
+fiche.querySelector('.fermer')!.addEventListener('click', () => fermerLaFiche())
+
+/**
+ * ÉCHAP ferme ce qui est ouvert, dans l'ordre où on l'a ouvert.
+ *
+ * Sans elle, refermer une fiche au clavier demandait de tabuler jusqu'à la
+ * croix, et quitter l'atelier de traverser tout son panneau. La touche est
+ * annoncée dans l'alternative textuelle de la page — un raccourci que rien ne
+ * documente n'existe pas.
+ */
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return
+  if (fiche.classList.contains('ouverte')) {
+    fermerLaFiche()
+    return
+  }
+  if (atelierActif) quitterAtelier()
+})
 
 /**
  * Le survol est GROUPÉ, pas traité au fil des événements.
@@ -781,7 +833,7 @@ boutonRotation.addEventListener('click', () => {
 document.getElementById('recadrer')!.addEventListener('click', () => {
   revenirVueEnsemble()
   mettreEnAvant(null)
-  fiche.classList.remove('ouverte')
+  fermerLaFiche()
   relacherIsolement()
 })
 
@@ -868,7 +920,12 @@ boucle()
 
 // La cellule est assemblée : on retire l'écran de chargement.
 requestAnimationFrame(() => {
-  document.getElementById('chargement')!.classList.add('parti')
+  const chargement = document.getElementById('chargement')!
+  chargement.classList.add('parti')
+  // L'opacité ne retire rien de l'arbre d'accessibilité : sans ces deux
+  // attributs, « Assemblage des organites… » reste annoncé indéfiniment.
+  chargement.setAttribute('aria-hidden', 'true')
+  chargement.setAttribute('inert', '')
 })
 
 // Repères de diagnostic pour les tests de bout en bout.

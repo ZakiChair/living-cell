@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>La cellule — modélisation interactive</title>
+    <meta name="description" content="Écorché interactif d'une cellule eucaryote animale, aux proportions réelles : seize mécanismes animés avec leur facteur temporel déclaré, un bilan énergétique qu'on perturbe, et un atelier où l'on porte un brin d'ARN messager à un ribosome pour voir une séquence d'ADN devenir une protéine." />
     <!-- Favicon en ligne : une cellule et son noyau. Évite le 404 sur
          /favicon.ico, seul message d'erreur de la console, sans ajouter de
          fichier binaire au dépôt. -->
@@ -40,6 +41,39 @@
 
       canvas { display: block; }
 
+      /* Lu par les assistances, invisible à l'œil. On ne met PAS `display: none`
+         ni `visibility: hidden` : les deux retirent l'élément de l'arbre
+         d'accessibilité, ce qui est exactement le contraire du but. */
+      .pour-lecteurs {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* Le lien d'évitement n'apparaît qu'au focus clavier — mais il doit alors
+         être franchement visible, sinon il ne sert personne. */
+      .evitement {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        z-index: 100;
+        padding: 10px 16px;
+        background: var(--encre);
+        color: var(--ivoire);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transform: translateY(-200%);
+        transition: transform 0.15s;
+      }
+      .evitement:focus { transform: none; outline: 2px solid #0072b2; outline-offset: 2px; }
+
       /* ── Chargement ─────────────────────────────────────────── */
       #chargement {
         position: fixed;
@@ -53,7 +87,7 @@
         transition: opacity 0.6s ease;
       }
       #chargement.parti { opacity: 0; pointer-events: none; }
-      #chargement h1 { margin: 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+      .titre-chargement { margin: 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
       #chargement p { margin: 0; color: var(--encre-2); font-size: 0.9rem; }
       .jauge { width: 220px; height: 2px; background: var(--trait); overflow: hidden; }
       .jauge i { display: block; height: 100%; width: 30%; background: #0072b2; animation: glisse 1.1s ease-in-out infinite; }
@@ -520,8 +554,17 @@
     </style>
   </head>
   <body>
-    <div id="chargement">
-      <h1>La cellule</h1>
+    <!-- Le lien d'évitement est le premier élément focalisable de la page : sans
+         lui, atteindre les réglages demande de traverser les seize mécanismes et
+         les douze organites au clavier. -->
+    <a class="evitement" href="#reglages">Aller aux réglages de la vue</a>
+
+    <!-- `aria-hidden` ET `inert` : l'écran de chargement passe à `opacity: 0`,
+         or l'opacité ne retire RIEN de l'arbre d'accessibilité. Il restait donc
+         annoncé indéfiniment, avec son propre h1 concurrent de celui du titre.
+         `inert` le retire aussi de l'ordre de tabulation. -->
+    <div id="chargement" role="status">
+      <p class="titre-chargement">La cellule</p>
       <div class="jauge"><i></i></div>
       <p>Assemblage des organites…</p>
     </div>
@@ -531,14 +574,35 @@
       <p>Écorché d'une cellule eucaryote animale. Survolez un organite pour l'identifier, cliquez pour la fiche.</p>
     </header>
 
-    <div id="colonne">
-      <section id="flux" aria-label="Processus vivants"></section>
+    <!--
+      L'ALTERNATIVE TEXTUELLE DE LA SCÈNE.
+
+      Le canvas porte un rôle et une description, mais une phrase ne remplace pas
+      une scène 3D. Ce paragraphe, invisible à l'œil et lu par les assistances,
+      dit ce que la page contient et par où l'explorer — parce que la liste des
+      mécanismes et la légende SONT l'alternative textuelle, et qu'encore
+      faut-il savoir qu'elles existent.
+    -->
+    <p class="pour-lecteurs">
+      Cette page est une modélisation en trois dimensions ; son contenu est
+      entièrement disponible en texte. La liste « Mécanismes » donne les seize
+      processus animés, chacun avec le facteur temporel auquel il est montré ;
+      la liste « Organites » donne les familles présentes. Activer une entrée de
+      l'une ou l'autre ouvre sa fiche détaillée, qui est lue automatiquement.
+      La touche Échap ferme la fiche ; elle quitte aussi l'atelier du gène.
+    </p>
+
+    <main id="colonne" aria-label="Contenu de la cellule">
+      <section id="flux" aria-label="Mécanismes animés"></section>
       <nav id="legende" aria-label="Organites"></nav>
-    </div>
+    </main>
 
     <div id="survol" role="status" aria-live="polite"></div>
 
-    <aside id="fiche" aria-live="polite">
+    <!-- `inert` tant qu'elle est fermée : la fiche reste dans le DOM pour son
+         animation de glissement, et exposait donc un titre vide et un bouton
+         « Fermer » atteignables alors qu'il n'y avait rien à fermer. -->
+    <aside id="fiche" aria-live="polite" aria-label="Fiche détaillée" inert>
       <button class="fermer" aria-label="Fermer la fiche">✕</button>
       <h2></h2>
       <p class="role"></p>
@@ -547,7 +611,7 @@
       <p class="note"></p>
     </aside>
 
-    <div id="reglages">
+    <div id="reglages" role="group" aria-label="Réglages de la vue">
       <!-- « Grain du cytosol » et non « Densité » : le curseur éclaircit le
            peuplement du cytoplasme, et il ne touche PAS à la boîte de vérité,
            dont la densité est le sujet. L'appeler « densité » laissait croire
