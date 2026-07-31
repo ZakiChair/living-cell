@@ -15,6 +15,7 @@ import { creerPoresNucleaires } from './cellule/organites/poresNucleaires.js'
 import { creerMatrices } from './cellule/organites/matrices.js'
 import { creerChromatineDense } from './cellule/organites/chromatineDense.js'
 import { recenserAmas, reglerGrain, CLE_BOITE_DE_VERITE } from './cellule/grain.js'
+import { NORMALE_DALLE } from './cellule/organites/encombrement.js'
 import { creerFlux } from './cellule/vie.js'
 import type { Mecanisme } from './cellule/mecanismes/contrat.js'
 import { creerMecanismes } from './cellule/mecanismes/tous.js'
@@ -798,8 +799,17 @@ if (boutonVerite && boiteVerite) {
 
     // Distance qui fait tenir la sphère englobante dans le champ vertical.
     const distance = (rayon * 1.35) / Math.tan((vue.camera.fov * Math.PI) / 360)
-    const recul = new THREE.Vector3(0.55, 0.42, 0.72).normalize().multiplyScalar(distance)
+    // ON ARRIVE DE FACE. La boîte est une dalle : abordée sous un angle
+    // quelconque, elle se lirait comme une tranche vue de profil, c'est-à-dire
+    // comme un trait. On recule donc le long de sa normale, et c'est en la
+    // faisant tourner que l'étudiant découvre que c'en est une.
+    vue.scene.updateMatrixWorld(true)
+    const recul = NORMALE_DALLE.clone()
+      .transformDirection(vue.scene.matrixWorld)
+      .multiplyScalar(distance)
 
+    ancreSuivie = boiteVerite.ancre
+    cibleMonde(ancreSuivie, cibleSuivie)
     vue.controles.target.copy(centre)
     vue.camera.position.copy(centre).add(recul)
 

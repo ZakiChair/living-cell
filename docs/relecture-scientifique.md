@@ -355,9 +355,9 @@ Ce sont les navettes de la voie sécrétoire : elles bourgeonnent de la face tra
 
 **Rôle affiché** : Le cytoplasme à sa densité réelle : 25 % du volume
 
-Dans ce cube de 647 nm d'arête, et nulle part ailleurs dans cette cellule, l'encombrement est celui de la biologie : 157 000 protéines, complexes, ribosomes et ARN, tous dessinés à leur taille vraie, du grain de 5 nm au ribosome de 25 nm. Une protéine ne traverse jamais un tel milieu en ligne droite ; elle rebondit sur ses voisines, et c'est pourquoi la GFP y diffuse trois fois plus lentement que dans l’eau. Cette densité ne peut pas être tenue partout : à l'échelle de la cellule entière il faudrait des centaines de millions d'objets, contre les deux cent mille que la carte graphique dessine à 60 images par seconde. Partout ailleurs dans cette cellule, le cytosol est éclairci d'environ trois ordres de grandeur : le grain que vous y voyez est un échantillon, pas un inventaire.
+Dans cette dalle de 1164 nm de côté sur 200 nm d'épaisseur — l'ordre d'une coupe épaisse de microscopie électronique —, et nulle part ailleurs dans cette cellule, l'encombrement est celui de la biologie : 157 000 protéines, complexes, ribosomes et ARN, tous dessinés à leur taille vraie, du grain de 5 nm au ribosome de 25 nm. Une protéine ne traverse jamais un tel milieu en ligne droite ; elle rebondit sur ses voisines, et c'est pourquoi la GFP y diffuse trois fois plus lentement que dans l’eau. Cette densité ne peut pas être tenue partout : à l'échelle de la cellule entière il faudrait des centaines de millions d'objets, contre les deux cent mille que la carte graphique dessine à 60 images par seconde. Si cette région est une dalle et non un cube, c'est pour cette raison : au-delà de la première couche, plus de 99 % des objets sont cachés par ceux de devant. Borner l'épaisseur rend donc visible presque deux fois plus de cytoplasme, au même budget. Partout ailleurs dans cette cellule, le cytosol est éclairci d'environ trois ordres de grandeur : le grain que vous y voyez est un échantillon, pas un inventaire.
 
-> **Chiffres à contrôler** : 25 % · 25 · 647 nm · 5 nm · 25 nm · 647 · 157 000 · 60
+> **Chiffres à contrôler** : 25 % · 25 · 1164 nm · 200 nm · 5 nm · 25 nm · 99 % · 1164 · 200 · 157 000 · 60 · 99
 
 ### 3.13 Cytosol
 

@@ -16,6 +16,13 @@ function instancesDessinees(objet: THREE.Object3D): number {
   return total
 }
 
+/** Les dimensions que la fiche annonce à l'étudiant, en micromètres. */
+function dimensionsAnnoncees(description: string): { cote: number; epaisseur: number } {
+  const trouve = description.match(/dalle de (\d+) nm de côté sur (\d+) nm d'épaisseur/)
+  expect(trouve, `la fiche n'annonce pas ses dimensions : « ${description.slice(0, 80)}… »`).not.toBeNull()
+  return { cote: Number(trouve![1]) / 1000, epaisseur: Number(trouve![2]) / 1000 }
+}
+
 /** Volume intérieur d'un maillage fermé, en µm³ — divergence sur les triangles. */
 function volumeDeGeometrie(geometrie: THREE.BufferGeometry): number {
   const plate = geometrie.index ? geometrie.toNonIndexed() : geometrie
@@ -57,37 +64,58 @@ describe('la boîte de vérité tient sa promesse', () => {
       instances += amas.count
     })
 
-    // Le dénominateur est l'arête que LA FICHE annonce à l'étudiant, et non une
+    // Le dénominateur est ce que LA FICHE annonce à l'étudiant, et non une
     // constante du module : c'est la promesse elle-même qui est mise à l'épreuve.
-    const annonce = boite.description.match(/cube de (\d+) nm d'arête/)?.[1]
-    expect(annonce, `la fiche n'annonce aucune arête : « ${boite.description.slice(0, 70)}… »`).toBeDefined()
-    const arete = Number(annonce) / 1000
-
-    const occupation = volumeOccupe / arete ** 3
+    const { cote, epaisseur } = dimensionsAnnoncees(boite.description)
+    const occupation = volumeOccupe / (cote * cote * epaisseur)
     expect(instances).toBeGreaterThan(150_000)
     expect(
       occupation,
       `occupation mesurée ${(occupation * 100).toFixed(1)} % pour les ${OCCUPATION_CYTOSOL * 100} % ` +
-        `que la fiche annonce, dans le cube de ${annonce} nm qu'elle annonce aussi`,
+        `que la fiche annonce, dans la dalle de ${(cote * 1000).toFixed(0)} × ` +
+        `${(epaisseur * 1000).toFixed(0)} nm qu'elle annonce aussi`,
     ).toBeGreaterThan(OCCUPATION_CYTOSOL * 0.9)
     expect(occupation).toBeLessThan(OCCUPATION_CYTOSOL * 1.1)
   })
 
-  it("ne déborde de son arête annoncée que de la taille d'un objet", () => {
-    // Les centres sont semés dans le cube annoncé ; un objet posé au bord en
-    // dépasse de son propre rayon. L'écart doit donc rester de l'ordre d'un
-    // ribosome — trente nanomètres — et non d'une fraction de la boîte.
+  /**
+   * C'EST UNE DALLE, ET SON ÉPAISSEUR EST CELLE QU'ELLE ANNONCE.
+   *
+   * On mesure dans le repère PROPRE de la dalle : elle est inclinée pour faire
+   * face à la caméra, si bien que son encombrement aligné sur les axes du monde
+   * est bien plus grand que ses dimensions — 1 255 × 1 243 × 816 nm pour une
+   * dalle de 1 164 × 1 164 × 200. Mesurer dans le monde ferait donc conclure à
+   * un cube.
+   */
+  it("est bien une dalle, à l'épaisseur qu'elle annonce", () => {
     const boite = creerEncombrement().find((o) => o.cle === CLE_BOITE_DE_VERITE)!
     boite.objet.updateMatrixWorld(true)
-    const taille = new THREE.Box3().setFromObject(boite.objet).getSize(new THREE.Vector3())
-    const annonce = Number(boite.description.match(/cube de (\d+) nm d'arête/)?.[1]) / 1000
-    for (const cote of [taille.x, taille.y, taille.z]) {
-      expect(cote).toBeGreaterThanOrEqual(annonce)
-      expect(
-        cote - annonce,
-        `la boîte déborde de ${((cote - annonce) * 1000).toFixed(0)} nm son arête annoncée`,
-      ).toBeLessThan(0.05)
-    }
+    const { cote, epaisseur } = dimensionsAnnoncees(boite.description)
+
+    const matrice = new THREE.Matrix4()
+    const point = new THREE.Vector3()
+    let maxLateral = 0
+    let maxEpaisseur = 0
+    boite.objet.traverse((noeud) => {
+      const amas = noeud as THREE.InstancedMesh
+      if (!amas.isInstancedMesh) return
+      for (let i = 0; i < amas.count; i++) {
+        amas.getMatrixAt(i, matrice)
+        point.setFromMatrixPosition(matrice)
+        maxLateral = Math.max(maxLateral, Math.abs(point.x), Math.abs(point.y))
+        maxEpaisseur = Math.max(maxEpaisseur, Math.abs(point.z))
+      }
+    })
+
+    // Les centres sont semés dans la dalle annoncée : la demi-étendue mesurée
+    // doit en être la moitié, à un cheveu près.
+    expect(maxLateral * 2).toBeCloseTo(cote, 2)
+    expect(
+      maxEpaisseur * 2,
+      `épaisseur mesurée ${(maxEpaisseur * 2000).toFixed(0)} nm pour ${(epaisseur * 1000).toFixed(0)} annoncés`,
+    ).toBeCloseTo(epaisseur, 3)
+    // Une dalle, pas un cube : franchement plus large que profonde.
+    expect(cote / epaisseur).toBeGreaterThan(4)
   })
 })
 

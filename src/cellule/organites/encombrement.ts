@@ -8,7 +8,7 @@ import {
 } from '../contrat.js'
 import {
   OCCUPATION_CYTOSOL,
-  areteCubeTenable,
+  areteTenable,
   volumeMoyenPondere,
 } from '../../noyau/densite.js'
 
@@ -23,7 +23,7 @@ import {
  *
  * Il le fait à DEUX RÉGIMES, et la distinction est une exigence d'honnêteté :
  *
- *  — LA BOÎTE DE VÉRITÉ : un cube posé dans le cytoplasme dégagé, où 157 000
+ *  — LA BOÎTE DE VÉRITÉ : une DALLE posée dans le cytoplasme dégagé, où 157 000
  *    objets tiennent la densité réelle. Son arête est DÉDUITE du volume
  *    réellement semé, pas choisie : voir `ARETE_BOITE`. C'est là qu'on regarde
  *    de près.
@@ -233,26 +233,70 @@ const FAMILLES = creerFamilles()
 const VOLUME_MOYEN_NM3 = volumeMoyenPondere(
   FAMILLES.map((f) => ({ part: f.part, volumeNm3: volumeDeGeometrie(f.geometrie) * 1e9 })),
 )
-/** Arête, en micromètres, qui fait vraiment 25 % d'occupation au budget donné. */
+/**
+ * ET C'EST UNE DALLE, PAS UN CUBE.
+ *
+ * Le corollaire de D7 que le lot 0 avait mesuré et que le produit n'appliquait
+ * pas : « il faut une dalle à profondeur bornée, pas un volume ». La raison est
+ * physique — au-delà de la première couche, plus de 99 % des instances sont
+ * occultées par celles de devant. Le budget part alors en objets que personne
+ * ne voit, et l'arête tenable s'en trouve limitée par le remplissage plutôt que
+ * par la surface lisible.
+ *
+ * Au même budget de 157 000 objets et à la même densité vraie, la dalle porte
+ * **1 165 nm de côté** là où le cube plafonnait à 647. C'est presque deux fois
+ * plus de cytoplasme à densité vraie sous les yeux de l'étudiant, sans qu'une
+ * seule instance de plus soit dessinée.
+ *
+ * La PROFONDEUR est choisie, et une seule fois : deux cents nanomètres, soit
+ * l'ordre d'épaisseur d'une coupe épaisse de microscopie électronique. C'est
+ * l'objet réel auquel la boîte ressemble, et ce n'est pas un hasard — une coupe
+ * est justement ce qu'on obtient quand on veut voir un cytoplasme dense sans
+ * que tout se superpose.
+ */
+const PROFONDEUR_DALLE_NM = 200
+const PROFONDEUR_DALLE = PROFONDEUR_DALLE_NM / 1000
+/** Côté latéral, en micromètres, qui fait vraiment 25 % d'occupation. */
 const ARETE_BOITE =
-  areteCubeTenable(INSTANCES_BOITE, OCCUPATION_CYTOSOL, VOLUME_MOYEN_NM3) / 1000
+  areteTenable(INSTANCES_BOITE, PROFONDEUR_DALLE_NM, OCCUPATION_CYTOSOL, VOLUME_MOYEN_NM3) / 1000
 const DEMI_BOITE = ARETE_BOITE / 2
+const DEMI_PROFONDEUR = PROFONDEUR_DALLE / 2
 
-/** Point quelconque dans le cube, en repère local de la boîte. */
+/**
+ * L'axe mince de la dalle, en coordonnées monde.
+ *
+ * Il pointe vers la caméra à sa position par défaut : on arrive donc sur la
+ * dalle de face, et c'est en la faisant tourner qu'on découvre que c'en est
+ * une. Un axe quelconque donnerait une tranche vue de profil, c'est-à-dire un
+ * trait.
+ */
+export const NORMALE_DALLE = new THREE.Vector3(0.18, 0.32, 0.93).normalize()
+
+/** Repère de la dalle : Z local le long de son épaisseur. */
+const REPERE_DALLE = new THREE.Quaternion().setFromUnitVectors(
+  new THREE.Vector3(0, 0, 1),
+  NORMALE_DALLE,
+)
+
+/** Point quelconque dans la dalle, en repère local. */
 function placerDansBoite(alea: () => number, cible: THREE.Vector3): void {
   cible.set(
     (alea() - 0.5) * ARETE_BOITE,
     (alea() - 0.5) * ARETE_BOITE,
-    (alea() - 0.5) * ARETE_BOITE,
+    (alea() - 0.5) * PROFONDEUR_DALLE,
   )
 }
 
-/** Vrai si le point tombe dans la région déclarée, en coordonnées monde. */
+const _localBoite = new THREE.Vector3()
+const _repereInverse = REPERE_DALLE.clone().invert()
+
+/** Vrai si le point tombe dans la dalle, en coordonnées monde. */
 function dansLaBoite(point: THREE.Vector3): boolean {
+  _localBoite.copy(point).sub(CENTRE_BOITE).applyQuaternion(_repereInverse)
   return (
-    Math.abs(point.x - CENTRE_BOITE.x) < DEMI_BOITE &&
-    Math.abs(point.y - CENTRE_BOITE.y) < DEMI_BOITE &&
-    Math.abs(point.z - CENTRE_BOITE.z) < DEMI_BOITE
+    Math.abs(_localBoite.x) < DEMI_BOITE &&
+    Math.abs(_localBoite.y) < DEMI_BOITE &&
+    Math.abs(_localBoite.z) < DEMI_PROFONDEUR
   )
 }
 
@@ -319,6 +363,7 @@ export function creerEncombrement(): Organite[] {
   const boite = new THREE.Group()
   boite.name = 'boite-de-verite'
   boite.position.copy(CENTRE_BOITE)
+  boite.quaternion.copy(REPERE_DALLE)
   boite.add(...semer(familles, INSTANCES_BOITE, alea, placerDansBoite))
   // Le liseré de boîte a été retiré : un cube filaire flottant dans le cytoplasme
   // ne ressemble à rien de biologique, et cette page doit montrer la cellule, pas
@@ -329,7 +374,7 @@ export function creerEncombrement(): Organite[] {
   // rendu ignore. Sans lui la boîte ne serait désignable que par ses arêtes de
   // 4 nm, impossibles à viser.
   const cible = new THREE.Mesh(
-    new THREE.BoxGeometry(ARETE_BOITE, ARETE_BOITE, ARETE_BOITE),
+    new THREE.BoxGeometry(ARETE_BOITE, ARETE_BOITE, PROFONDEUR_DALLE),
     materiauOrganite(TEINTES.cytosquelette),
   )
   cible.name = 'cible-boite'
@@ -346,7 +391,9 @@ export function creerEncombrement(): Organite[] {
       nom: 'Boîte de vérité',
       role: 'Le cytoplasme à sa densité réelle : 25 % du volume',
       description:
-        `Dans ce cube de ${(ARETE_BOITE * 1000).toFixed(0)} nm d'arête, et nulle part ailleurs dans cette ` +
+        `Dans cette dalle de ${(ARETE_BOITE * 1000).toFixed(0)} nm de côté sur ` +
+        `${PROFONDEUR_DALLE_NM} nm d'épaisseur — l'ordre d'une coupe épaisse de microscopie ` +
+        "électronique —, et nulle part ailleurs dans cette " +
         "cellule, l'encombrement est celui de la biologie : 157 000 protéines, " +
         'complexes, ribosomes et ARN, tous dessinés à leur taille vraie, du grain ' +
         'de 5 nm au ribosome de 25 nm. Une protéine ne traverse jamais un tel ' +
@@ -354,7 +401,10 @@ export function creerEncombrement(): Organite[] {
         'pourquoi la GFP y diffuse trois fois plus lentement que dans l’eau. ' +
         "Cette densité ne peut pas être tenue partout : à l'échelle de la cellule " +
         "entière il faudrait des centaines de millions d'objets, contre les deux " +
-        'cent mille que la carte graphique dessine à 60 images par seconde. ' +
+        'cent mille que la carte graphique dessine à 60 images par seconde. Si cette région ' +
+        "est une dalle et non un cube, c'est pour cette raison : au-delà de la première " +
+        "couche, plus de 99 % des objets sont cachés par ceux de devant. Borner l'épaisseur " +
+        'rend donc visible presque deux fois plus de cytoplasme, au même budget. ' +
         "Partout ailleurs dans cette cellule, le cytosol est éclairci d'environ " +
         'trois ordres de grandeur : le grain que vous y voyez est un ' +
         "échantillon, pas un inventaire.",
