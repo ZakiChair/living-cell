@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite, pointDansCoquille } from '../contrat.js'
-import { siegeMitochondrie, type Mecanisme } from './contrat.js'
+import { siegeMitochondrie, type MecanismeBrut } from './contrat.js'
 
 /**
  * LE CYCLE DE KREBS, DANS LA MATRICE MITOCHONDRIALE.
@@ -265,7 +265,7 @@ interface Case {
   phase: number
 }
 
-export function creerKrebs(): Mecanisme[] {
+export function creerKrebs(): MecanismeBrut[] {
   const alea = creerAlea(1937)
 
   // Le parent ne tourne pas : il garde les axes du monde, dont dépendent la
@@ -845,7 +845,7 @@ export function creerKrebs(): Mecanisme[] {
       cle: 'krebs',
       nom: 'Cycle de Krebs',
       siege: 'Matrice mitochondriale',
-      facteur: 'accéléré ×5',
+      ralentissement: 1 / 5,
       justificationFacteur:
         "Le temps qu'un carbone met à faire le tour des huit enzymes dépend du régime : " +
         "de l'ordre d'une cinquantaine de secondes dans un muscle au repos, où le flux est " +

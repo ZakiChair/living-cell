@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import { SIEGES, type Mecanisme } from './contrat.js'
+import { SIEGES, type MecanismeBrut } from './contrat.js'
 
 /**
  * TRANSCRIPTION DE L'ADN EN ARN PAR L'ARN POLYMÉRASE II.
@@ -207,7 +207,7 @@ function derive(
   return sortie.set(x * amplitude, y * amplitude, z * amplitude)
 }
 
-export function creerTranscription(): Mecanisme[] {
+export function creerTranscription(): MecanismeBrut[] {
   const alea = creerAlea(11071981)
   const groupe = new THREE.Group()
   // Dans le noyau, à 1,4 µm de son centre : le segment tient largement sous les
@@ -965,7 +965,7 @@ export function creerTranscription(): Mecanisme[] {
       cle: 'transcription',
       nom: "Transcription de l'ADN en ARN",
       siege: 'Noyau',
-      facteur: 'ralenti ×20',
+      ralentissement: 20,
       justificationFacteur:
         "L'ARN polymérase II avance ici à 60 nucléotides par seconde, soit 17 ms par " +
         "nucléotide : à l'écran chaque nucléotide prend 0,33 s, soit un ralenti de 20, " +

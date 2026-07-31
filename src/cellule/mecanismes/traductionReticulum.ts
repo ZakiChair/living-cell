@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite, pointDansCoquille } from '../contrat.js'
-import type { Mecanisme } from './contrat.js'
+import type { MecanismeBrut } from './contrat.js'
 
 /**
  * LA SYNTHÈSE DES PROTÉINES PAR LES RIBOSOMES.
@@ -580,7 +580,7 @@ function hauteurMembrane(x: number, z: number): number {
   return 0.010 * Math.sin(x * 7.5) + 0.007 * Math.cos(z * 9.5 + 1.1)
 }
 
-export function creerTraductionReticulum(): Mecanisme[] {
+export function creerTraductionReticulum(): MecanismeBrut[] {
   const alea = creerAlea(GRAINE)
 
   // ── Géométries et matériaux, partagés par les deux scènes ───────────────
@@ -1105,7 +1105,7 @@ export function creerTraductionReticulum(): Mecanisme[] {
       cle: 'traduction-polysome',
       nom: 'Traduction : un polysome au travail',
       siege: 'Cytosol',
-      facteur: 'ralenti ×20',
+      ralentissement: 20,
       justificationFacteur:
         'Un ribosome de mammifère pose 5 à 6 acides aminés par seconde : un codon dure ' +
         '170 ms, qui deviennent 3,4 s à l’écran — un ralenti de 20. Une bactérie irait ' +
@@ -1143,7 +1143,7 @@ export function creerTraductionReticulum(): Mecanisme[] {
       cle: 'translocation-sec61',
       nom: 'Translocation dans le réticulum',
       siege: 'Réticulum endoplasmique rugueux',
-      facteur: 'ralenti ×20',
+      ralentissement: 20,
       justificationFacteur:
         'Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran, ralenti de 20. ' +
         'La chaîne traverse la membrane exactement au rythme où elle sort du tunnel.',

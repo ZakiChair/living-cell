@@ -1,10 +1,14 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
-import { creerMitochondries, placementsMitochondries } from './organites/mitochondries.js'
+import {
+  calculerPlacements,
+  creerMitochondries,
+  placementsMitochondries,
+} from './organites/mitochondries.js'
 import { creerReticulumRugueux } from './organites/reticulumRugueux.js'
 import { creerMatrices } from './organites/matrices.js'
 import { creerMecanismes } from './mecanismes/tous.js'
-import { DIR_CHAINE, DIR_KREBS } from './mecanismes/betaOxydation.js'
+import { badgeDe } from './mecanismes/contrat.js'
 import { CENTRE_NOYAU, RAYON_CELLULE, RAYON_NOYAU } from './contrat.js'
 
 /**
@@ -23,8 +27,16 @@ import { CENTRE_NOYAU, RAYON_CELLULE, RAYON_NOYAU } from './contrat.js'
  * membrane est donc extrait du maillage livré.
  */
 
-/** Le plus grand écart accepté entre un mécanisme et son organite, en µm. */
-const TOLERANCE_SIEGE = 1.5
+/**
+ * Le plus grand écart accepté entre un mécanisme et son organite, en µm.
+ *
+ * 1,5 µm ne mordait pas : un audit a décalé les sièges de 1,39 µm sans faire
+ * rougir le test, alors qu'une capsule ne fait que 0,35 µm de rayon — le
+ * mécanisme était donc dehors. Les écarts réels vont de 0,00 à 0,21 µm ; le
+ * seuil est ramené au rayon de la capsule, ce qui est la seule valeur qui
+ * signifie « dedans ».
+ */
+const TOLERANCE_SIEGE = 0.35
 
 /**
  * Profil d'une surface de révolution, relu depuis ses sommets.
@@ -138,6 +150,33 @@ describe('les mitochondries sont posées où elles se déclarent', () => {
     }
   })
 
+  /**
+   * L'INVARIANT EST PROUVÉ, PAS SURVEILLÉ.
+   *
+   * Les capsules sont tirées dans une coquille centrée sur la CELLULE, alors
+   * que le noyau est décentré : rien ne les en écartait. Un audit par rejeu a
+   * trouvé 36 graines fautives sur 300 — la graine du produit passait par
+   * chance, et le test qui la vérifiait était une sentinelle au-dessus d'une
+   * loterie. Une garde d'exclusion a été ajoutée ; ce test la met à l'épreuve
+   * sur deux cents tirages au lieu d'un.
+   */
+  it('tient hors du noyau pour deux cents graines, pas seulement la bonne', () => {
+    const fautives: string[] = []
+    for (let graine = 1; graine <= 200; graine++) {
+      for (const [i, p] of calculerPlacements(graine).entries()) {
+        const distance = p.position.distanceTo(CENTRE_NOYAU)
+        if (distance < RAYON_NOYAU + DEMI_LONGUEUR) {
+          fautives.push(`graine ${graine}, capsule ${i + 1} à ${distance.toFixed(2)} µm`)
+        }
+        if (p.position.z > 0) fautives.push(`graine ${graine}, capsule ${i + 1} du mauvais côté`)
+        if (p.position.length() + DEMI_LONGUEUR >= RAYON_CELLULE) {
+          fautives.push(`graine ${graine}, capsule ${i + 1} traverse la membrane`)
+        }
+      }
+    }
+    expect(fautives.slice(0, 5), `${fautives.length} placements fautifs`).toEqual([])
+  })
+
   it('ne les empile pas les unes sur les autres', () => {
     for (let i = 0; i < placements.length; i++) {
       for (let j = i + 1; j < placements.length; j++) {
@@ -231,10 +270,13 @@ describe("le réticulum rugueux reste hors de l'enveloppe nucléaire", () => {
     // Un vrai réticulum rugueux prolonge l'enveloppe : un chevauchement de
     // quelques pour cent est la continuité qu'on veut montrer. Plus de cinq,
     // c'est une pile de citernes dans le nucléoplasme.
+    // 5 % ne mordait pas non plus : la pile pouvait s'enfoncer de 0,3 µm sans
+    // rougir. Mesuré : 0,24 %. Le seuil suit la mesure.
     expect(
       part,
-      `${(part * 100).toFixed(1)} % des sommets sont dans le noyau, jusqu'à ${profondeurMax.toFixed(2)} µm de profondeur`,
-    ).toBeLessThan(0.05)
+      `${(part * 100).toFixed(2)} % des sommets sont dans le noyau, jusqu'à ${profondeurMax.toFixed(2)} µm de profondeur`,
+    ).toBeLessThan(0.01)
+    expect(profondeurMax, 'la pile s’enfonce plus que le recouvrement voulu').toBeLessThan(0.2)
   })
 })
 
@@ -296,7 +338,9 @@ describe('chaque mécanisme se déroule dans son organite', () => {
   const mecanismes = creerMecanismes()
 
   it('construit bien les seize mécanismes', () => {
-    expect(mecanismes.length).toBeGreaterThanOrEqual(13)
+    // « Au moins treize » laissait en retirer trois du panneau sans un mot.
+    expect(mecanismes).toHaveLength(16)
+    expect(new Set(mecanismes.map((m) => m.cle)).size).toBe(16)
   })
 
   it('place les mécanismes mitochondriaux dans une mitochondrie', () => {
@@ -305,8 +349,14 @@ describe('chaque mécanisme se déroule dans son organite', () => {
       return new THREE.Box3().setFromObject(m.objet).getCenter(new THREE.Vector3())
     })
 
-    const mitochondriaux = mecanismes.filter((m) => /mitochondri/i.test(m.siege))
-    expect(mitochondriaux.length).toBeGreaterThan(0)
+    // Un filtre par sous-chaîne attrapait « Cytosol et mitochondrie » — le
+    // destin du pyruvate, qui commence dans le cytosol et dont la
+    // lactate-déshydrogénase y reste. Ce siège composite a d'ailleurs servi de
+    // passe-droit : le mécanisme avait été déplacé au centre d'une capsule sans
+    // que le test bronche. On exige donc que le siège COMMENCE par la
+    // mitochondrie.
+    const mitochondriaux = mecanismes.filter((m) => /^(Mitochondrie|Matrice mitochondriale)$/.test(m.siege))
+    expect(mitochondriaux.length).toBeGreaterThanOrEqual(3)
 
     for (const m of mitochondriaux) {
       const ecart = Math.min(...centres.map((c) => c.distanceTo(m.ancre)))
@@ -328,29 +378,49 @@ describe('chaque mécanisme se déroule dans son organite', () => {
    * échantillon.
    */
   it('déclare partout ce qui a été coupé ou échantillonné', () => {
-    const muets = mecanismes.filter((m) => !m.ellision?.trim())
+    // La non-vacuité ne suffisait pas : remplacer une ellision par « x » passait.
+    // Une déclaration d'échantillonnage tient en quelques phrases, pas en un mot.
+    const muets = mecanismes.filter((m) => (m.ellision?.trim().length ?? 0) < 120)
     expect(
-      muets.map((m) => m.nom),
-      'ces mécanismes ne déclarent aucune ellision',
+      muets.map((m) => `${m.nom} (${m.ellision?.trim().length ?? 0} caractères)`),
+      'ces mécanismes ne déclarent rien de substantiel sur ce qu’ils coupent',
     ).toEqual([])
   })
 
   /**
-   * Le badge de la bêta-oxydation annonçait « accéléré ×5 » pour un ralenti
-   * ×5,4, et sa propre justification décrivait le ralenti deux lignes plus bas.
-   * Aucun test ne pouvait le voir : le badge et sa justification sont deux
-   * chaînes indépendantes, écrites à la main.
+   * LE BADGE EST DÉRIVÉ, ET CE TEST LE VÉRIFIE.
    *
-   * Ce test les relie par le seul lien vérifiable sans lire le français : le
-   * CHIFFRE. Un badge dont le facteur ne se retrouve nulle part dans sa
-   * justification est un badge que personne n'a justifié.
+   * Une première version cherchait le mot « ralenti » dans le badge et le
+   * chiffre dans la justification. Un audit par mutation a montré qu'elle
+   * laissait passer, VERTE, le défaut historique exact : remettre « accéléré
+   * ×5 » sur la bêta-oxydation ne la faisait pas broncher, parce qu'elle ne
+   * comparait le sens à rien.
+   *
+   * Le sens n'est plus écrit : `poserLesBadges` le calcule depuis un nombre, et
+   * `MecanismeBrut` interdit à un module de rédiger un badge. Ce test garde la
+   * porte : chaque badge affiché doit être exactement celui que son facteur
+   * numérique produit.
+   *
+   * CE QU'IL NE COUVRE PAS, et qu'il faut dire : le NOMBRE lui-même. Un
+   * mécanisme qui déclarerait un ralentissement de 5 quand il en fait 50 passe
+   * ici. Seule une mesure du cycle animé contre sa durée dans la cellule le
+   * verrait — c'est ce que font `respiration.test.ts` et le test de la pompe,
+   * pour deux mécanismes sur seize.
    */
+  it('affiche exactement le badge que son facteur numérique produit', () => {
+    for (const m of mecanismes) {
+      expect(m.facteur, `« ${m.nom} »`).toBe(badgeDe(m.ralentissement))
+      expect(m.facteur).toMatch(/ralenti|accéléré|temps réel/)
+    }
+  })
+
   it('justifie chaque facteur que les badges affichent', () => {
     // Le facteur peut s'écrire en toutes lettres — « environ cinq fois plus
     // vite ». Refuser cette graphie pousserait à dénaturer un texte qui est
     // juste, ce qui serait le contraire du but.
     const enLettres: Record<string, string> = {
       '2': 'deux',
+      '3': 'trois',
       '5': 'cinq',
       '10': 'dix',
       '20': 'vingt',
@@ -362,63 +432,20 @@ describe('chaque mécanisme se déroule dans son organite', () => {
       '10000': 'dix mille',
     }
 
-    const sansMot: string[] = []
     const injustifies: string[] = []
-
     for (const m of mecanismes) {
-      if (!/ralenti|accéléré|temps réel/.test(m.facteur)) {
-        sansMot.push(`${m.nom} → « ${m.facteur} »`)
-      }
-      // Un badge peut porter DEUX facteurs — « deux temps : accéléré ×5, puis
-      // ralenti ×5 000 » — et chacun doit être justifié.
-      // Deux formes, parce qu'elles ne se cherchent pas dans le même texte :
-      // un nombre écrit « 5 000 » ne se retrouve que dans une prose dont on a
-      // ÔTÉ les espaces, un nombre écrit « cinq mille » que dans une prose qui
-      // les garde. Les confondre faisait échouer un badge parfaitement justifié.
       const justificationSerree = m.justificationFacteur.replace(/\s/g, '')
       const justificationLue = m.justificationFacteur.replace(/\s/g, ' ')
       for (const trouve of m.facteur.matchAll(/×\s*([\d\s,.]+)/g)) {
-        // La virgule finale de « ×5, puis » appartient à la phrase, pas au nombre.
         const enChiffres = trouve[1]!.trim().replace(/\s/g, '').replace(/[,.]+$/, '')
         const mot = enLettres[enChiffres]
         const justifie =
-          justificationSerree.includes(enChiffres) || (mot !== undefined && justificationLue.includes(mot))
-        if (!justifie) {
-          injustifies.push(`${m.nom} → ×${enChiffres} (badge « ${m.facteur} »)`)
-        }
+          justificationSerree.includes(enChiffres) ||
+          (mot !== undefined && justificationLue.includes(mot))
+        if (!justifie) injustifies.push(`${m.nom} → ×${enChiffres} (badge « ${m.facteur} »)`)
       }
     }
-
-    // On COLLECTE au lieu d'échouer au premier : un test qui s'arrête à la
-    // première violation oblige à autant de passes qu'il y a de défauts, et
-    // laisse croire à chaque tour qu'il n'en restait qu'un.
-    expect(sansMot, 'badges qui ne disent ni ralenti ni accéléré').toEqual([])
     expect(injustifies, 'facteurs que leur justification ne reprend jamais').toEqual([])
-  })
-
-  /**
-   * Les flèches de sortie de la bêta-oxydation avaient été calculées à la main
-   * comme la différence entre deux positions littérales. Celles-ci ayant changé,
-   * elles pointaient au hasard tout en prétendant désigner le cycle de Krebs et
-   * la chaîne respiratoire. Elles sont maintenant dérivées ; ce test empêche
-   * qu'elles redeviennent décoratives.
-   */
-  it('fait pointer les flèches de la bêta-oxydation vers leurs destinataires', () => {
-    const trouver = (cle: string): THREE.Vector3 => {
-      const m = mecanismes.find((x) => x.cle === cle)
-      expect(m, `mécanisme « ${cle} » introuvable`).toBeDefined()
-      return m!.ancre.clone()
-    }
-    const depart = trouver('beta-oxydation')
-
-    for (const [nom, cible, direction] of [
-      ['Krebs', trouver('krebs'), DIR_KREBS],
-      ['chaîne respiratoire', trouver('respiration'), DIR_CHAINE],
-    ] as const) {
-      const attendue = cible.sub(depart).normalize()
-      const alignement = attendue.dot(direction.clone().normalize())
-      expect(alignement, `la flèche vers ${nom} pointe à côté (produit scalaire ${alignement.toFixed(2)})`).toBeGreaterThan(0.9)
-    }
   })
 
   it('place les mécanismes nucléaires dans le noyau', () => {

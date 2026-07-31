@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { siegeMitochondrie, type Mecanisme } from './contrat.js'
+import { siegeMitochondrie, type MecanismeBrut } from './contrat.js'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 /**
@@ -44,19 +44,20 @@ const ANCRE = SIEGE.clone().add(new THREE.Vector3(-0.14, -0.1, 0))
 /**
  * Où partent l'acétyl-CoA et les transporteurs d'électrons.
  *
- * Ces deux vecteurs étaient écrits en dur : ils avaient été calculés à la main
- * comme la différence entre deux positions littérales, celles du cycle de Krebs
- * et de la chaîne respiratoire. Ces positions ayant changé, les flèches
- * pointaient au hasard dans le cytoplasme tout en prétendant désigner quelque
- * chose. On les CALCULE donc, depuis les mêmes placements que les mécanismes
- * visés — la flèche montre alors vraiment où va le produit.
+ * Deux directions SCHÉMATIQUES, et il faut le dire : elles indiquent deux
+ * sorties distinctes dans le repère de la scène, pas le chemin vers un autre
+ * objet de la cellule.
  *
- * Le groupe n'étant ni tourné ni retourné, sa direction locale est aussi sa
- * direction monde, et la mise à l'échelle réelle est uniforme : les deux
- * conservent le vecteur.
+ * Elles ont été, un temps, calculées vers les scènes du cycle de Krebs et de la
+ * chaîne respiratoire. C'était une erreur de biologie : l'acétyl-CoA produit ici
+ * alimente le cycle de Krebs de la MÊME matrice, pas celui d'une autre
+ * mitochondrie à treize micromètres. C'était aussi une erreur de lecture — les
+ * deux scènes visées se trouvant presque dans le même azimut, les flèches ne
+ * faisaient plus que 11° d'écart contre 38° auparavant, et les deux flux
+ * partaient visuellement ensemble.
  */
-export const DIR_KREBS = siegeMitochondrie(1).sub(SIEGE).normalize()
-export const DIR_CHAINE = siegeMitochondrie(0).sub(SIEGE).normalize()
+const DIR_KREBS = new THREE.Vector3(-1.4, -0.6, -1.0).normalize()
+const DIR_CHAINE = new THREE.Vector3(-1.4, 0.6, -1.0).normalize()
 
 /** La boucle des quatre enzymes. */
 const CENTRE_BOUCLE_X = 0.24
@@ -230,7 +231,7 @@ function borner(x: number, bas: number, haut: number): number {
   return x < bas ? bas : x > haut ? haut : x
 }
 
-export function creerBetaOxydation(): Mecanisme[] {
+export function creerBetaOxydation(): MecanismeBrut[] {
   const alea = creerAlea(70_116)
   const groupe = new THREE.Group()
   groupe.position.copy(SIEGE)
@@ -1153,7 +1154,7 @@ export function creerBetaOxydation(): Mecanisme[] {
       cle: 'beta-oxydation',
       nom: 'Bêta-oxydation des acides gras',
       siege: 'Matrice mitochondriale',
-      facteur: 'ralenti ×5',
+      ralentissement: 5,
       justificationFacteur:
         "Les quatre enzymes de la spirale tournent une dizaine de fois par seconde : un tour complet, " +
         "diffusions comprises, prend environ un tiers de seconde, soit 1,8 s à l'écran. Les sept tours " +

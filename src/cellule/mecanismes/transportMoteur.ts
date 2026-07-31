@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import { SIEGES, type Mecanisme } from './contrat.js'
+import { SIEGES, type MecanismeBrut } from './contrat.js'
 
 /**
  * TRANSPORT PAR MOTEURS MOLÉCULAIRES, et INSTABILITÉ DYNAMIQUE DU MICROTUBULE.
@@ -233,7 +233,7 @@ interface Moteur {
   roulis: number
 }
 
-export function creerTransportMoteur(): Mecanisme[] {
+export function creerTransportMoteur(): MecanismeBrut[] {
   const alea = creerAlea(GRAINE)
 
   // Repère du fuseau local au centrosome : l'axe radial, plus deux perpendiculaires.
@@ -814,7 +814,7 @@ export function creerTransportMoteur(): Mecanisme[] {
       cle: 'transport-moteur',
       nom: 'Kinésine et dynéine sur le microtubule',
       siege: 'Cytosquelette',
-      facteur: 'ralenti ×100',
+      ralentissement: 100,
       justificationFacteur:
         "La kinésine fait environ cent pas PRODUCTIFS par seconde, de 8 nm chacun, soit 800 nm/s : un pas dure 10 ms dans la cellule, il en prend une à l'écran. On verra pourtant une tentative et demie par seconde — une sur trois échoue et ne fait pas avancer la molécule, il faut donc compter les pas qui aboutissent, pas les balancements.",
       ellision:
@@ -831,7 +831,7 @@ export function creerTransportMoteur(): Mecanisme[] {
       cle: 'instabilite-dynamique',
       nom: 'Instabilité dynamique du microtubule',
       siege: 'Cytosquelette',
-      facteur: 'accéléré ×3',
+      ralentissement: 1 / 3,
       justificationFacteur:
         "Le tube pousse d'environ 1,8 µm/min et s'effondre à 17 µm/min. Accéléré trois fois, il remplit les 0,38 µm de la fenêtre gravée en quatre secondes et les reperd en moins d'une demi-seconde : les deux vitesses sont montrées telles quelles, et c'est leur rapport de près de dix qui doit sauter aux yeux.",
       ellision:

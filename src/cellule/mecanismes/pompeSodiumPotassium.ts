@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RAYON_CELLULE, TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import type { Mecanisme } from './contrat.js'
+import type { MecanismeBrut } from './contrat.js'
 
 /**
  * La pompe sodium-potassium, et le canal juste à côté.
@@ -58,7 +58,7 @@ const _rotation = new THREE.Quaternion()
 const _echelle = new THREE.Vector3(1, 1, 1)
 const _matrice = new THREE.Matrix4()
 
-export function creerPompeSodiumPotassium(): Mecanisme[] {
+export function creerPompeSodiumPotassium(): MecanismeBrut[] {
   const alea = creerAlea(11_235)
   const groupe = new THREE.Group()
   groupe.position.copy(CENTRE)
@@ -259,7 +259,7 @@ export function creerPompeSodiumPotassium(): Mecanisme[] {
       cle: 'pompe-sodium-potassium',
       nom: 'Pompe Na⁺/K⁺ et canal potassique',
       siege: 'Membrane plasmique',
-      facteur: 'ralenti ×1 000',
+      ralentissement: 1000,
       justificationFacteur:
         'Un cycle de pompe prend 7 à 20 ms, ce qui devient une douzaine de secondes ' +
         "à l'écran et se suit état par état. À ce même ralenti, le canal devrait " +

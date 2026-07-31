@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { siegeMitochondrie, type Mecanisme } from './contrat.js'
+import type { MecanismeBrut } from './contrat.js'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 /**
@@ -25,9 +25,16 @@ import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 // ── Repères, en micromètres (1 unité = 1 µm) ───────────────────────────────
 
-/** Cytosol, contre la glycolyse que le module voisin place à (-6.5, -4.2, -1.5). */
-/** Posé sur une vraie mitochondrie, et non à des coordonnées littérales. */
-const SIEGE = siegeMitochondrie(3)
+/**
+ * CYTOSOL, adossé à la glycolyse dont cette scène montre la suite.
+ *
+ * Il avait été déplacé au centre d'une mitochondrie en même temps que les
+ * mécanismes réellement mitochondriaux — à 9,8 µm de la glycolyse contre
+ * laquelle la scène est construite, et à l'intérieur d'une capsule alors que la
+ * lactate-déshydrogénase est cytosolique. L'invariant de siège ne l'a pas vu :
+ * il filtre sur le mot « mitochondrie », que ce siège contient aussi.
+ */
+const SIEGE = new THREE.Vector3(-7.6, -5.6, 0.6)
 
 /** Rayon du champ : au-delà, tout est renvoyé vers le centre. */
 const RAYON_CHAMP = 1.25
@@ -310,7 +317,7 @@ function axeTumble(phase: number, temps: number): void {
   axeTumbleZ = Math.sin(a) * sb
 }
 
-export function creerFermentation(): Mecanisme[] {
+export function creerFermentation(): MecanismeBrut[] {
   const alea = creerAlea(70_413)
   const groupe = new THREE.Group()
   groupe.position.copy(SIEGE)
@@ -1781,7 +1788,7 @@ export function creerFermentation(): Mecanisme[] {
       cle: 'fermentation',
       nom: 'Le destin du pyruvate : oxygène ou fermentation',
       siege: 'Cytosol et mitochondrie',
-      facteur: 'accéléré ×5',
+      ralentissement: 1 / 5,
       justificationFacteur:
         "Ce qui est accéléré ×5 ici est le RÉGIME, pas le geste enzymatique : dans un muscle qui " +
         "démarre, l'oxygène local s'épuise puis revient en une trentaine de secondes — 35 s réelles " +

@@ -1,80 +1,64 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
-import {
-  ATP_PAR_SECONDE,
-  ATP_PAR_TOUR,
-  DUREE_TOUR,
-  NB_ATP,
-  TOURS_PAR_SECONDE_REELS,
-  VITESSE_ATP,
-  creerRespiration,
-} from './respiration.js'
+import { ATP_PAR_TOUR, TOURS_PAR_SECONDE_REELS } from './respiration.js'
+import { creerMecanismes } from './tous.js'
 
 /**
- * LE TEST QUE LA SPEC EXIGEAIT DEPUIS LE DÉBUT.
+ * LE TEST QUE LA SPEC EXIGEAIT, ET QU'IL A FALLU ÉCRIRE TROIS FOIS.
  *
  * Critère D3 : « un test échoue si le badge diverge de ce que l'animation fait
- * réellement ». Ce test n'avait jamais été écrit, et c'est exactement par là que
- * deux défauts sont passés — la chaîne respiratoire fabriquait 9,4 ATP par tour
- * là où sa fiche en annonçait 3, et la bêta-oxydation affichait un accéléré pour
- * un ralenti.
+ * réellement ». C'est par son absence que deux défauts sont passés — la chaîne
+ * respiratoire fabriquait 9,4 ATP par tour là où sa fiche en annonce 3, et la
+ * bêta-oxydation affichait un accéléré pour un ralenti.
  *
- * Le principe est de ne comparer que des grandeurs que le CODE produit à des
- * affirmations que l'utilisateur LIT. Un test qui relirait les mêmes constantes
- * des deux côtés ne prouverait rien.
+ * PREMIÈRE VERSION : multipliait l'effectif par la vitesse de cycle. Tautologie,
+ * la vitesse étant définie comme le quotient.
  *
- * `creerRespiration()` ne construit que de la géométrie et des matériaux : rien
- * n'y demande de contexte graphique, et il tourne donc sous vitest.
+ * DEUXIÈME VERSION : comptait les naissances dans les matrices d'instances —
+ * un vrai numérateur — mais divisait par `DUREE_TOUR`, une constante IMPORTÉE.
+ * Le dénominateur restait postulé, si bien qu'un rotor mis à quatre secondes par
+ * tour laissait le test vert pendant que le badge continuait d'annoncer 1,5 s.
+ *
+ * CELLE-CI mesure les deux : le débit dans les matrices, la période dans la
+ * rotation du rotor. Aucune durée n'est relue. Et elle porte sur le mécanisme
+ * LIVRÉ, badge posé, tel que la page l'affiche.
  */
 describe('la chaîne respiratoire : le badge contre ce que le code fait', () => {
-  const [mecanisme] = creerRespiration()
+  const mecanisme = creerMecanismes().find((m) => m.cle === 'respiration')!
 
-  it('existe et porte un badge', () => {
-    expect(mecanisme).toBeDefined()
-    expect(mecanisme!.facteur).toBeTruthy()
+  it('est bien livré par la page, avec un badge', () => {
+    expect(mecanisme, 'aucun mécanisme « respiration » dans ce que la page pose').toBeDefined()
+    expect(mecanisme.facteur).toBeTruthy()
   })
 
-  /**
-   * LE CŒUR DU TEST : on COMPTE ce qu'`animer` fabrique.
-   *
-   * Une première version de ce test multipliait le nombre de molécules par leur
-   * vitesse de cycle. C'était une TAUTOLOGIE — la vitesse est définie comme le
-   * débit divisé par l'effectif, si bien que le produit valait le débit quoi
-   * qu'il arrive, et le test ne pouvait pas échouer. C'est le même défaut que
-   * `version.test.ts`, qui compare une constante à elle-même.
-   *
-   * On fait donc tourner l'animation sur trente secondes d'écran et on compte
-   * les naissances dans les matrices d'instances : une molécule naît quand son
-   * échelle retombe brusquement, à la reprise de son cycle. Le seul lien avec
-   * la stœchiométrie est alors le comportement.
-   *
-   * Les anciennes valeurs — vingt-six molécules à 0,24 cycle par seconde —
-   * produisaient 9,4 ATP par tour au lieu de 3. Ce test les refuse.
-   */
-  it("fabrique exactement trois ATP par tour, mesuré sur l'animation", () => {
-    const amas = mecanisme!.objet.getObjectByName('atp') as THREE.InstancedMesh
-    expect(amas, "l'amas d'ATP doit être nommé pour être mesurable").toBeDefined()
-    expect(amas.isInstancedMesh).toBe(true)
+  /** Fait tourner l'animation et rend le débit d'ATP et la période du rotor. */
+  function mesurer(): { atpParSeconde: number; secondesParTour: number } {
+    const amas = mecanisme.objet.getObjectByName('atp') as THREE.InstancedMesh
+    const rotor = mecanisme.objet.getObjectByName('rotor')!
+    expect(amas?.isInstancedMesh, "l'amas d'ATP doit être nommé pour être mesurable").toBe(true)
+    expect(rotor, 'le rotor doit être nommé pour que sa période soit mesurable').toBeDefined()
 
     const matrice = new THREE.Matrix4()
     const position = new THREE.Vector3()
     const rotation = new THREE.Quaternion()
     const echelle = new THREE.Vector3()
-
     const echelleDe = (i: number): number => {
       amas.getMatrixAt(i, matrice)
       matrice.decompose(position, rotation, echelle)
       return echelle.x
     }
 
-    const DUREE_MESURE = 30
+    const DUREE = 30
     const PAS = 1 / 60
-    mecanisme!.animer(0)
+    mecanisme.animer(0)
     const precedentes = Array.from({ length: amas.count }, (_, i) => echelleDe(i))
 
+    // La rotation est cumulative et non bornée à 2π : on la lit au début et à la
+    // fin, et la période s'en déduit sans jamais consulter de constante.
+    const angleDebut = rotor.rotation.y
     let naissances = 0
-    for (let n = 1; n <= DUREE_MESURE / PAS; n++) {
-      mecanisme!.animer(n * PAS)
+    for (let n = 1; n <= DUREE / PAS; n++) {
+      mecanisme.animer(n * PAS)
       for (let i = 0; i < amas.count; i++) {
         const courante = echelleDe(i)
         // Une chute franche : la molécule précédente a disparu, une neuve part
@@ -83,49 +67,54 @@ describe('la chaîne respiratoire : le badge contre ce que le code fait', () => 
         precedentes[i] = courante
       }
     }
+    const tours = (rotor.rotation.y - angleDebut) / (Math.PI * 2)
+    expect(tours, 'le rotor ne tourne pas : rien à mesurer').toBeGreaterThan(1)
 
-    const tours = DUREE_MESURE / DUREE_TOUR
-    const parTour = naissances / tours
-    // À un demi-ATP près : la fenêtre de mesure ne tombe pas sur un nombre
-    // entier de cycles pour chacune des molécules.
-    expect(parTour).toBeGreaterThan(ATP_PAR_TOUR - 0.5)
-    expect(parTour).toBeLessThan(ATP_PAR_TOUR + 0.5)
-    expect(ATP_PAR_TOUR).toBe(3)
-  })
+    return { atpParSeconde: naissances / DUREE, secondesParTour: DUREE / tours }
+  }
 
-  it("garde ses constantes cohérentes entre elles", () => {
-    // Complément du test précédent, et non son remplaçant : celui-ci ne prouve
-    // rien sur l'animation, il vérifie seulement que la table est cohérente.
-    expect(NB_ATP * VITESSE_ATP).toBeCloseTo(ATP_PAR_SECONDE, 12)
-  })
-
-  it("dit dans sa fiche ce que ce débit vaut, mot pour mot", () => {
-    // La fiche affirme « un ATP par tiers de tour ». Trois par tour, donc.
-    expect(mecanisme!.description).toContain('un ATP par tiers de tour')
-    expect(3).toBe(ATP_PAR_TOUR)
+  /**
+   * LE CŒUR DU TEST : deux grandeurs mesurées, aucune importée.
+   *
+   * Les anciennes valeurs — vingt-six molécules à 0,24 cycle par seconde —
+   * donnaient 9,35 ATP par tour. Un rotor à quatre secondes par tour en donnerait
+   * 8. Les deux échouent ici.
+   */
+  it('fabrique trois ATP par tour de rotor, mesuré des deux côtés', () => {
+    const { atpParSeconde, secondesParTour } = mesurer()
+    const parTour = atpParSeconde * secondesParTour
+    expect(
+      parTour,
+      `mesuré ${parTour.toFixed(2)} ATP par tour (${atpParSeconde.toFixed(2)}/s, ` +
+        `tour de ${secondesParTour.toFixed(2)} s) pour ${ATP_PAR_TOUR} annoncés`,
+    ).toBeGreaterThan(ATP_PAR_TOUR - 0.4)
+    expect(parTour).toBeLessThan(ATP_PAR_TOUR + 0.4)
   })
 
   /**
-   * Le badge annonce un ralenti ×200. La seule façon de le vérifier est de
-   * confronter la durée d'un tour À L'ÉCRAN à la durée d'un tour DANS LA
-   * CELLULE : leur rapport est le facteur, et il ne peut pas être écrit ailleurs.
+   * Le badge annonce un ralenti. Le seul moyen de le vérifier est de confronter
+   * la période MESURÉE du rotor à sa période dans la cellule : leur rapport est
+   * le facteur, et il ne peut être écrit nulle part.
    */
-  it('annonce le ralenti que la durée du tour impose', () => {
-    const dureeReelle = 1 / TOURS_PAR_SECONDE_REELS
-    const facteurReel = DUREE_TOUR / dureeReelle
+  it('annonce le ralenti que la période mesurée impose', () => {
+    const { secondesParTour } = mesurer()
+    const facteurReel = secondesParTour * TOURS_PAR_SECONDE_REELS
     expect(facteurReel).toBeCloseTo(195, 0)
 
-    const annonce = Number(mecanisme!.facteur.replace(/[^\d]/g, ''))
-    expect(mecanisme!.facteur).toMatch(/^ralenti/)
+    expect(mecanisme.facteur).toMatch(/^ralenti/)
+    const annonce = Number(mecanisme.facteur.replace(/[^\d]/g, ''))
     // À 3 % près : le badge arrondit, il ne doit pas se tromper d'ordre.
-    expect(Math.abs(annonce - facteurReel) / facteurReel).toBeLessThan(0.03)
+    expect(
+      Math.abs(annonce - facteurReel) / facteurReel,
+      `badge « ${mecanisme.facteur} » pour un ralenti mesuré de ${facteurReel.toFixed(0)}`,
+    ).toBeLessThan(0.03)
   })
 
-  it('justifie son badge avec les mêmes chiffres', () => {
-    expect(mecanisme!.justificationFacteur).toContain('130 tours par seconde')
+  it('dit dans sa fiche le débit que le code produit', () => {
+    expect(mecanisme.description).toContain('un ATP par tiers de tour')
+    expect(ATP_PAR_TOUR).toBe(3)
+    expect(mecanisme.justificationFacteur).toContain('130 tours par seconde')
     expect(TOURS_PAR_SECONDE_REELS).toBe(130)
-    expect(mecanisme!.justificationFacteur).toContain('1,5 s')
-    expect(DUREE_TOUR).toBe(1.5)
   })
 
   /**
@@ -134,12 +123,12 @@ describe('la chaîne respiratoire : le badge contre ce que le code fait', () => 
    * laissait un étudiant qui compte les molécules conclure faux.
    */
   it('déclare que ses effectifs sont échantillonnés', () => {
-    expect(mecanisme!.ellision).toBeTruthy()
-    expect(mecanisme!.ellision).toContain('échantillonn')
+    expect(mecanisme.ellision).toBeTruthy()
+    expect(mecanisme.ellision).toContain('échantillonn')
   })
 
   it('reste au siège que sa fiche annonce', () => {
-    expect(mecanisme!.siege).toBe('Mitochondrie')
-    expect(mecanisme!.objet.children.length).toBeGreaterThan(0)
+    expect(mecanisme.siege).toBe('Mitochondrie')
+    expect(mecanisme.objet.children.length).toBeGreaterThan(0)
   })
 })

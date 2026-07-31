@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Mecanisme } from './contrat.js'
+import type { MecanismeBrut } from './contrat.js'
 
 /**
  * Remise des mécanismes à leur taille biologique réelle.
@@ -54,7 +54,7 @@ const _centre = new THREE.Vector3()
  * posés loin de son origine se replierait vers cette origine au lieu de rétrécir
  * sur place.
  */
-export function mettreAEchelleReelle(mecanismes: Mecanisme[]): Mecanisme[] {
+export function mettreAEchelleReelle(mecanismes: MecanismeBrut[]): MecanismeBrut[] {
   return mecanismes.map((m) => {
     const cible = TAILLES_REELLES_UM[m.cle]
     if (cible === undefined) return m

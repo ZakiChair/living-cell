@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import { RAYON_NOYAU, SIEGES, type Mecanisme } from './contrat.js'
+import { RAYON_NOYAU, SIEGES, type MecanismeBrut } from './contrat.js'
 
 /**
  * L'EXPORT DE L'ARN MESSAGER PAR LE PORE NUCLÉAIRE.
@@ -155,7 +155,7 @@ function pointChemin(s: number, cible: THREE.Vector3): THREE.Vector3 {
   return cible.set(Math.cos(sc * 4) * r, Math.sin(sc * 4) * r, Z_ENTREE_MRNP + sc * COURSE_MRNP)
 }
 
-export function creerExportNucleaire(): Mecanisme[] {
+export function creerExportNucleaire(): MecanismeBrut[] {
   const alea = creerAlea(GRAINE)
 
   const groupe = new THREE.Group()
@@ -691,7 +691,7 @@ export function creerExportNucleaire(): Mecanisme[] {
       cle: 'export-nucleaire',
       nom: "Export de l'ARN messager",
       siege: 'Enveloppe nucléaire',
-      facteur: 'ralenti ×200',
+      ralentissement: 200,
       justificationFacteur:
         "Une importine reconnue franchit le pore en moins de dix millisecondes : à ×200 " +
         "la traversée dure deux secondes, juste au-dessus du seuil où l'œil décroche. Le " +

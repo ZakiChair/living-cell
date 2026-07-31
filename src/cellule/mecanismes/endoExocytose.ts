@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RAYON_CELLULE, TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import type { Mecanisme } from './contrat.js'
+import type { MecanismeBrut } from './contrat.js'
 
 /**
  * ENDOCYTOSE ET EXOCYTOSE À LA MEMBRANE PLASMIQUE.
@@ -373,7 +373,7 @@ const NB_RECEPTEURS = 130
 /** Trois manteaux : un qui aboutit, deux qui avortent. */
 const NB_CAGES = 3
 
-function creerEndocytose(): Mecanisme {
+function creerEndocytose(): MecanismeBrut {
   const alea = creerAlea(0x454e444f)
   const groupe = reperMembrane(DIR_ENDOCYTOSE)
   const cage = construireCage()
@@ -771,7 +771,7 @@ function creerEndocytose(): Mecanisme {
     cle: 'endocytose-clathrine',
     nom: 'Endocytose par puits de clathrine',
     siege: 'Membrane plasmique',
-    facteur: 'accéléré ×2,3',
+    ralentissement: 1 / 2.3,
     justificationFacteur:
       "Un puits de clathrine met 30 à 60 s à se creuser, à se pincer et à perdre " +
       "son manteau. Le cycle complet dure ici 20 s d'écran pour 45 s réelles, soit " +
@@ -842,7 +842,7 @@ const X_PORE_FIN = 0.73
 const X_APLATI_FIN = 0.93
 const X_RESET = 0.97
 
-function creerExocytose(): Mecanisme {
+function creerExocytose(): MecanismeBrut {
   const alea = creerAlea(0x45584f43)
   const groupe = reperMembrane(DIR_EXOCYTOSE)
 
@@ -1225,7 +1225,7 @@ function creerExocytose(): Mecanisme {
     cle: 'exocytose-snare',
     nom: 'Exocytose et fusion SNARE',
     siege: 'Membrane plasmique',
-    facteur: 'deux temps : accéléré ×5, puis ralenti ×5 000',
+    ralentissement: [1 / 5, 5000],
     justificationFacteur:
       "Deux temps, parce qu'une seule vitesse serait fausse pour l'un des deux. " +
       "L'errance et l'amarrage de la vésicule prennent une trentaine de secondes : " +
@@ -1263,6 +1263,6 @@ function creerExocytose(): Mecanisme {
  * Les deux faces d'un même échange de membrane, séparées parce que leurs
  * horloges le sont.
  */
-export function creerEndoExocytose(): Mecanisme[] {
+export function creerEndoExocytose(): MecanismeBrut[] {
   return [creerEndocytose(), creerExocytose()]
 }

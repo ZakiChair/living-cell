@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Mecanisme } from './contrat.js'
+import type { MecanismeBrut } from './contrat.js'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 /**
@@ -387,7 +387,7 @@ TEMPS_TEMOINS[11] = T_SORTIE + DUREE_SORTIE + 0.45
 /** Durée de l'extinction de la réglette, juste avant le glucose suivant. */
 const DUREE_EXTINCTION = 0.3
 
-export function creerGlycolyse(): Mecanisme[] {
+export function creerGlycolyse(): MecanismeBrut[] {
   const alea = creerAlea(70_114)
   const groupe = new THREE.Group()
   groupe.position.copy(SIEGE)
@@ -1015,7 +1015,7 @@ export function creerGlycolyse(): Mecanisme[] {
       cle: 'glycolyse',
       nom: 'Glycolyse',
       siege: 'Cytosol',
-      facteur: 'accéléré ×5',
+      ralentissement: 1 / 5,
       justificationFacteur:
         "Le transit d'un glucose à travers les dix étapes ne dure pas le même temps selon l'état de " +
         'la cellule : le rapport entre les réserves d\'intermédiaires et le flux donne moins d\'une ' +

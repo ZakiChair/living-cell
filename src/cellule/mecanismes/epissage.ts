@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import { SIEGES, type Mecanisme } from './contrat.js'
+import { SIEGES, type MecanismeBrut } from './contrat.js'
 
 /**
  * ÉPISSAGE DE L'ARN PRÉ-MESSAGER PAR LE SPLICEOSOME.
@@ -152,7 +152,7 @@ function derive(
   return sortie.set(x * amplitude, y * amplitude, z * amplitude)
 }
 
-export function creerEpissage(): Mecanisme[] {
+export function creerEpissage(): MecanismeBrut[] {
   const alea = creerAlea(58201)
   const groupe = new THREE.Group()
   // Décalage donné par rapport au CENTRE du noyau : posé en coordonnées monde,
@@ -532,7 +532,7 @@ export function creerEpissage(): Mecanisme[] {
       cle: 'epissage',
       nom: "Épissage de l'ARN par le spliceosome",
       siege: 'Noyau',
-      facteur: 'accéléré ×50',
+      ralentissement: 1 / 50,
       justificationFacteur:
         "L'épissage d'un intron prend 5 à 10 minutes ; à ×50 il tient en 9 secondes. " +
         'La transcription des 16 737 pb du transcrit, 8,4 minutes à 2 kb/min, en occupe 10. ' +

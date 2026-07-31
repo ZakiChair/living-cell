@@ -66,8 +66,11 @@ export const LIBELLES: Record<Etape, { titre: string; sous: string }> = {
     sous: 'Un codon à la fois, avec trois à cinq ARN de transfert rejetés avant le bon.',
   },
   termine: {
-    titre: 'La protéine est libérée',
-    sous: "Le ribosome a rencontré un codon stop et s'est détaché en deux sous-unités.",
+    titre: 'La chaîne B est terminée',
+    // PAS de codon stop : la région montrée s'arrête à la fin de la chaîne B,
+    // et dans le gène entier la traduction continue au-delà — le peptide C,
+    // puis la chaîne A. Annoncer un stop décrivait un procédé qui n'a pas lieu.
+    sous: "La région montrée s'achève. Dans le gène entier, le ribosome continuerait sur le peptide C puis sur la chaîne A avant de rencontrer un vrai codon stop.",
   },
 }
 
@@ -96,6 +99,16 @@ export const LIAISONS_PAR_ACIDE_AMINE = 4
 /** Nombre d'ARN de transfert rejetés avant le bon, pour chaque codon. */
 const ESSAIS_MIN = 3
 const ESSAIS_MAX = 5
+
+/**
+ * Où le codon s'arrête en pas à pas : juste avant le cliquet.
+ *
+ * La scène déclenche la translocation à 0,8 de l'avancement du codon. On
+ * s'arrête en deçà pour que l'ARN de transfert soit arrivé et la sous-unité
+ * armée, sans que le pas soit franchi — c'est exactement l'instant que le mode
+ * pas à pas existe pour montrer.
+ */
+const SEUIL_PAS_A_PAS = 0.78
 
 export interface Atelier {
   gene: Gene
@@ -203,9 +216,39 @@ export function reinitialiser(atelier: Atelier): void {
 
 // ── L'écoulement ───────────────────────────────────────────────────────────
 
-/** Combien d'essais ratés sur ce codon : déterministe, mais irrégulier. */
-function essaisPour(indice: number): number {
-  return ESSAIS_MIN + ((indice * 7 + 3) % (ESSAIS_MAX - ESSAIS_MIN + 1))
+/**
+ * Mélange déterministe d'un entier vers un entier bien réparti.
+ *
+ * Le mélangeur de Wang, en 32 bits. Il évite le piège dans lequel la première
+ * version était tombée : `(i * 7 + 3) % 3` se réduit à `i % 3`, et produisait la
+ * suite 3, 4, 5, 3, 4, 5… strictement périodique, là où le commentaire annonçait
+ * « déterministe, mais irrégulier ». Multiplier avant un modulo qui divise le
+ * multiplicateur ne mélange rien.
+ */
+function melanger(x: number): number {
+  let n = x | 0
+  n = (n ^ 61) ^ (n >>> 16)
+  n = n + (n << 3)
+  n = n ^ (n >>> 4)
+  n = Math.imul(n, 0x27d4eb2d)
+  n = n ^ (n >>> 15)
+  return n >>> 0
+}
+
+/** Combien d'ARN de transfert sont rejetés sur ce codon : de 3 à 5. */
+export function essaisPour(indice: number): number {
+  return ESSAIS_MIN + (melanger(indice) % (ESSAIS_MAX - ESSAIS_MIN + 1))
+}
+
+/**
+ * Lequel des `nb` ARN de transfert dessinés finit par s'installer.
+ *
+ * Il était désigné par `essais % nb`, avec `essais` entre 3 et 5 et `nb` = 6 :
+ * les instances 0, 1 et 2 ne pouvaient donc JAMAIS gagner. Un tirage propre sur
+ * l'indice du codon les remet toutes en jeu.
+ */
+export function arntGagnant(indiceCodon: number, nb: number): number {
+  return melanger(indiceCodon * 2 + 1) % nb
 }
 
 function poserUnAcideAmine(atelier: Atelier): void {
@@ -264,9 +307,25 @@ export function avancerAtelier(atelier: Atelier, dt: number, regime: number): vo
       }
       break
     case 'traduction': {
-      // En pas à pas, le temps passe et les ARN de transfert continuent de
-      // cogner, mais aucun acide aminé n'est posé sans un geste.
-      if (atelier.pasAPas) break
+      // EN PAS À PAS, le codon avance JUSQU'AU SEUIL du cliquet, puis attend.
+      //
+      // Il restait auparavant figé à zéro, ce qui gelait les deux seuls
+      // procédés que le pas à pas sert à examiner : l'ARN de transfert gagnant
+      // restait à sa distance maximale sans jamais s'installer, et la petite
+      // sous-unité ne pivotait pas. Les ARNt perdants, eux, continuaient de
+      // cogner — pilotés par le temps —, ce qui faisait passer le gel pour un
+      // choix.
+      //
+      // On s'arrête juste avant que le cliquet ne parte : l'ARNt est arrivé, la
+      // translocation est armée, et c'est le geste de l'utilisateur qui la
+      // déclenche.
+      if (atelier.pasAPas) {
+        atelier.fractionCodon = Math.min(
+          SEUIL_PAS_A_PAS,
+          atelier.fractionCodon + pas / DUREE_CODON,
+        )
+        break
+      }
       atelier.fractionCodon += pas / DUREE_CODON
       while (atelier.fractionCodon >= 1 && atelier.etape === 'traduction') {
         atelier.fractionCodon -= 1

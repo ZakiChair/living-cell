@@ -24,8 +24,23 @@ export interface Mecanisme {
   /** L'organite où ça se passe, pour regrouper la liste. */
   siege: string
   /**
-   * Le facteur temporel, tel qu'il s'affiche : « ralenti ×1 000 », « accéléré ×100 ».
-   * Toujours accompagné de sa justification dans `justificationFacteur`.
+   * LE FACTEUR TEMPOREL, EN NOMBRE — et le badge s'en déduit.
+   *
+   * Plus grand que 1 : la scène est RALENTIE d'autant. Plus petit : accélérée.
+   * Un tableau pour les rares scènes à deux temps.
+   *
+   * C'est un nombre, et non la phrase affichée, parce que la phrase écrite à la
+   * main a menti. La bêta-oxydation a longtemps annoncé « accéléré ×5 » pour un
+   * ralenti ×5, et le test censé l'empêcher laissait passer l'inversion : il
+   * vérifiait que le mot figurait dans le badge, jamais qu'il correspondait à
+   * quoi que ce soit. Le sens ne peut plus être écrit, il est calculé.
+   */
+  ralentissement: number | readonly number[]
+  /**
+   * Le facteur tel qu'il s'affiche. DÉRIVÉ de `ralentissement` par
+   * `poserLesBadges`, jamais rédigé dans les modules — ceux-ci renvoient des
+   * `MecanismeBrut`, un type d'où ce champ est absent, si bien qu'écrire un
+   * badge à la main ne compile pas.
    */
   facteur: string
   /** Pourquoi ce facteur : la durée réelle, et ce qu'elle devient à l'écran. */
@@ -92,3 +107,49 @@ export const SIEGES = {
 
 /** Rayon du noyau, en micromètres. Réexporté depuis la source unique. */
 export const RAYON_NOYAU = RAYON_NOYAU_PARTAGE
+
+/**
+ * Un mécanisme tel que son module le construit : sans badge.
+ *
+ * Le champ `facteur` est ajouté par `poserLesBadges`, et par lui seul. Un
+ * module qui tenterait d'écrire « accéléré ×5 » sur un ralenti ne compilerait
+ * pas — c'est la seule façon d'empêcher pour de bon l'inversion qui a traîné
+ * des mois dans la bêta-oxydation.
+ */
+export type MecanismeBrut = Omit<Mecanisme, 'facteur'>
+
+/** Écrit un facteur avec l'espace insécable des milliers : « 5 000 ». */
+function chiffrer(facteur: number): string {
+  const arrondi = facteur >= 10 ? facteur.toFixed(0) : facteur.toFixed(1).replace(/[,.]0$/, '')
+  return arrondi.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+}
+
+/**
+ * Le badge d'un facteur, DÉDUIT de son signe.
+ *
+ * Un seul endroit décide si l'on écrit « ralenti » ou « accéléré », et il le
+ * décide en comparant le nombre à 1. C'est ce qui rend l'inversion impossible.
+ */
+export function badgeDe(ralentissement: number | readonly number[]): string {
+  if (Array.isArray(ralentissement)) {
+    const temps = (ralentissement as readonly number[]).map((r) => badgeDe(r))
+    return `deux temps : ${temps.join(', puis ')}`
+  }
+  const r = ralentissement as number
+  if (!(r > 0) || !Number.isFinite(r)) {
+    throw new Error(`ralentissement invalide : ${r}`)
+  }
+  if (r > 1.05) return `ralenti ×${chiffrer(r)}`
+  if (r < 0.95) return `accéléré ×${chiffrer(1 / r)}`
+  return 'temps réel'
+}
+
+/**
+ * Réécrit le badge de chaque mécanisme depuis son facteur numérique.
+ *
+ * Appelé une fois, dans `tous.ts`, sur tout ce que la page affiche : aucun
+ * module ne rédige plus la phrase, donc aucun ne peut se tromper de sens.
+ */
+export function poserLesBadges(mecanismes: MecanismeBrut[]): Mecanisme[] {
+  return mecanismes.map((m) => ({ ...m, facteur: badgeDe(m.ralentissement) }))
+}

@@ -14,6 +14,8 @@ import {
   materiauOrganite,
   pointDansCoquille,
   type Organite,
+  CENTRE_NOYAU,
+  RAYON_NOYAU,
 } from '../contrat.js'
 
 /** Grand axe d'une mitochondrie, en micromètres. Échelle vraie. */
@@ -53,6 +55,9 @@ const EPAISSEUR_CRETE = 0.03
 const PORTEE_CRETES = 0.8
 /** Marge laissée entre le bord d'une crête inclinée et la membrane interne. */
 const MARGE_CRETE = 0.015
+
+/** Jeu laissé entre l'enveloppe nucléaire et le bout d'une capsule. */
+const MARGE_NOYAU = 0.1
 
 /** Le grand axe de la capsule, aligné sur Y en espace local. */
 const AXE_LONG = new THREE.Vector3(0, 1, 0)
@@ -192,9 +197,19 @@ let _placements: PlacementMitochondrie[] | null = null
  * tirage à l'une ne peut plus déplacer l'autre.
  */
 export function placementsMitochondries(): PlacementMitochondrie[] {
-  if (_placements) return _placements
+  if (!_placements) _placements = calculerPlacements(GRAINE_PLACEMENT)
+  return _placements
+}
 
-  const alea = creerAlea(GRAINE_PLACEMENT)
+/**
+ * Le placement pour une graine donnée — exposé pour que l'invariant se PROUVE.
+ *
+ * Un test qui ne vérifierait que la graine de production surveillerait une
+ * loterie : avant la garde d'exclusion ci-dessous, 36 graines sur 300 posaient
+ * une capsule dans le noyau, et celle du produit passait par chance.
+ */
+export function calculerPlacements(graine: number): PlacementMitochondrie[] {
+  const alea = creerAlea(graine)
   const pivot = new THREE.Object3D()
   const liste: PlacementMitochondrie[] = []
 
@@ -205,6 +220,23 @@ export function placementsMitochondries(): PlacementMitochondrie[] {
     // exemplaires du côté ouvert, sinon la moitié disparaît de la planche.
     position.z = -Math.abs(position.z)
 
+    // LE NOYAU EST DÉCENTRÉ, la coquille ne l'est pas : rien n'empêchait une
+    // capsule d'y tomber. Un audit par rejeu de graines a trouvé 36 tirages
+    // fautifs sur 300 — l'invariant tenait par chance, et le test qui le
+    // surveillait était une sentinelle au-dessus d'une loterie. On repousse
+    // donc, radialement, plutôt que de tirer à nouveau : la boucle se termine
+    // toujours, et c'est la garde que `matrices.ts` avait déjà de son côté.
+    _direction.subVectors(position, CENTRE_NOYAU)
+    const distance = _direction.length()
+    // Marge franche : repousser pile sur la limite laisse le flottant tomber
+    // des deux côtés, et un test d'invariant n'a rien à arbitrer au bit près.
+    const ecartMinimal = RAYON_NOYAU + DEMI_LONGUEUR + MARGE_NOYAU
+    if (distance < ecartMinimal) {
+      _direction.divideScalar(distance || 1)
+      position.copy(CENTRE_NOYAU).addScaledVector(_direction, ecartMinimal)
+      position.z = -Math.abs(position.z)
+    }
+
     // Orientation quelconque, prise sur la sphère unité, puis roulis autour du
     // grand axe pour que les crêtes ne se décalent pas toutes dans le même sens.
     pointDansCoquille(alea, 1, 1, _direction).normalize()
@@ -214,7 +246,6 @@ export function placementsMitochondries(): PlacementMitochondrie[] {
     liste.push({ position, quaternion: pivot.quaternion.clone() })
   }
 
-  _placements = liste
   return liste
 }
 

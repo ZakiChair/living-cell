@@ -1,4 +1,4 @@
-import type { Mecanisme } from './contrat.js'
+import { poserLesBadges, type Mecanisme } from './contrat.js'
 import { mettreAEchelleReelle } from './echelleReelle.js'
 import { creerRespiration } from './respiration.js'
 import { creerTraductionReticulum } from './traductionReticulum.js'
@@ -35,7 +35,11 @@ export function creerMecanismes(): Mecanisme[] {
   // Tout passe par la remise à l'échelle réelle : plusieurs modules ont été
   // construits agrandis, et c'est ce qui les faisait ressembler à des planches
   // de manuel posées dans le cytoplasme plutôt qu'à la cellule elle-même.
-  return mettreAEchelleReelle([
+  // Les badges sont POSÉS ici, depuis le facteur numérique de chaque
+  // mécanisme : aucun module ne rédige plus « ralenti » ou « accéléré », donc
+  // aucun ne peut se tromper de sens.
+  return poserLesBadges(
+    mettreAEchelleReelle([
     // Énergie
     ...creerGlycolyse(),
     ...creerFermentation(),
@@ -51,6 +55,7 @@ export function creerMecanismes(): Mecanisme[] {
     ...creerTransportMoteur(),
     ...creerEndoExocytose(),
     ...creerPompeSodiumPotassium(),
-    ...creerProteasome(),
-  ])
+      ...creerProteasome(),
+    ]),
+  )
 }

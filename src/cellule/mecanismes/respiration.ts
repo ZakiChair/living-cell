@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import { siegeMitochondrie, type Mecanisme } from './contrat.js'
+import { siegeMitochondrie, type MecanismeBrut } from './contrat.js'
 
 /**
  * La chaîne respiratoire et l'ATP synthase.
@@ -125,7 +125,7 @@ function creerComplexe(
   return maillage
 }
 
-export function creerRespiration(): Mecanisme[] {
+export function creerRespiration(): MecanismeBrut[] {
   const alea = creerAlea(60_607)
   const groupe = new THREE.Group()
   groupe.position.copy(CENTRE)
@@ -176,6 +176,10 @@ export function creerRespiration(): Mecanisme[] {
     cran.position.set(Math.cos(angle) * 0.055, 0, Math.sin(angle) * 0.055)
     rotor.add(cran)
   }
+  // Nommé pour que le test D3 mesure la PÉRIODE du rotor au lieu de la relire
+  // dans une constante : c'est le dénominateur du débit d'ATP, et l'importer
+  // rendait la mesure tautologique.
+  rotor.name = 'rotor'
   synthase.add(rotor)
 
   // La tige centrale, solidaire du rotor.
@@ -404,7 +408,7 @@ export function creerRespiration(): Mecanisme[] {
       cle: 'respiration',
       nom: 'Chaîne respiratoire et ATP synthase',
       siege: 'Mitochondrie',
-      facteur: 'ralenti ×200',
+      ralentissement: 200,
       justificationFacteur:
         "L'ATP synthase tourne à environ 130 tours par seconde : un tour prend 8 ms, " +
         "ce qui devient 1,5 s à l'écran et se suit à l'œil — un ralenti de 200, arrondi " +

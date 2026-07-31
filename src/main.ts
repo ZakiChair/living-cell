@@ -117,6 +117,25 @@ for (const [siege, liste] of parSiege) {
 let mecanismeChoisi: Mecanisme | null = null
 
 /**
+ * Le grain que l'utilisateur a choisi, entre 0 et 1.
+ *
+ * Le gros plan et l'atelier l'abaissent temporairement ; ils doivent le rendre
+ * ensuite. Sans cette mémoire, régler le grain à 40 % puis regarder un
+ * mécanisme le ramenait à 100 % au retour.
+ */
+let grainChoisi = 1
+
+function imposerLeGrain(fraction: number): void {
+  if (!curseurDensite) return
+  curseurDensite.value = String(Math.round(fraction * 100))
+  reglerDensite(fraction)
+}
+
+function rendreLeGrainChoisi(): void {
+  imposerLeGrain(grainChoisi)
+}
+
+/**
  * Met un mécanisme en avant et efface le reste.
  *
  * Sans ça, un mécanisme observé de près disparaît sous l'encombrement du cytosol
@@ -133,11 +152,12 @@ function mettreEnAvant(choisi: Mecanisme | null): void {
   // Les flux d'ambiance encombrent le champ de près : on les coupe aussi.
   for (const f of flux) f.objet.visible = choisi === null
 
-  // L'encombrement moléculaire est superbe de loin et illisible de près.
-  if (curseurDensite) {
-    curseurDensite.value = choisi === null ? '100' : '12'
-    reglerDensite(choisi === null ? 1 : 0.12)
-  }
+  // L'encombrement moléculaire est superbe de loin et illisible de près. On
+  // MÉMORISE le réglage de l'utilisateur avant de l'écraser : le curseur est le
+  // geste signature du site, et revenir d'un gros plan le remettait à 100 %
+  // quoi qu'il ait choisi.
+  if (choisi === null) rendreLeGrainChoisi()
+  else imposerLeGrain(0.12)
 
   for (const [cle, bouton] of boutonsMecanisme) {
     bouton.setAttribute('aria-pressed', String(choisi !== null && cle === choisi.cle))
@@ -280,8 +300,7 @@ document.getElementById('colonne')!.appendChild(panneauAtelier.racine)
 function entrerAtelier(): void {
   atelierActif = true
   mettreEnAvant(null)
-  familleIsolee = null
-  appliquerIsolement()
+  relacherIsolement()
   sceneAtelier.objet.visible = true
   for (const f of flux) f.objet.visible = false
   for (const m of mecanismes) m.objet.visible = false
@@ -290,10 +309,7 @@ function entrerAtelier(): void {
   // distance, le noyau n'est plus un contexte, c'est une paroi opaque entre la
   // caméra et le sujet. L'atelier est un plateau, et la fiche le déclare.
   for (const organite of vue.organites) organite.objet.visible = false
-  if (curseurDensite) {
-    curseurDensite.value = '8'
-    reglerDensite(0.08)
-  }
+  imposerLeGrain(0.08)
   panneauAtelier.racine.hidden = false
   panneauFlux.hidden = true
   legende.hidden = true
@@ -312,10 +328,7 @@ function quitterAtelier(): void {
   legende.hidden = false
   boutonAtelier.setAttribute('aria-pressed', 'false')
   fiche.classList.remove('ouverte')
-  if (curseurDensite) {
-    curseurDensite.value = '100'
-    reglerDensite(1)
-  }
+  rendreLeGrainChoisi()
   mettreEnAvant(null)
   revenirVueEnsemble()
 }
@@ -341,6 +354,8 @@ const posRibosome = new THREE.Vector3()
 const localTemp = new THREE.Vector3()
 const inverseTemp = new THREE.Matrix4()
 let saisieEnCours = false
+/** Quel pointeur tient le brin. Un autre bouton ne doit pas le lâcher. */
+let pointeurQuiTient: number | null = null
 
 /** Distance en pixels sous laquelle le pointeur est considéré sur le brin. */
 const RAYON_PRISE_PX = 44
@@ -401,21 +416,42 @@ function relacherBrin(): void {
 
 window.addEventListener('pointerdown', (e) => {
   if ((e.target as HTMLElement).closest('#legende, #reglages, #fiche, #flux, #atelier')) return
+  // BOUTON PRINCIPAL SEULEMENT. Sans ce filtre, un clic droit sur le brin le
+  // saisissait et coupait l'orbite, pour un geste que personne n'a demandé.
+  if (e.button !== 0) return
+  if (saisieEnCours) return
   if (!brinSousPointeur(e.clientX, e.clientY)) return
   saisieEnCours = true
+  pointeurQuiTient = e.pointerId
   // On coupe l'orbite : sans cela, tirer le brin ferait aussi pivoter la scène.
   vue.controles.enabled = false
   deplacerBrin(e.clientX, e.clientY)
 })
 
 window.addEventListener('pointermove', (e) => {
-  if (saisieEnCours) deplacerBrin(e.clientX, e.clientY)
+  if (saisieEnCours && e.pointerId === pointeurQuiTient) deplacerBrin(e.clientX, e.clientY)
 })
 
-window.addEventListener('pointerup', () => {
+/**
+ * Relâche le brin — et seulement pour le pointeur qui le tenait.
+ *
+ * `pointerup` était écouté sans distinction : appuyer puis relâcher le bouton
+ * droit pendant un glisser au bouton gauche déposait le brin et rendait
+ * l'orbite en plein geste. `pointercancel` n'était pas écouté du tout, si bien
+ * qu'un geste interrompu par le système laissait la caméra figée et le brin
+ * collé au curseur, définitivement.
+ */
+function terminerLaSaisie(pointerId?: number): void {
+  if (!saisieEnCours) return
+  if (pointerId !== undefined && pointerId !== pointeurQuiTient) return
   relacherBrin()
+  pointeurQuiTient = null
   vue.controles.enabled = true
-})
+}
+
+window.addEventListener('pointerup', (e) => terminerLaSaisie(e.pointerId))
+window.addEventListener('pointercancel', (e) => terminerLaSaisie(e.pointerId))
+window.addEventListener('blur', () => terminerLaSaisie())
 
 // ── Légende ───────────────────────────────────────────────────────────────
 // Une entrée par famille, pas par exemplaire : six mitochondries font une
@@ -490,6 +526,21 @@ const OPACITE_ORGANITE_EN_GROS_PLAN = 0.08
  * tour à tour dans `material.opacity` se reprendraient mutuellement leur
  * réglage, et la dernière appelée gagnerait — un couplage silencieux de plus.
  */
+/**
+ * Lève l'isolement, ET remet les boutons de la légende à l'état qu'ils
+ * décrivent.
+ *
+ * Les deux étaient dissociés : entrer dans l'atelier levait l'isolement sans
+ * relever les boutons, si bien qu'en sortant, « Mitochondrie ×6 » restait
+ * enfoncé alors que plus rien n'était isolé. Le gestionnaire de « Recadrer »
+ * faisait bien les deux — la boucle existait, elle n'était juste pas partagée.
+ */
+function relacherIsolement(): void {
+  familleIsolee = null
+  appliquerIsolement()
+  for (const b of legende.querySelectorAll('button')) b.setAttribute('aria-pressed', 'false')
+}
+
 function appliquerIsolement(): void {
   for (const organite of vue.organites) {
     const dansLaFamille =
@@ -652,7 +703,10 @@ function reglerDensite(fraction: number): void {
   reglerGrain(amasDenses, fraction)
 }
 if (curseurDensite) {
-  curseurDensite.addEventListener('input', () => reglerDensite(Number(curseurDensite.value) / 100))
+  curseurDensite.addEventListener('input', () => {
+    grainChoisi = Number(curseurDensite.value) / 100
+    reglerDensite(grainChoisi)
+  })
 }
 
 // ── Aller à la boîte de vérité ────────────────────────────────────────────
@@ -705,9 +759,7 @@ document.getElementById('recadrer')!.addEventListener('click', () => {
   revenirVueEnsemble()
   mettreEnAvant(null)
   fiche.classList.remove('ouverte')
-  familleIsolee = null
-  appliquerIsolement()
-  for (const b of legende.querySelectorAll('button')) b.setAttribute('aria-pressed', 'false')
+  relacherIsolement()
 })
 
 // Le mouvement est réduit, pas supprimé : la préférence système est une

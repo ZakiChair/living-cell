@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 import { RAYON_NOYAU, SIEGES } from '../mecanismes/contrat.js'
 import { TEINTES_CLASSE } from '../../noyau/codeGenetique.js'
-import type { Atelier } from '../../noyau/atelier.js'
+import { arntGagnant, type Atelier } from '../../noyau/atelier.js'
 
 /**
  * LA SCÈNE DE L'ATELIER DU GÈNE.
@@ -488,7 +488,7 @@ export function creerSceneAtelier(): SceneAtelier {
       }
       // Chacun arrive de sa direction, touche, et repart. Le dernier reste :
       // c'est celui dont l'anticodon apparie le codon lu.
-      const gagnant = i === atelier.essais % NB_ARNT
+      const gagnant = i === arntGagnant(atelier.codons, NB_ARNT)
       const phase = (temps * 0.7 + i / NB_ARNT) % 1
       const approche = gagnant ? 1 - lissage(1 - atelier.fractionCodon) : Math.sin(phase * Math.PI)
       const distance = 0.05 * (1 - approche) + RAYON_PETITE * 1.2

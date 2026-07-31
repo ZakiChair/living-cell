@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Mecanisme } from './contrat.js'
+import type { MecanismeBrut } from './contrat.js'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 
 /**
@@ -143,7 +143,7 @@ const LOBES_LIGASE = new Float32Array([
   -0.0025, -0.0023, -0.0013, 0.0022,
 ])
 
-export function creerProteasome(): Mecanisme[] {
+export function creerProteasome(): MecanismeBrut[] {
   const alea = creerAlea(48_112)
   const groupe = new THREE.Group()
   groupe.position.copy(SIEGE)
@@ -829,7 +829,7 @@ export function creerProteasome(): Mecanisme[] {
       cle: 'proteasome',
       nom: 'Dégradation par le protéasome',
       siege: 'Cytosol',
-      facteur: 'accéléré ×10',
+      ralentissement: 1 / 10,
       justificationFacteur:
         "Une chaîne complète — engagement, dépliement, dernier peptide — prend environ 23 s sur " +
         "protéine purifiée ; à ×10 elle tient en 2,3 s à l'écran. Au même facteur le protéasome " +
