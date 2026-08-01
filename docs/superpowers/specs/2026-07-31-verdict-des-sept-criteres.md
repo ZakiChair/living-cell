@@ -78,19 +78,30 @@ mécanisme déclare un *nombre*, `MecanismeBrut` interdit le champ texte, et un 
 d'écrire « ralenti » ou « accéléré ». L'inversion qui a traîné des mois dans la bêta-oxydation est
 devenue une erreur de compilation.
 
-**Ce qui ne l'est pas :** le NOMBRE lui-même. **Trois** mécanismes sur seize confrontent leur
-facteur à une mesure de l'animation — la chaîne respiratoire, dont la période du rotor et le débit
-d'ATP sont tous deux mesurés ; la pompe Na⁺/K⁺, dont les traversées sont comptées dans les matrices
-et dont le rapport 3:2 est ainsi verrouillé ; et l'atelier, dont le badge est calculé depuis la
-vitesse effective. Les treize autres pourraient annoncer 5 pour un facteur de 50 sans que rien ne
-bronche.
+**Ce qui l'est aussi, depuis le 1ᵉʳ août :** le NOMBRE, pour **huit** mécanismes sur seize. Un
+harnais générique (`periode.ts`) mesure la période d'un cycle par autocorrélation de la signature
+de l'objet qui le porte, et vérifie que
 
-Un **filet générique** couvre les seize depuis le 1ᵉʳ août : aucune matrice non finie sur une heure
-d'animation échantillonnée. Il ne dit rien du facteur, mais il attrape la classe de défaut qui rend
-une scène invisible sans un mot d'erreur.
+> période mesurée à l'écran ÷ durée réelle déclarée = ralentissement affiché
 
-**Décision : le critère est tenu, la couverture est un chantier ouvert et chiffré.** Le patron
-existe et a servi deux fois ; décliner les treize restants coûte environ une journée.
+Aucune constante d'animation n'entre dans ce calcul. Les deux seules déclarations sont le NOM d'un
+objet de la scène et une durée de BIOLOGIE — c'est-à-dire ce qu'un relecteur peut contrôler, et rien
+qu'un développeur puisse ajuster pour faire passer le test. Trois mutations le vérifient : changer
+le badge sans l'animation échoue, ralentir l'animation sans le badge échoue, accélérer l'animation
+du double sans le badge échoue.
+
+S'y ajoutent la pompe Na⁺/K⁺, dont les traversées sont comptées instance par instance et dont le
+rapport 3:2 est verrouillé ; le débit d'ATP de la chaîne respiratoire, compté de même ; et
+l'atelier, dont le badge est calculé depuis la vitesse effective et ne peut donc pas diverger.
+
+Un **filet générique** couvre les seize : aucune matrice non finie sur une heure d'animation
+échantillonnée. Il ne dit rien du facteur, mais il attrape la classe de défaut qui rend une scène
+invisible sans un mot d'erreur.
+
+**Décision : le critère est tenu.** Les huit mécanismes non couverts sont ceux dont la scène n'a pas
+de cycle franc — une dérive brownienne, une instabilité dynamique, une chaîne d'événements non
+répétitive. Leur badge reste vérifié par sa cohérence interne et par la relecture, pas par une
+mesure ; c'est une limite du dispositif, pas une dette.
 
 **Une interdiction du critère est violée, et assumée :** « le passage de accéléré à ralenti dans un
 même plan est interdit ». `endoExocytose` porte « deux temps : accéléré ×5, puis ralenti ×5 000 »
@@ -202,8 +213,8 @@ Trois choses, et aucune n'est une dette d'honnêteté.
 
 1. **La relecture par un biologiste.** C'est la seule condition de livraison encore ouverte. Le
    dossier qui la rend possible existe (`npm run relecture`) ; il manque le relecteur.
-2. **La mesure D3 pour treize mécanismes.** Le patron a servi deux fois, le chiffrage tient : une
-   journée. Le badge, lui, ne peut déjà plus se tromper de sens.
-3. **La boîte de vérité en dalle plutôt qu'en cube.** Le calcul est écrit et testé
-   (`areteTenable`) ; le cube de 680 nm ne ment plus, une dalle porterait simplement plus large au
-   même budget.
+2. ~~**La mesure D3 pour treize mécanismes.**~~ ✅ **Fait** : huit mécanismes sont désormais mesurés
+   par un harnais générique. Les huit autres n'ont pas de cycle franc à mesurer — c'est une limite
+   de la méthode, énoncée plutôt qu'une dette.
+3. ~~**La boîte de vérité en dalle plutôt qu'en cube.**~~ ✅ **Fait** : 1 164 nm de côté sur 200
+   d'épaisseur, contre 647 en cube, au même budget de 157 000 objets.

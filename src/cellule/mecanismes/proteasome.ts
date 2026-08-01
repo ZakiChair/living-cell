@@ -232,6 +232,8 @@ export function creerProteasome(): MecanismeBrut[] {
     materiauOrganite(TEINTE_CIBLE, { doubleFace: false }),
     NB_CIBLES * NB_BILLES,
   )
+  // Porte le cycle auquel le badge se réfère : voir `observable`.
+  cibles.name = 'proteines-a-degrader'
   cibles.frustumCulled = false
   groupe.add(cibles)
 

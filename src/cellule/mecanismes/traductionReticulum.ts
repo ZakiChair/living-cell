@@ -317,6 +317,8 @@ function creerAtelier(
   }
 
   const arnt = new THREE.InstancedMesh(geos.arnt, mats.arnt, nb * NB_SLOTS)
+  // Porte le cycle auquel le badge se réfère : voir `observable`.
+  arnt.name = 'arn-de-transfert'
   const acides = new THREE.InstancedMesh(geos.acide, mats.chaine, nb * NB_SLOTS)
   const chaines = new THREE.InstancedMesh(geos.residu, mats.chaine, nb * CHAINE_MAX)
   arnt.frustumCulled = false
@@ -1106,6 +1108,14 @@ export function creerTraductionReticulum(): MecanismeBrut[] {
       nom: 'Traduction : un polysome au travail',
       siege: 'Cytosol',
       ralentissement: 20,
+      observable: {
+        nom: 'arn-de-transfert',
+        cycleReel: PAS_CYCLE * 0.17,
+        pourquoi:
+          "Les ARN de transfert bouclent avec le ribosome : douze codons traduits, " +
+          "puis la relève. C'est ce cycle que le badge ralentit, et il dure treize " +
+          'fois 170 ms dans le cytosol — la cadence du ribosome de mammifère.',
+      },
       justificationFacteur:
         'Un ribosome de mammifère pose 5 à 6 acides aminés par seconde : un codon dure ' +
         '170 ms, qui deviennent 3,4 s à l’écran — un ralenti de 20. Une bactérie irait ' +

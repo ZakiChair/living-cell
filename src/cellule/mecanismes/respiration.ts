@@ -409,6 +409,14 @@ export function creerRespiration(): MecanismeBrut[] {
       nom: 'Chaîne respiratoire et ATP synthase',
       siege: 'Mitochondrie',
       ralentissement: 200,
+      observable: {
+        nom: 'rotor',
+        cycleReel: 1 / TOURS_PAR_SECONDE_REELS,
+        pourquoi:
+          "Le rotor F0 fait un tour complet à chaque passage de son anneau de " +
+          'protons : le badge ralentit exactement ce tour. Il tourne à environ 130 ' +
+          'tours par seconde dans la mitochondrie, soit 7,7 ms par tour.',
+      },
       justificationFacteur:
         "L'ATP synthase tourne à environ 130 tours par seconde : un tour prend 8 ms, " +
         "ce qui devient 1,5 s à l'écran et se suit à l'œil — un ralenti de 200, arrondi " +

@@ -280,6 +280,8 @@ export function creerBetaOxydation(): MecanismeBrut[] {
     materiauOrganite(TEINTE_ENZYME, { doubleFace: false }),
     4 * LOBES_PAR_ENZYME,
   )
+  // Porte le cycle auquel le badge se réfère : voir `observable`.
+  enzymesSpirale.name = 'anneau-des-quatre-enzymes'
   const enzymesPorte = new THREE.InstancedMesh(
     geoBille,
     materiauOrganite(TEINTE_PORTE, { doubleFace: false }),
@@ -1155,6 +1157,16 @@ export function creerBetaOxydation(): MecanismeBrut[] {
       nom: 'Bêta-oxydation des acides gras',
       siege: 'Matrice mitochondriale',
       ralentissement: 5,
+      observable: {
+        nom: 'anneau-des-quatre-enzymes',
+        cycleReel: 0.36,
+        pourquoi:
+          "Les quatre enzymes se rallument à chaque tour de la spirale : c'est ce " +
+          'tour que le badge ralentit. Il prend environ un tiers de seconde dans la ' +
+          "matrice, diffusions comprises. La chaîne de carbones, elle, ne boucle qu'en " +
+          "fin de spirale — sept tours plus tard — et son cycle n'est donc pas celui " +
+          'du badge.',
+      },
       justificationFacteur:
         "Les quatre enzymes de la spirale tournent une dizaine de fois par seconde : un tour complet, " +
         "diffusions comprises, prend environ un tiers de seconde, soit 1,8 s à l'écran. Les sept tours " +

@@ -43,6 +43,31 @@ export interface Mecanisme {
    * badge à la main ne compile pas.
    */
   facteur: string
+  /**
+   * CE QUI PORTE LE CYCLE AUQUEL LE BADGE SE RÉFÈRE.
+   *
+   * Sans lui, le badge n'est vérifiable que contre lui-même. Un harnais mesure
+   * la période de l'objet nommé dans l'animation livrée, et la compare à sa
+   * durée dans la cellule : leur rapport DOIT être le ralentissement annoncé.
+   * Aucune constante d'animation n'entre dans ce calcul.
+   *
+   * Il a fallu trois tentatives pour en arriver là. Mesurer la période de la
+   * SCÈNE ne suffit pas : une scène superpose plusieurs horloges — ses propres
+   * ellisions le disent — et sa période globale est leur plus petit commun
+   * multiple. Le cycle de Krebs rend ainsi 20 s pour un tour de 10, et la
+   * chaîne respiratoire 60 s pour un rotor de 1,5.
+   *
+   * `cycleReel` est une donnée de BIOLOGIE, pas un réglage : c'est ce qu'un
+   * relecteur peut contrôler, et c'est le seul chiffre déclaré ici.
+   */
+  observable?: {
+    /** Nom de l'objet, posé par `.name` dans la scène. */
+    nom: string
+    /** Durée d'un cycle dans la cellule, en secondes. */
+    cycleReel: number
+    /** Pourquoi c'est cet objet qui porte le cycle du badge. */
+    pourquoi: string
+  }
   /** Pourquoi ce facteur : la durée réelle, et ce qu'elle devient à l'écran. */
   justificationFacteur: string
   /**

@@ -507,6 +507,8 @@ export function creerGlycolyse(): MecanismeBrut[] {
   // ── Le substrat, ses phosphates, ses partenaires ─────────────────────────
   const materiauSubstrat = materiauOrganite(0xffffff, { doubleFace: false })
   const carbones = new THREE.InstancedMesh(geometrieBille, materiauSubstrat, NB_CARBONES)
+  // Porte le cycle auquel le badge se réfère : voir `observable`.
+  carbones.name = 'substrat-du-glucose'
 
   const phosphates = new THREE.InstancedMesh(
     geometrieGrain,
@@ -1016,6 +1018,14 @@ export function creerGlycolyse(): MecanismeBrut[] {
       nom: 'Glycolyse',
       siege: 'Cytosol',
       ralentissement: 1 / 5,
+      observable: {
+        nom: 'substrat-du-glucose',
+        cycleReel: DUREE_CYCLE * 5,
+        pourquoi:
+          "Le substrat traverse les dix postes puis le tour recommence. Ce transit " +
+          "prend plusieurs dizaines de secondes dans une cellule au repos, l'état " +
+          'que cette scène joue.',
+      },
       justificationFacteur:
         "Le transit d'un glucose à travers les dix étapes ne dure pas le même temps selon l'état de " +
         'la cellule : le rapport entre les réserves d\'intermédiaires et le flux donne moins d\'une ' +

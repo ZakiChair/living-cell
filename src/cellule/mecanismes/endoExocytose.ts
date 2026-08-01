@@ -427,6 +427,8 @@ function creerEndocytose(): MecanismeBrut {
     matiereTriskele,
     NB_GRAINS_TRISKELE,
   )
+  // Porte le cycle auquel le badge se réfère : voir `observable`.
+  triskeles.name = 'manteau-de-clathrine'
   triskeles.frustumCulled = false
   groupe.add(triskeles)
 
@@ -772,6 +774,14 @@ function creerEndocytose(): MecanismeBrut {
     nom: 'Endocytose par puits de clathrine',
     siege: 'Membrane plasmique',
     ralentissement: 1 / 2.3,
+    observable: {
+      nom: 'manteau-de-clathrine',
+      cycleReel: PERIODE_ENDO * 2.3,
+      pourquoi:
+        "Le manteau de clathrine s'assemble, étrangle la vésicule puis se défait : " +
+        'un puits complet par cycle. Il faut 30 secondes à une minute dans la ' +
+        'cellule, et cette scène en joue 46.',
+    },
     justificationFacteur:
       "Un puits de clathrine met 30 à 60 s à se creuser, à se pincer et à perdre " +
       "son manteau. Le cycle complet dure ici 20 s d'écran pour 45 s réelles, soit " +

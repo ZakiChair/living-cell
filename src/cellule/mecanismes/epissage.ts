@@ -227,6 +227,8 @@ export function creerEpissage(): MecanismeBrut[] {
     materiauOrganite(TEINTES.cytosquelette, { doubleFace: false }),
     NB_INTRONS * PERLES_INTRON,
   )
+  // Porte le cycle auquel le badge se réfère : voir `observable`.
+  perlesIntron.name = 'intron-en-cours-d-excision'
   // Trois marqueurs par intron : site 5', adénosine du branchement, et le nœud
   // 2'-5' lui-même — la signature chimique de la réaction.
   const marqueurs = new THREE.InstancedMesh(
@@ -533,6 +535,16 @@ export function creerEpissage(): MecanismeBrut[] {
       nom: "Épissage de l'ARN par le spliceosome",
       siege: 'Noyau',
       ralentissement: 1 / 50,
+      observable: {
+        nom: 'intron-en-cours-d-excision',
+        cycleReel: 1750,
+        pourquoi:
+          "Les introns se replient en lasso puis se détachent, et la boucle recommence " +
+          "quand les trois sont excisés. C'est cette boucle entière que le badge " +
+          'accélère : transcrire 16 737 paires de bases à 2 kb/min prend 8,4 minutes, ' +
+          "et les trois excisions, échelonnées et co-transcriptionnelles, portent " +
+          "l'ensemble à une trentaine de minutes — 1 750 s.",
+      },
       justificationFacteur:
         "L'épissage d'un intron prend 5 à 10 minutes ; à ×50 il tient en 9 secondes. " +
         'La transcription des 16 737 pb du transcrit, 8,4 minutes à 2 kb/min, en occupe 10. ' +

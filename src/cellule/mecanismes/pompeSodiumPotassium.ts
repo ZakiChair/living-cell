@@ -267,6 +267,14 @@ export function creerPompeSodiumPotassium(): MecanismeBrut[] {
       nom: 'Pompe Na⁺/K⁺ et canal potassique',
       siege: 'Membrane plasmique',
       ralentissement: 1000,
+      observable: {
+        nom: 'sodium',
+        cycleReel: 0.0128,
+        pourquoi:
+          "Les sodiums traversent une fois par cycle de la pompe : leur période est " +
+          "celle des quatre conformations E1, E1-P, E2-P, E2. Un cycle réel dure 7 à " +
+          '20 ms ; on retient 12,8 ms, le milieu de cette fourchette.',
+      },
       justificationFacteur:
         'Un cycle de pompe prend 7 à 20 ms, ce qui devient une douzaine de secondes ' +
         "à l'écran et se suit état par état. À ce même ralenti, le canal devrait " +

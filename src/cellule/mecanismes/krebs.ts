@@ -395,6 +395,8 @@ export function creerKrebs(): MecanismeBrut[] {
     matiereSubstrat,
     NB_CARBONES,
   )
+  // Porte le cycle auquel le badge se réfère : voir `observable`.
+  carbones.name = 'substrat-du-cycle'
   carbones.frustumCulled = false
   molecule.add(carbones)
 
@@ -846,6 +848,14 @@ export function creerKrebs(): MecanismeBrut[] {
       nom: 'Cycle de Krebs',
       siege: 'Matrice mitochondriale',
       ralentissement: 1 / 5,
+      observable: {
+        nom: 'substrat-du-cycle',
+        cycleReel: 50,
+        pourquoi:
+          "Les carbones du substrat font le tour des huit enzymes et reviennent à " +
+          "l'oxaloacétate : c'est ce tour que le badge accélère. Il prend une " +
+          'cinquantaine de secondes dans un muscle au repos.',
+      },
       justificationFacteur:
         "Le temps qu'un carbone met à faire le tour des huit enzymes dépend du régime : " +
         "de l'ordre d'une cinquantaine de secondes dans un muscle au repos, où le flux est " +
