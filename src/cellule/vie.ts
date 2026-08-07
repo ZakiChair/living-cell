@@ -214,5 +214,10 @@ export function creerTraficProteines(): Flux {
  * du gène en ajoutant une quatrième, la garder revenait à ajouter à la pile.
  */
 export function creerFlux(): Flux[] {
-  return [creerEchangesMineraux(), creerTraficProteines()]
+  // Les deux anciennes animations d'ambiance étaient indépendantes de l'état :
+  // les canaux reprenaient la direction de la pompe et le trafic n'avait ni
+  // cargo ni retour rétrograde. Les mécanismes inspectables, désormais pilotés
+  // par leurs débits biologiques, les remplacent. Une texture de fond ne doit
+  // jamais contredire le modèle qu'elle prétend illustrer.
+  return []
 }

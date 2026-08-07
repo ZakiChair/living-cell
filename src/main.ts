@@ -27,7 +27,15 @@ import {
   donnerAuRibosome,
   facteurAffiche,
 } from './noyau/atelier.js'
-import { SAUT_MAX, avancerDe, creerEtat, regimeTraduction } from './noyau/etatCellule.js'
+import { SAUT_MAX, creerEtat } from './noyau/etatCellule.js'
+import {
+  activiteMecanisme,
+  avancerSystemeCellulaire,
+  creerSystemeCellulaire,
+  estCleMecanisme,
+  regimesAtelier,
+} from './noyau/systemeCellulaire.js'
+import { creerLaboratoireCellulaire } from './cellule/laboratoire.js'
 
 const vue = creerVue(document.body)
 
@@ -56,12 +64,16 @@ for (const f of flux) vue.scene.add(f.objet)
 
 const mecanismes = creerMecanismes()
 for (const m of mecanismes) vue.scene.add(m.objet)
+const horlogesMecanismes = new Map(mecanismes.map((m) => [m.cle, 0]))
 
 // ── L'atelier du gène ─────────────────────────────────────────────────────
 // La cellule a désormais un ÉTAT, et l'atelier est ce qui le rend manipulable.
 // Les deux vivent dans src/noyau/, testés sans GPU ; ici on ne fait que les
 // brancher à la scène et à l'interface.
 const etatCellule = creerEtat()
+const systemeCellulaire = creerSystemeCellulaire(etatCellule)
+const systemeTemoin = creerSystemeCellulaire(creerEtat(), 0x5eed)
+const laboratoireCellulaire = creerLaboratoireCellulaire(systemeCellulaire, systemeTemoin)
 const atelier = creerAtelier()
 const sceneAtelier = creerSceneAtelier()
 sceneAtelier.objet.visible = false
@@ -479,6 +491,7 @@ const legende = document.getElementById('legende')!
  * donc leur badge en pied de légende.
  */
 function poserLaNoteDesFlux(): void {
+  if (flux.length === 0) return
   const note = document.createElement('p')
   note.className = 'note-flux'
   note.textContent =
@@ -890,32 +903,30 @@ function boucle(): void {
   }
 
   tempsVie += dt
-  // On n'anime que ce qui se voit. `mettreEnAvant` masque quinze mécanismes sur
-  // seize dès qu'on en choisit un ; les animer quand même dépensait du budget
-  // d'image exactement là où il manque — en vue rapprochée.
-  for (const f of flux) if (f.objet.visible) f.animer(tempsVie)
-  for (const m of mecanismes) if (m.objet.visible) m.animer(tempsVie)
-
-  // ── L'état de la cellule, et l'atelier qu'il gouverne ────────────────────
-  // Le moteur tourne EN PERMANENCE, même hors atelier : un levier tiré depuis la
-  // vue d'ensemble doit avoir déjà produit son effet quand on descend voir.
-  //
-  // UNE SEULE HORLOGE. Le curseur de vitesse accélérait d'abord le seul
-  // ribosome, la cellule restant en temps réel : à ×4 la protéine était finie
-  // en vingt-cinq secondes quand l'ATP mettait quarante-cinq à s'effondrer, si
-  // bien que couper l'oxygène n'arrêtait jamais rien à l'écran. La boucle
-  // existait dans le code et restait invisible. Le multiplicateur porte donc
-  // sur les deux, et le badge dit le facteur qui en résulte.
-  // Le temps simulé est calculé UNE fois, borné UNE fois, et passé aux deux.
-  // Deux bornes posées séparément peuvent toujours diverger, et elles l'ont
-  // fait : `avancerDe` plafonnait à 0,5 s, l'atelier ne plafonnait rien.
   const dtSimule = Math.min(dt * (atelierActif ? atelier.vitesse : 1), SAUT_MAX)
-  avancerDe(etatCellule, dtSimule)
+  avancerSystemeCellulaire(systemeCellulaire, dtSimule)
+  avancerSystemeCellulaire(systemeTemoin, dtSimule)
+
+  // Une horloge par mécanisme : son débit biologique accélère, ralentit ou
+  // arrête désormais la scène. Le rendu ne décide plus seul que la cellule vit.
+  for (const f of flux) if (f.objet.visible) f.animer(tempsVie)
+  for (const m of mecanismes) {
+    if (!m.objet.visible) continue
+    // Le garde est doublé d'un test qui épingle les seize clés : une clé que
+    // le modèle ignore ne peut pas geler silencieusement une animation.
+    if (!estCleMecanisme(m.cle)) continue
+    const horloge = (horlogesMecanismes.get(m.cle) ?? 0) +
+      dtSimule * activiteMecanisme(systemeCellulaire, m.cle)
+    horlogesMecanismes.set(m.cle, horloge)
+    m.animer(horloge)
+  }
+
   if (atelierActif) {
-    avancerAtelier(atelier, dtSimule, regimeTraduction(etatCellule.atp))
+    avancerAtelier(atelier, dtSimule, regimesAtelier(systemeCellulaire))
     sceneAtelier.animer(atelier, tempsVie)
     panneauAtelier.rafraichir(atelier, etatCellule)
   }
+  laboratoireCellulaire.rafraichir()
 
   // Avant `controles.update()` : la cible doit être à jour quand l'amortissement
   // calcule le déplacement de cette image.

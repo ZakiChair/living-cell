@@ -160,8 +160,9 @@ export function creerPanneauAtelier(
       nom: "Couper l'oxygène",
       quoiRegarder:
         "La chaîne respiratoire perd son accepteur final. Il ne reste que la " +
-        "glycolyse : 2 ATP par glucose au lieu de 30. La cellule ne meurt pas, " +
-        "elle s'appauvrit d'un facteur quinze — et le ribosome s'arrête.",
+        "glycolyse : 2 ATP par glucose au lieu de 30. À court terme la cellule " +
+        "s'appauvrit et le ribosome s'arrête ; si l'anoxie dure, le laboratoire " +
+        "fait monter l'acidification, les dommages et la perte de viabilité.",
     },
     {
       cle: 'oligomycine' as const,
@@ -385,10 +386,10 @@ export function creerPanneauAtelier(
 export const FICHE_ATELIER = {
   titre: "L'atelier du gène",
   description:
-    "La chaîne complète, d'un bout à l'autre : l'ARN polymérase copie les " +
-    "quatre-vingt-dix paires de bases du gène en ouvrant la double hélice sur " +
+    "La chaîne pédagogique, d'un bout à l'autre : l'ARN polymérase copie les " +
+    "quatre-vingt-dix bases du fragment codant la chaîne B en ouvrant la double hélice sur " +
     'treize à la fois, le transcrit reçoit sa coiffe dès le vingt-cinquième ' +
-    "nucléotide, franchit le pore nucléaire — qui n'est pas un trou mais un " +
+    "nucléotide ; le fragment est contrôlé, polyadénylé puis franchit le pore nucléaire — qui n'est pas un trou mais un " +
     "hydrogel où le brin doit fondre — et attend. Il n'ira nulle part tout seul : " +
     "c'est vous qui le donnez au ribosome, et rien ne se traduit avant. Ensuite " +
     'le ribosome lit un codon à la fois, trois à cinq ARN de transfert viennent ' +
@@ -396,7 +397,7 @@ export const FICHE_ATELIER = {
     "séquence est celle de la chaîne B de l'insuline humaine : la protéine qui " +
     "s'affiche résidu par résidu est déterminée par les bases du gène, par la " +
     'table standard du code génétique et par rien d’autre. Ces quatre-vingt-dix ' +
-    'bases sont celles du gène INS humain, collationnées sur GenBank ' +
+    'bases proviennent de la région codante du gène INS humain, collationnée sur GenBank ' +
     '(NM_000207.3) et épinglées base par base par un test.',
   ellision:
     "C'EST UN PLATEAU, pas une vue de la cellule : les organites sont retirés " +

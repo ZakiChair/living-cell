@@ -115,6 +115,12 @@ export interface Atelier {
   etape: Etape
   /** Nucléotides transcrits, de 0 à la longueur du gène. */
   bases: number
+  /** La coiffe est ajoutée co-transcriptionnellement dès le 25e nucléotide. */
+  coiffeAjoutee: boolean
+  /** Le fragment sans intron a franchi le contrôle de maturation nucléaire. */
+  maturationValidee: boolean
+  /** La queue poly-A a été ajoutée avant l'export. */
+  polyadenyle: boolean
   /** Codons traduits, de 0 au nombre de codons. */
   codons: number
   /** Avancement dans le codon courant, de 0 à 1. */
@@ -136,6 +142,9 @@ export function creerAtelier(): Atelier {
     gene: creerGene(),
     etape: 'repos',
     bases: 0,
+    coiffeAjoutee: false,
+    maturationValidee: false,
+    polyadenyle: false,
     codons: 0,
     fractionCodon: 0,
     liaisons: 0,
@@ -207,6 +216,9 @@ export function avancerDUnCodon(atelier: Atelier): boolean {
 export function reinitialiser(atelier: Atelier): void {
   atelier.etape = 'repos'
   atelier.bases = 0
+  atelier.coiffeAjoutee = false
+  atelier.maturationValidee = false
+  atelier.polyadenyle = false
   atelier.codons = 0
   atelier.fractionCodon = 0
   atelier.liaisons = 0
@@ -270,13 +282,35 @@ function poserUnAcideAmine(atelier: Atelier): void {
  * sans rien casser — la chaîne reprendra où elle en était quand l'ATP remontera,
  * ce qui est bien ce que fait une cellule réoxygénée.
  */
-export function avancerAtelier(atelier: Atelier, dt: number, regime: number): void {
+export interface RegimesAtelier {
+  transcription: number
+  maturation: number
+  export: number
+  traduction: number
+}
+
+export function avancerAtelier(
+  atelier: Atelier,
+  dt: number,
+  regime: number | RegimesAtelier,
+): void {
   // `dt` est DÉJÀ multiplié par la vitesse, et déjà borné, par l'appelant : la
   // cellule et l'atelier partagent une seule horloge. Appliquer `vitesse` ici
   // aussi la dédoublait — et les deux bornes, posées séparément, divergeaient
   // dès qu'une image dépassait 25 ms. À vitesse 20, c'est-à-dire sous 40 images
   // par seconde, l'atelier avançait quatre fois plus vite que la cellule.
-  const allure = Math.max(0, Math.min(1, regime))
+  const regimeEtape = typeof regime === 'number'
+    ? regime
+    : atelier.etape === 'transcription'
+      ? regime.transcription
+      : atelier.etape === 'coiffe'
+        ? regime.maturation
+        : atelier.etape === 'export'
+          ? regime.export
+          : atelier.etape === 'traduction'
+            ? regime.traduction
+            : 1
+  const allure = Math.max(0, Math.min(1, regimeEtape))
   if (allure <= 0) return
   const pas = dt * allure
   atelier.horloge += pas
@@ -288,6 +322,7 @@ export function avancerAtelier(atelier: Atelier, dt: number, regime: number): vo
       atelier.bases = Math.min(total, atelier.bases + NT_PAR_SECONDE * pas)
       const franchies = Math.floor(atelier.bases) - avant
       if (franchies > 0) atelier.liaisons += franchies * LIAISONS_PAR_NUCLEOTIDE
+      if (!atelier.coiffeAjoutee && atelier.bases >= 25) atelier.coiffeAjoutee = true
       if (atelier.bases >= total) {
         atelier.etape = 'coiffe'
         atelier.horloge = 0
@@ -296,6 +331,8 @@ export function avancerAtelier(atelier: Atelier, dt: number, regime: number): vo
     }
     case 'coiffe':
       if (atelier.horloge >= DUREE_COIFFE) {
+        atelier.maturationValidee = true
+        atelier.polyadenyle = true
         atelier.etape = 'export'
         atelier.horloge = 0
       }

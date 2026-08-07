@@ -52,9 +52,9 @@ export function creerVue(conteneur: HTMLElement): Vue {
   renderer.domElement.setAttribute('role', 'img')
   renderer.domElement.setAttribute(
     'aria-label',
-    "Écorché en trois dimensions d'une cellule eucaryote animale : noyau, " +
+    "Écorché pédagogique en trois dimensions d'une cellule bêta pancréatique humaine : noyau, " +
       'mitochondries, réticulum endoplasmique, appareil de Golgi, vésicules et ' +
-      'cytosquelette, à leurs proportions réelles. La légende et la liste des ' +
+      'cytosquelette, avec une échelle explicitée par la barre de mesure. La légende et la liste des ' +
       'mécanismes, à gauche, donnent le même contenu en texte.',
   )
   conteneur.appendChild(renderer.domElement)
