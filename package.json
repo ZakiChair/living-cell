@@ -1,13 +1,13 @@
 {
   "name": "living-cell",
   "version": "0.1.0",
-  "description": "Site pédagogique présentant une cellule eucaryote animale comme un système vivant, mesuré et manipulable",
+  "description": "Modèle pédagogique d'une cellule bêta pancréatique humaine, mesurée et manipulable",
   "license": "ISC",
   "type": "module",
   "scripts": {
     "banc": "vite",
     "build": "vite build",
-    "test": "vitest run",
+    "test": "tsc --noEmit && vitest run",
     "test:suivi": "vitest",
     "relecture": "tsx outils/dossierRelecture.ts > docs/relecture-scientifique.md"
   },
