@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { ContexteCellule } from '../../noyau/contexte.js'
 import { CENTRE_NOYAU, RAYON_NOYAU as RAYON_NOYAU_PARTAGE } from '../contrat.js'
 import { placementsMitochondries } from '../organites/mitochondries.js'
 
@@ -88,9 +89,20 @@ export interface Mecanisme {
   rayonCadrage: number
   /** Teinte dominante, pour la pastille de la liste. */
   couleur: number
-  /** Avance le mécanisme. `temps` est en secondes écoulées depuis le début. */
-  animer: (temps: number) => void
+  /**
+   * Avance le mécanisme. `temps` est en secondes écoulées depuis le début.
+   *
+   * `contexte` est l'état cellulaire en LECTURE SEULE : c'est par lui qu'une
+   * scène peut changer de comportement — rotor qui suit la force
+   * proton-motrice, SNARE déclenchés par le calcium, granules dont le compte
+   * suit le pool — et non plus seulement de vitesse. Une scène qui ne s'en
+   * sert pas l'ignore : déclarer `(temps) => …` reste licite, l'argument
+   * supplémentaire est simplement inutilisé.
+   */
+  animer: (temps: number, contexte: ContexteCellule) => void
 }
+
+export type { ContexteCellule }
 
 /**
  * Le siège d'un mécanisme mitochondrial : une vraie mitochondrie.

@@ -1,3 +1,4 @@
+import { contexteRepos } from '../noyau/contexte.js'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import {
@@ -468,7 +469,7 @@ describe('chaque mécanisme se déroule dans son organite', () => {
 
     for (const m of mecanismes) {
       for (const temps of [0, 0.5, 7, 26.5, 61, 137, 613, 1800, 3600]) {
-        m.animer(temps)
+        m.animer(temps, contexteRepos())
         m.objet.traverse((noeud) => {
           const amas = noeud as THREE.InstancedMesh
           if (!amas.isInstancedMesh) return

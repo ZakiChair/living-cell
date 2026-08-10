@@ -1,3 +1,4 @@
+import { contexteRepos } from '../../noyau/contexte.js'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { DUREE_ETAT, K_PAR_CYCLE, NA_PAR_CYCLE } from './pompeSodiumPotassium.js'
@@ -38,7 +39,7 @@ describe('la pompe Na⁺/K⁺ : le compte contre la fiche', () => {
     const matrice = new THREE.Matrix4()
     const position = new THREE.Vector3()
     const PAS = 1 / 60
-    mecanisme.animer(0)
+    mecanisme.animer(0, contexteRepos())
 
     const precedentes = new Float64Array(amas.count)
     for (let i = 0; i < amas.count; i++) {
@@ -48,7 +49,7 @@ describe('la pompe Na⁺/K⁺ : le compte contre la fiche', () => {
 
     let traversees = 0
     for (let n = 1; n <= Math.round(secondes / PAS); n++) {
-      mecanisme.animer(n * PAS)
+      mecanisme.animer(n * PAS, contexteRepos())
       for (let i = 0; i < amas.count; i++) {
         amas.getMatrixAt(i, matrice)
         const y = position.setFromMatrixPosition(matrice).y

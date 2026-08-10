@@ -28,6 +28,7 @@ import {
   facteurAffiche,
 } from './noyau/atelier.js'
 import { SAUT_MAX, creerEtat } from './noyau/etatCellule.js'
+import { contexteDe } from './noyau/contexte.js'
 import {
   activiteMecanisme,
   avancerSystemeCellulaire,
@@ -909,6 +910,9 @@ function boucle(): void {
 
   // Une horloge par mécanisme : son débit biologique accélère, ralentit ou
   // arrête désormais la scène. Le rendu ne décide plus seul que la cellule vit.
+  // Le contexte est dérivé une fois par image : chaque scène lit le MÊME état,
+  // et aucune ne peut l'écrire — c'est un instantané, pas le système.
+  const contexte = contexteDe(systemeCellulaire)
   for (const f of flux) if (f.objet.visible) f.animer(tempsVie)
   for (const m of mecanismes) {
     if (!m.objet.visible) continue
@@ -918,7 +922,7 @@ function boucle(): void {
     const horloge = (horlogesMecanismes.get(m.cle) ?? 0) +
       dtSimule * activiteMecanisme(systemeCellulaire, m.cle)
     horlogesMecanismes.set(m.cle, horloge)
-    m.animer(horloge)
+    m.animer(horloge, contexte)
   }
 
   if (atelierActif) {

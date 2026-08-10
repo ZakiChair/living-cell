@@ -1,3 +1,4 @@
+import { contexteRepos } from '../../noyau/contexte.js'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import { ATP_PAR_TOUR, TOURS_PAR_SECONDE_REELS } from './respiration.js'
@@ -50,7 +51,7 @@ describe('la chaîne respiratoire : le badge contre ce que le code fait', () => 
 
     const DUREE = 30
     const PAS = 1 / 60
-    mecanisme.animer(0)
+    mecanisme.animer(0, contexteRepos())
     const precedentes = Array.from({ length: amas.count }, (_, i) => echelleDe(i))
 
     // La rotation est cumulative et non bornée à 2π : on la lit au début et à la
@@ -58,7 +59,7 @@ describe('la chaîne respiratoire : le badge contre ce que le code fait', () => 
     const angleDebut = rotor.rotation.y
     let naissances = 0
     for (let n = 1; n <= DUREE / PAS; n++) {
-      mecanisme.animer(n * PAS)
+      mecanisme.animer(n * PAS, contexteRepos())
       for (let i = 0; i < amas.count; i++) {
         const courante = echelleDe(i)
         // Une chute franche : la molécule précédente a disparu, une neuve part

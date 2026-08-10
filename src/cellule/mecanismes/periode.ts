@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { contexteRepos } from '../../noyau/contexte.js'
 import type { Mecanisme, MecanismeBrut } from './contrat.js'
 
 /**
@@ -93,8 +94,11 @@ function releverSignature(
 ): Float64Array {
   const n = Math.round(duree / PAS)
   const trace = new Float64Array(n)
+  // Le harnais mesure la scène AU REPOS : le contexte stationnaire garantit
+  // que la période relevée est celle du badge, pas celle d'un régime stimulé.
+  const contexte = contexteRepos()
   for (let i = 0; i < n; i++) {
-    mecanisme.animer(i * PAS)
+    mecanisme.animer(i * PAS, contexte)
     trace[i] = signature(cible)
   }
   return trace
