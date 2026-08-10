@@ -9,6 +9,7 @@ import { creerReticulumRugueux } from './cellule/organites/reticulumRugueux.js'
 import { creerReticulumLisse } from './cellule/organites/reticulumLisse.js'
 import { creerMembrane } from './cellule/organites/membrane.js'
 import { creerVesiculesEtLysosomes } from './cellule/organites/vesiculesEtLysosomes.js'
+import { creerGranulesInsuline } from './cellule/organites/granulesInsuline.js'
 import { creerCytosquelette } from './cellule/organites/cytosquelette.js'
 import { creerEncombrement } from './cellule/organites/encombrement.js'
 import { creerPoresNucleaires } from './cellule/organites/poresNucleaires.js'
@@ -50,6 +51,10 @@ poser(vue, creerNoyau())
 poser(vue, creerGolgi())
 poser(vue, creerMitochondries())
 poser(vue, creerVesiculesEtLysosomes())
+// Le premier organite VIVANT : le compte de ses granules suit le pool du
+// modèle, mis à jour dans la boucle. Une cellule stimulée se vide sous les yeux.
+const granulesInsuline = creerGranulesInsuline()
+poser(vue, granulesInsuline.organites)
 
 // Le peuplement vient en dernier : c'est ce qui remplit le vide entre les
 // organites, et le cytoplasme n'est jamais de l'eau.
@@ -913,6 +918,7 @@ function boucle(): void {
   // Le contexte est dérivé une fois par image : chaque scène lit le MÊME état,
   // et aucune ne peut l'écrire — c'est un instantané, pas le système.
   const contexte = contexteDe(systemeCellulaire)
+  granulesInsuline.mettreAJour(contexte)
   for (const f of flux) if (f.objet.visible) f.animer(tempsVie)
   for (const m of mecanismes) {
     if (!m.objet.visible) continue

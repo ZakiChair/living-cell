@@ -114,6 +114,7 @@ export const TEINTES = {
   cytosquelette: 0x9c9384,
   centriole: 0x6b6357,
   cytosol: 0xf2eee4,
+  granuleInsuline: 0xf0e442,
 } as const
 
 /** Matériau standard des organites : aplats mats, sans reflet, façon planche. */
