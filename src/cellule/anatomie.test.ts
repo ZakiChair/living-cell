@@ -1,4 +1,5 @@
 import { contexteRepos } from '../noyau/contexte.js'
+import { CLES_MECANISMES } from '../noyau/systemeCellulaire.js'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import {
@@ -355,10 +356,13 @@ describe('chaque mécanisme se déroule dans son organite', () => {
    */
   const mecanismes = creerMecanismes()
 
-  it('construit bien les seize mécanismes', () => {
+  it('construit exactement les mécanismes que le modèle sait mesurer', () => {
     // « Au moins treize » laissait en retirer trois du panneau sans un mot.
-    expect(mecanismes).toHaveLength(16)
-    expect(new Set(mecanismes.map((m) => m.cle)).size).toBe(16)
+    // Le compte vient de CLES_MECANISMES : une scène sans clé dans le modèle
+    // gèlerait en silence, une clé sans scène serait un mensonge du panneau.
+    expect(mecanismes).toHaveLength(CLES_MECANISMES.length)
+    expect(new Set(mecanismes.map((m) => m.cle)).size).toBe(CLES_MECANISMES.length)
+    expect(new Set(mecanismes.map((m) => m.cle))).toEqual(new Set(CLES_MECANISMES))
   })
 
   it('place les mécanismes mitochondriaux dans une mitochondrie', () => {

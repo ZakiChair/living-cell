@@ -34,6 +34,9 @@ export const CLES_MECANISMES = [
   "export-nucleaire",
   "traduction-polysome",
   "translocation-sec61",
+  "repliement-re",
+  "transit-golgi",
+  "maturation-granule",
   "transport-moteur",
   "instabilite-dynamique",
   "endocytose-clathrine",
@@ -745,6 +748,10 @@ export function activiteMecanisme(
     case "export-nucleaire": return borner(f.exportNucleaire / 0.025, 0, 1);
     case "traduction-polysome": return borner(f.traduction / Math.max(EPSILON, p.traductionMax), 0, 1);
     case "translocation-sec61": return borner(f.translocationRE / Math.max(EPSILON, p.traductionMax), 0, 1);
+    // La vie d'une protéine : chaque étape suit le flux du pool qu'elle draine.
+    case "repliement-re": return borner(f.translocationRE / Math.max(EPSILON, p.traductionMax), 0, 1);
+    case "transit-golgi": return borner(f.transportGolgi / 0.035, 0, 1);
+    case "maturation-granule": return borner(f.biogeneseGranules / 0.028, 0, 1);
     case "transport-moteur":
       // Normalisé par le trafic à pleine capacité : voies antérogrades aux
       // maxima de leurs cinétiques, sécrétion saturée et son retour membranaire.

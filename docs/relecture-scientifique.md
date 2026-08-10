@@ -209,7 +209,43 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20
 
-### 2.11 Kinésine et dynéine sur le microtubule
+### 2.11 Repliement : BiP, PDI et les trois ponts
+
+**Siège** : Réticulum endoplasmique rugueux · **Facteur temporel affiché** : accéléré ×30
+
+**Justification du facteur.** La proinsuline met de l’ordre de dix minutes à se replier et à recevoir ses ponts disulfure dans le réticulum ; le cycle tient ici en 20 s, soit un accéléré d’environ ×30. Le geste de la PDI, lui, est bien plus rapide que ça — c’est l’ATTENTE entre deux prises en charge qui domine.
+
+**Description lue par l’étudiant.** Un fil n’est pas une protéine. La proinsuline qui vient de traverser Sec61 pend dans la lumière du réticulum ; BiP — violet — la tient le temps qu’elle se compacte, et la PDI — vert d’eau — vient poser ses TROIS PONTS DISULFURE, les barreaux orange : B7–A7, B19–A19, A6–A11. Parmi les quinze appariements possibles de ses six cystéines, un seul est le bon, et la PDI défait autant qu’elle fait. Suivez les trois chaînes : deux partent vers le Golgi, la troisième s’est trompée — mauvais pont, repliement de travers — et prend l’autre chemin, vers la dégradation. Chez la souris Akita, une seule cystéine mutée suffit : la proinsuline s’accumule, le réticulum sature, la cellule bêta meurt. Le repliement n’est pas un détail de fabrication, c’est là que se joue le diabète néonatal.
+
+**Ellision — ce qui est coupé ou échantillonné.** Un grain pour trois acides aminés, et des positions de cystéines approchées à cette échelle. La calnexine et la calréticuline, qui surveillent les protéines GLYCOSYLÉES, ne sont pas dessinées — la proinsuline n’est pas glycosylée, et c’est BiP qui la tient. Le glutathion qui fixe le potentiel rédox de la lumière est invisible. La chaîne ratée part vers la dégradation en ligne droite : la rétrotranslocation par ERAD n’est pas encore montrée. La part d’échec lit le stress du réticulum dans le modèle — au repos une chaîne sur trois, davantage quand l’atelier déborde.
+
+> **Chiffres à contrôler** : 20 s · 20 · 30
+
+### 2.12 Golgi : citernes qui mûrissent, sucres qui s'ajoutent
+
+**Siège** : Appareil de Golgi · **Facteur temporel affiché** : accéléré ×50
+
+**Justification du facteur.** Une protéine met une vingtaine de minutes à traverser le Golgi ; le transit tient ici en 24 s, soit un accéléré d'environ ×50. À cette échelle les vésicules COPII semblent des navettes pressées : en vrai leur trajet dure une ou deux minutes.
+
+**Description lue par l’étudiant.** Le Golgi ne fait pas passer les protéines de citerne en citerne : c'est la CITERNE ENTIÈRE qui avance. Née côté cis de la fusion des vésicules COPII venues du réticulum, elle mûrit en avançant dans la pile, son cargo dedans, pendant que les vésicules COPI — orange — renvoient ses enzymes en arrière : une citerne médiane a des enzymes médianes parce que le recyclage l'y maintient, pas parce qu'elle est immobile. À chaque étage, des enzymes différentes taillent les sucres du cargo — l'antenne verte qui pousse à l'étage médian. Au bout, la face trans se défait en vésicules : pour la proinsuline, un GRANULE IMMATURE bourgeonne, et sa maturation est une autre scène.
+
+**Ellision — ce qui est coupé ou échantillonné.** Quatre citernes au lieu de cinq à huit, et une seule pile. Les glycosyltransférases elles-mêmes ne sont pas dessinées : on ne voit que leur œuvre, l'antenne verte qui pousse à l'étage médian — et la proinsuline réelle n'est PAS glycosylée : le cargo figuré vaut pour les centaines d'autres protéines qui transitent en même temps qu'elle. Les manteaux COPII et COPI sont réduits à la teinte de leur vésicule. Le tri de sortie — mannose-6-phosphate vers les lysosomes, granules vers la sécrétion régulée — est résumé au seul bourgeon du granule.
+
+> **Chiffres à contrôler** : 24 s · 24 · 50
+
+### 2.13 Maturation du granule : convertases, peptide C, cristal de zinc
+
+**Siège** : Appareil de Golgi · **Facteur temporel affiché** : accéléré ×150
+
+**Justification du facteur.** La conversion de la proinsuline et la cristallisation prennent de l'ordre d'une heure dans le granule ; le cycle tient ici en 24 s, soit un accéléré d'environ ×150. Les coupes elles-mêmes sont des gestes d'enzyme, bien plus rapides : c'est l'acidification progressive qui donne son tempo à la maturation.
+
+**Description lue par l’étudiant.** Le granule qui vient du trans-Golgi ne contient pas d'insuline : il contient de la PROINSULINE — une seule chaîne, B et A reliées par le peptide C, le grain gris du milieu. La maturation est une usine : les plaques de clathrine repartent avec les protéines mal adressées, le pH tombe, et les CONVERTASES passent — PC1/3 coupe à la jonction B–C, PC2 à la jonction C–A, la carboxypeptidase E ébarbe. L'insuline libérée cristallise en hexamères autour du zinc que ZnT8 pompe dans le granule : c'est le cœur dense des clichés de microscopie. Le peptide C, lui, ne part pas : dissous dans le halo, il sera co-sécrété MOLE POUR MOLE avec l'insuline — c'est lui qu'on dose en clinique pour savoir si un pancréas fabrique encore, car l'insuline injectée n'en a pas.
+
+**Ellision — ce qui est coupé ou échantillonné.** Dix proinsulines pour les dizaines de milliers d'un granule réel, et chacune réduite à trois grains — B, C, A. La baisse de pH (6,5 → 5,5), qui active les convertases et précipite le cristal, n'est pas figurée : on n'en voit que les effets. La pompe à protons qui la produit n'est pas dessinée — ZnT8, lui, l'est, parce que le zinc se voit dans le cristal. Les résidus basiques que la CPE ébarbe après les coupes sont sous la taille du grain. Le granule est immobile : dans la cellule il voyage pendant qu'il mûrit.
+
+> **Chiffres à contrôler** : 24 s · 24 · 150
+
+### 2.14 Kinésine et dynéine sur le microtubule
 
 **Siège** : Cytosquelette · **Facteur temporel affiché** : ralenti ×100
 
@@ -221,7 +257,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 8 nm · 800 nm · 10 ms · 800 · 10 · 1 nm · 0,9 µm · 100 · 52 000
 
-### 2.12 Instabilité dynamique du microtubule
+### 2.15 Instabilité dynamique du microtubule
 
 **Siège** : Cytosquelette · **Facteur temporel affiché** : accéléré ×3
 
@@ -233,7 +269,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 1,8 µm · 17 µm · 0,38 µm · 17 · 38 · 8 nm · 160
 
-### 2.13 Endocytose par puits de clathrine
+### 2.16 Endocytose par puits de clathrine
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : accéléré ×2,3
 
@@ -245,7 +281,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 60 s · 20 s · 45 s · 30 · 60 · 20 · 45
 
-### 2.14 Sécrétion d'insuline : calcium, SNARE et granule
+### 2.17 Sécrétion d'insuline : calcium, SNARE et granule
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : deux temps : accéléré ×5, puis ralenti ×5 000
 
@@ -257,7 +293,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 1 ms · 5 s · 5 000 · 2 nm · 150 nm · 12 nm · 150 · 12 · 13
 
-### 2.15 Pompe Na⁺/K⁺ et canal potassique
+### 2.18 Pompe Na⁺/K⁺ et canal potassique
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : ralenti ×1 000
 
@@ -269,7 +305,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 20 ms · 20
 
-### 2.16 Dégradation par le protéasome
+### 2.19 Dégradation par le protéasome
 
 **Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×10
 
@@ -446,4 +482,4 @@ Ce dossier couvre le TEXTE. Trois choses lui échappent et demandent la page :
 - **Le geste** : donner un brin d'ARN à un ribosome, et couper l'oxygène pour voir la
   traduction s’arrêter.
 
-*Généré depuis 16 mécanismes, 18 familles d'organites et 90 bases.*
+*Généré depuis 19 mécanismes, 18 familles d'organites et 90 bases.*

@@ -13,6 +13,9 @@ import { creerGlycolyse } from './glycolyse.js'
 import { creerKrebs } from './krebs.js'
 import { creerBetaOxydation } from './betaOxydation.js'
 import { creerFermentation } from './fermentation.js'
+import { creerRepliementRE } from './repliementRE.js'
+import { creerTransitGolgi } from './transitGolgi.js'
+import { creerMaturationGranule } from './maturationGranule.js'
 
 /**
  * Tous les mécanismes de la cellule.
@@ -46,11 +49,14 @@ export function creerMecanismes(): Mecanisme[] {
     ...creerBetaOxydation(),
     ...creerKrebs(),
     ...creerRespiration(),
-    // Information
+    // Information — puis la vie d'une protéine, du repliement au granule mûr
     ...creerTranscription(),
     ...creerEpissage(),
     ...creerExportNucleaire(),
     ...creerTraductionReticulum(),
+    ...creerRepliementRE(),
+    ...creerTransitGolgi(),
+    ...creerMaturationGranule(),
     // Matière
     ...creerTransportMoteur(),
     ...creerEndoExocytose(),
