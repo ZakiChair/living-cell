@@ -107,9 +107,12 @@ export function creerGranulesInsuline(): GranulesInsuline {
   coeurs.name = 'coeurs-cristallins'
 
   // Le halo clair entre cœur et membrane : la signature EM de la cellule bêta.
+  // Simple face et maillage grossier : 460 sphères translucides DOUBLE face
+  // mettaient le débit à genoux dès que la caméra entrait dans le nuage —
+  // chaque pixel payait deux parois par granule traversé.
   const halos = new THREE.InstancedMesh(
-    new THREE.SphereGeometry(RAYON_GRANULE, 12, 8),
-    materiauOrganite(TEINTES.granuleInsuline, { opacite: 0.22 }),
+    new THREE.SphereGeometry(RAYON_GRANULE, 8, 6),
+    materiauOrganite(TEINTES.granuleInsuline, { opacite: 0.22, doubleFace: false }),
     NOMBRE_MAX,
   )
   halos.name = 'halos-granules'

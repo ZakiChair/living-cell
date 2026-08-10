@@ -245,17 +245,17 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 60 s · 20 s · 45 s · 30 · 60 · 20 · 45
 
-### 2.14 Exocytose et fusion SNARE
+### 2.14 Sécrétion d'insuline : calcium, SNARE et granule
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : deux temps : accéléré ×5, puis ralenti ×5 000
 
 **Justification du facteur.** Deux temps, parce qu'une seule vitesse serait fausse pour l'un des deux. L'errance et l'amarrage de la vésicule prennent une trentaine de secondes : ils occupent les 6,7 premières secondes d'écran, soit un accéléré d'environ ×5. La fermeture éclair des SNARE et l'ouverture du pore, elles, durent moins de 1 ms et sont étalées sur les 5 s suivantes — un ralenti de ×5 000. Sans ce ralenti, la fusion serait une image et demie.
 
-**Description lue par l’étudiant.** Une vésicule sécrétoire erre sous la membrane. Quand elle passe à portée, ses v-SNARE rencontrent les t-SNARE de la membrane et les quatre hélices se referment comme une fermeture éclair, du bout libre vers les membranes : c'est cette fermeture qui tire les deux bicouches l'une contre l'autre jusqu'au contact. Un pore de moins de 2 nm s'ouvre alors, le contenu part dans le milieu extérieur, et la vésicule finit de se déplier dans la membrane plasmique. Sa membrane ne disparaît pas : elle S'AJOUTE, et ses protéines se dispersent dans le plan — la surface de la cellule vient d'augmenter, et il faudra que l'endocytose la reprenne.
+**Description lue par l’étudiant.** Un granule d'insuline erre sous la membrane : son cœur cristallin — l'hormone en hexamères autour de deux zincs — se devine par le halo. Quand il passe à portée, ses v-SNARE rencontrent les t-SNARE de la membrane et les quatre hélices se referment comme une fermeture éclair, du bout libre vers les membranes ; mais la fermeture s'arrête là, ARMÉE : rien ne fusionne sans calcium. Ce sont les canaux voisins qui décident — ils ne s'ouvrent que si le glucose a fermé les canaux K-ATP et dépolarisé la membrane. Leur bouffée ne porte qu'à cinquante nanomètres, et la synaptotagmine du granule la détecte : ses domaines C2 plongent, la fusion part. Un pore de moins de 2 nm s'ouvre, le cristal se dissout dans le milieu extérieur — voilà l'insuline dans le sang. La membrane du granule ne disparaît pas : elle S'AJOUTE à la surface de la cellule, et il faudra que l'endocytose la reprenne.
 
-**Ellision — ce qui est coupé ou échantillonné.** Le calcium qui déclenche la fusion, la synaptotagmine qui le détecte, Munc13 et Munc18 qui préparent la syntaxine, et NSF/α-SNAP qui redéfont le complexe après coup ne sont pas dessinés ; les complexes SNARE disparaissent simplement une fois la fusion faite. Chaque hélice est figurée par 13 grains au lieu de la soixantaine de résidus qu'elle compte. Le mouvement des vésicules est une errance à deux sinus, pas une intégration brownienne : la propriété conservée est l'absence de cap, pas la statistique du déplacement.
+**Ellision — ce qui est coupé ou échantillonné.** Le granule est dessiné à 150 nm de diamètre, la MOITIÉ du granule d'insuline réel : à taille vraie, le faisceau SNARE de 12 nm — le sujet de la scène — deviendrait invisible contre son flanc. Munc13 et Munc18 qui préparent la syntaxine, et NSF/α-SNAP qui redéfont le complexe après coup, ne sont pas dessinés ; les complexes SNARE disparaissent simplement une fois la fusion faite. Chaque hélice est figurée par 13 grains au lieu de la soixantaine de résidus qu'elle compte. La bouffée calcique appartient à la chorégraphie — une fusion montrée est une fusion dont le canal voisin s'est ouvert — mais le calcium AMBIANT, lui, vient du modèle : comptez les ions bleus au repos puis sous glucose. Le mouvement des vésicules est une errance à deux sinus, pas une intégration brownienne : la propriété conservée est l'absence de cap, pas la statistique du déplacement.
 
-> **Chiffres à contrôler** : 1 ms · 5 s · 5 000 · 2 nm · 13
+> **Chiffres à contrôler** : 1 ms · 5 s · 5 000 · 2 nm · 150 nm · 12 nm · 150 · 12 · 13
 
 ### 2.15 Pompe Na⁺/K⁺ et canal potassique
 

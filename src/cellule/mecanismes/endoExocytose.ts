@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { RAYON_CELLULE, TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import type { MecanismeBrut } from './contrat.js'
+import { contexteRepos } from '../../noyau/contexte.js'
+import type { ContexteCellule, MecanismeBrut } from './contrat.js'
 
 /**
  * ENDOCYTOSE ET EXOCYTOSE À LA MEMBRANE PLASMIQUE.
@@ -817,11 +818,18 @@ function creerEndocytose(): MecanismeBrut {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const PERIODE_EXO = 16
-/** Vésicule sécrétoire de 100 nm de diamètre. */
-const RV_SEC = 0.05
+/**
+ * Granule de sécrétion : 150 nm de diamètre dessinés, la MOITIÉ du granule
+ * d'insuline réel (300 nm). À taille vraie, le faisceau SNARE de 12 nm — le
+ * sujet de la scène — deviendrait un détail invisible contre le flanc du
+ * granule. L'écart est déclaré dans l'ellision.
+ */
+const RV_SEC = 0.075
 /** Ouverture de la calotte à l'instant de la fusion : la vésicule est entière. */
 const BETA_FUSION = 2.7
 const COL_EXO = 0.004
+/** Cœur cristallin du granule : la moitié du diamètre, comme en EM. */
+const RAYON_COEUR_GRANULE = 0.042
 
 const NB_VESICULES = 4
 const GRAINS_PAR_VESICULE = 24
@@ -851,6 +859,25 @@ const X_FUSION = 0.63
 const X_PORE_FIN = 0.73
 const X_APLATI_FIN = 0.93
 const X_RESET = 0.97
+
+// ── Le déclencheur calcique ─────────────────────────────────────────────────
+/**
+ * La fusion n'est pas spontanée : elle attend le calcium. Trois canaux
+ * calciques voltage-dépendants sont plantés à quelques dizaines de nanomètres
+ * du site — dans la cellule bêta ils sont physiquement couplés aux granules
+ * amarrés — et leur ouverture crée un MICRODOMAINE : le calcium libre ne
+ * porte qu'à ~50 nm, tamponné aussitôt. C'est la synaptotagmine du granule
+ * qui le détecte et libère la fermeture des SNARE.
+ */
+const NB_CANAUX_CA = 3
+const RAYON_SITE_CANAUX = 0.055
+const NB_IONS_CA = 36
+/** Portée du microdomaine calcique : au-delà, l'ion est tamponné et disparaît. */
+const PORTEE_MICRODOMAINE = 0.055
+/** La bouffée commence avec la fin de la fermeture éclair et couvre la fusion. */
+const X_CA_DEB = 0.56
+const X_CA_FIN = 0.75
+const NB_SYNAPTOTAGMINES = 5
 
 function creerExocytose(): MecanismeBrut {
   const alea = creerAlea(0x45584f43)
@@ -884,10 +911,23 @@ function creerExocytose(): MecanismeBrut {
     for (let k = 0; k < 3; k++) tirerErrance(erranceVes, v * 12 + k * 4, alea)
   }
 
+  // ── Cœurs cristallins ───────────────────────────────────────────────────
+  // Ce qui fait d'une vésicule un GRANULE : le cœur dense d'insuline-zinc,
+  // facetté, visible par transparence, séparé de la membrane par le halo
+  // clair. Il se dissout à la fusion — le pH du milieu extérieur défait le
+  // cristal en quelques secondes, et c'est l'insuline libre qui s'en va.
+  const coeurs = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(RAYON_COEUR_GRANULE, 0),
+    materiauOrganite(TEINTES.granuleInsuline, { doubleFace: false }),
+    NB_VESICULES,
+  )
+  coeurs.frustumCulled = false
+  groupe.add(coeurs)
+
   // ── Contenu sécrété ─────────────────────────────────────────────────────
   const contenu = new THREE.InstancedMesh(
     new THREE.IcosahedronGeometry(0.0045, 0),
-    materiauOrganite(TEINTES.golgi, { doubleFace: false }),
+    materiauOrganite(TEINTES.granuleInsuline, { doubleFace: false }),
     NB_GRAINS,
   )
   contenu.frustumCulled = false
@@ -984,6 +1024,58 @@ function creerExocytose(): MecanismeBrut {
     ancreLibre[i * 3 + 2] = creuxSphere(r) - 0.002
   }
 
+  // ── Canaux calciques et microdomaine ────────────────────────────────────
+  // Trois canaux Cav plantés à 55 nm du site : dans la cellule bêta, canaux et
+  // granules amarrés sont physiquement couplés — le calcium n'a pas à voyager.
+  const canauxCa = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.006, 0.006, 0.012, 8),
+    materiauOrganite(TEINTES.proteineMembranaire, { doubleFace: false }),
+    NB_CANAUX_CA,
+  )
+  canauxCa.frustumCulled = false
+  groupe.add(canauxCa)
+  const ancreCanal = new Float32Array(NB_CANAUX_CA * 3)
+  for (let c = 0; c < NB_CANAUX_CA; c++) {
+    const a = (c / NB_CANAUX_CA) * Math.PI * 2 + 0.9
+    ancreCanal[c * 3] = RAYON_SITE_CANAUX * Math.cos(a)
+    ancreCanal[c * 3 + 1] = RAYON_SITE_CANAUX * Math.sin(a)
+    ancreCanal[c * 3 + 2] = creuxSphere(RAYON_SITE_CANAUX) - 0.004
+  }
+
+  const ionsCa = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(0.0016, 0),
+    materiauOrganite(0x56b4e9, { doubleFace: false }),
+    NB_IONS_CA,
+  )
+  ionsCa.frustumCulled = false
+  groupe.add(ionsCa)
+  // Par ion : canal d'origine, direction de jet (3), phase dans la bouffée.
+  const parIon = new Float32Array(NB_IONS_CA * 5)
+  for (let i = 0; i < NB_IONS_CA; i++) {
+    const u = alea() * 0.9 + 0.05
+    const a = alea() * Math.PI * 2
+    const s = Math.sqrt(Math.max(0, 1 - u * u))
+    const b = i * 5
+    parIon[b] = Math.floor(alea() * NB_CANAUX_CA)
+    // Jet vers l'intérieur (z négatif : côté cytosol), en éventail.
+    parIon[b + 1] = s * Math.cos(a)
+    parIon[b + 2] = s * Math.sin(a)
+    parIon[b + 3] = -u
+    parIon[b + 4] = alea()
+  }
+
+  // ── Synaptotagmines ─────────────────────────────────────────────────────
+  // Les détecteurs de calcium du granule : ancrées sur sa membrane, tournées
+  // vers le site de contact. À la bouffée, leurs domaines C2 plongent vers la
+  // membrane plasmique — c'est ce geste qui libère la fusion.
+  const synaptotagmines = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(0.004, 0),
+    materiauOrganite(TEINTES.golgi, { doubleFace: false }),
+    NB_SYNAPTOTAGMINES,
+  )
+  synaptotagmines.frustumCulled = false
+  groupe.add(synaptotagmines)
+
   // ── Protéines de la membrane vésiculaire ────────────────────────────────
   const protVesicule = new THREE.InstancedMesh(
     new THREE.IcosahedronGeometry(0.006, 0),
@@ -1004,11 +1096,16 @@ function creerExocytose(): MecanismeBrut {
 
   const DECALAGE_T = NB_COMPLEXES * 3 * GRAINS_PAR_HELICE
 
-  const animer = (temps: number): void => {
+  const animer = (temps: number, contexte: ContexteCellule = contexteRepos()): void => {
     const p = (((temps / PERIODE_EXO) % 1) + 1) % 1
     const tv = temps
     const zip = liss((p - X_ZIP_DEB) / (X_ZIP_FIN - X_ZIP_DEB))
     const fusionne = p >= X_FUSION && p < X_RESET
+    // Le calcium ambiant vient du MODÈLE : au repos quelques ions errent, une
+    // cellule stimulée au glucose en montre dix fois plus. La bouffée du
+    // microdomaine, elle, appartient à la chorégraphie — une fusion qui se
+    // produit est par définition une fusion dont le canal voisin s'est ouvert.
+    const calciumRelatif = Math.min(1, contexte.calciumCytosolique / 0.001)
 
     // ── Membrane et pore de fusion ────────────────────────────────────────
     // Après la fusion, la vésicule N'EST PLUS un objet : sa membrane est
@@ -1059,8 +1156,76 @@ function creerExocytose(): MecanismeBrut {
         ech = p < X_FUSION ? 1 : liss((p - X_RESET) / 0.03)
       }
       poser(vesicules, v, x, y, z, ech)
+      // Le cœur cristallin suit son granule. Celui qui fusionne se dissout à
+      // mesure que son insuline part : le pH extérieur défait le cristal.
+      let echCoeur = ech
+      if (v === 0 && fusionne) {
+        echCoeur = Math.max(0, 1 - liss((p - X_FUSION) / 0.14))
+        poser(coeurs, v, x, y, zLumen, echCoeur)
+      } else {
+        poser(coeurs, v, x, y, z, echCoeur)
+      }
     }
     vesicules.instanceMatrix.needsUpdate = true
+    coeurs.instanceMatrix.needsUpdate = true
+
+    // ── Canaux calciques, microdomaine, synaptotagmines ───────────────────
+    for (let c = 0; c < NB_CANAUX_CA; c++) {
+      poser(canauxCa, c, ancreCanal[c * 3]!, ancreCanal[c * 3 + 1]!, ancreCanal[c * 3 + 2]!, 1)
+    }
+    canauxCa.instanceMatrix.needsUpdate = true
+
+    const bouffee = liss((p - X_CA_DEB) / 0.05) * (1 - liss((p - X_CA_FIN) / 0.05))
+    // Ambiants toujours là, portés par le modèle ; le reste n'existe que
+    // pendant la bouffée du microdomaine.
+    const nbAmbiants = 2 + Math.round(8 * calciumRelatif)
+    for (let i = 0; i < NB_IONS_CA; i++) {
+      const b = i * 5
+      const canal = parIon[b]! * 3
+      if (i < nbAmbiants) {
+        // Errance libre dans le champ, côté cytosol.
+        const x = 0.24 * Math.sin(tv * 0.9 + i * 2.6)
+        const y = 0.24 * Math.cos(tv * 0.7 + i * 1.9)
+        const z = -0.04 - 0.1 * (0.5 + 0.5 * Math.sin(tv * 1.1 + i))
+        poser(ionsCa, i, x, y, z, 1)
+        continue
+      }
+      if (bouffee <= 0.01) {
+        poser(ionsCa, i, 0, 0, 10, 0)
+        continue
+      }
+      // Jet depuis la bouche du canal : la course de l'ion est bornée par le
+      // microdomaine — au-delà de ~55 nm il est tamponné, et il disparaît.
+      const avancee = ((tv * 0.55 + parIon[b + 4]!) % 1) * PORTEE_MICRODOMAINE
+      const evanoui = 1 - liss((avancee - PORTEE_MICRODOMAINE * 0.6) / (PORTEE_MICRODOMAINE * 0.4))
+      poser(
+        ionsCa,
+        i,
+        ancreCanal[canal]! + parIon[b + 1]! * avancee,
+        ancreCanal[canal + 1]! + parIon[b + 2]! * avancee,
+        ancreCanal[canal + 2]! + parIon[b + 3]! * avancee,
+        bouffee * evanoui,
+      )
+    }
+    ionsCa.instanceMatrix.needsUpdate = true
+
+    // Les synaptotagmines ceinturent le bas du granule ; à la bouffée leurs
+    // domaines C2 plongent de 4 nm vers la membrane plasmique.
+    const plongee = 0.004 * bouffee
+    const echSyt = p < X_FUSION + 0.1 ? 1 : Math.max(0, 1 - liss((p - X_FUSION - 0.1) / 0.08))
+    for (let s = 0; s < NB_SYNAPTOTAGMINES; s++) {
+      const a = (s / NB_SYNAPTOTAGMINES) * Math.PI * 2 + 0.35
+      const rr = RV_SEC * 0.82
+      poser(
+        synaptotagmines,
+        s,
+        vx0 + rr * Math.cos(a),
+        vy0 + rr * Math.sin(a),
+        vz0 + RV_SEC * 0.5 + plongee,
+        echSyt,
+      )
+    }
+    synaptotagmines.instanceMatrix.needsUpdate = true
 
     // ── Contenu ───────────────────────────────────────────────────────────
     for (let i = 0; i < NB_GRAINS; i++) {
@@ -1233,7 +1398,7 @@ function creerExocytose(): MecanismeBrut {
 
   return {
     cle: 'exocytose-snare',
-    nom: 'Exocytose et fusion SNARE',
+    nom: "Sécrétion d'insuline : calcium, SNARE et granule",
     siege: 'Membrane plasmique',
     ralentissement: [1 / 5, 5000],
     justificationFacteur:
@@ -1244,23 +1409,32 @@ function creerExocytose(): MecanismeBrut {
       'moins de 1 ms et sont étalées sur les 5 s suivantes — un ralenti de ' +
       "×5 000. Sans ce ralenti, la fusion serait une image et demie.",
     ellision:
-      'Le calcium qui déclenche la fusion, la synaptotagmine qui le détecte, ' +
-      "Munc13 et Munc18 qui préparent la syntaxine, et NSF/α-SNAP qui redéfont le " +
-      'complexe après coup ne sont pas dessinés ; les complexes SNARE disparaissent ' +
-      'simplement une fois la fusion faite. Chaque hélice est figurée par 13 grains ' +
-      "au lieu de la soixantaine de résidus qu'elle compte. Le mouvement des " +
-      'vésicules est une errance à deux sinus, pas une intégration brownienne : la ' +
-      "propriété conservée est l'absence de cap, pas la statistique du déplacement.",
+      "Le granule est dessiné à 150 nm de diamètre, la MOITIÉ du granule " +
+      "d'insuline réel : à taille vraie, le faisceau SNARE de 12 nm — le sujet de " +
+      'la scène — deviendrait invisible contre son flanc. Munc13 et Munc18 qui ' +
+      'préparent la syntaxine, et NSF/α-SNAP qui redéfont le complexe après coup, ' +
+      'ne sont pas dessinés ; les complexes SNARE disparaissent simplement une ' +
+      'fois la fusion faite. Chaque hélice est figurée par 13 grains au lieu de ' +
+      "la soixantaine de résidus qu'elle compte. La bouffée calcique appartient à " +
+      'la chorégraphie — une fusion montrée est une fusion dont le canal voisin ' +
+      "s'est ouvert — mais le calcium AMBIANT, lui, vient du modèle : comptez les " +
+      'ions bleus au repos puis sous glucose. Le mouvement des vésicules est une ' +
+      "errance à deux sinus, pas une intégration brownienne : la propriété " +
+      "conservée est l'absence de cap, pas la statistique du déplacement.",
     description:
-      "Une vésicule sécrétoire erre sous la membrane. Quand elle passe à portée, " +
-      'ses v-SNARE rencontrent les t-SNARE de la membrane et les quatre hélices se ' +
-      "referment comme une fermeture éclair, du bout libre vers les membranes : " +
-      "c'est cette fermeture qui tire les deux bicouches l'une contre l'autre " +
-      "jusqu'au contact. Un pore de moins de 2 nm s'ouvre alors, le contenu part " +
-      'dans le milieu extérieur, et la vésicule finit de se déplier dans la ' +
-      'membrane plasmique. Sa membrane ne disparaît pas : elle S\'AJOUTE, et ses ' +
-      'protéines se dispersent dans le plan — la surface de la cellule vient ' +
-      "d'augmenter, et il faudra que l'endocytose la reprenne.",
+      "Un granule d'insuline erre sous la membrane : son cœur cristallin — " +
+      "l'hormone en hexamères autour de deux zincs — se devine par le halo. " +
+      "Quand il passe à portée, ses v-SNARE rencontrent les t-SNARE de la " +
+      'membrane et les quatre hélices se referment comme une fermeture éclair, ' +
+      "du bout libre vers les membranes ; mais la fermeture s'arrête là, ARMÉE : " +
+      'rien ne fusionne sans calcium. Ce sont les canaux voisins qui décident — ' +
+      'ils ne s\'ouvrent que si le glucose a fermé les canaux K-ATP et dépolarisé ' +
+      'la membrane. Leur bouffée ne porte qu\'à cinquante nanomètres, et la ' +
+      'synaptotagmine du granule la détecte : ses domaines C2 plongent, la ' +
+      "fusion part. Un pore de moins de 2 nm s'ouvre, le cristal se dissout dans " +
+      'le milieu extérieur — voilà l\'insuline dans le sang. La membrane du ' +
+      "granule ne disparaît pas : elle S'AJOUTE à la surface de la cellule, et " +
+      "il faudra que l'endocytose la reprenne.",
     objet: groupe,
     ancre: DIR_EXOCYTOSE.clone().multiplyScalar(RAYON_CELLULE - 0.04),
     rayonCadrage: 0.32,
