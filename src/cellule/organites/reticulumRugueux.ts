@@ -23,10 +23,10 @@ import {
 /** Direction d'étalement dans le cytoplasme, à l'opposé de l'appareil de Golgi. */
 const AXE = new THREE.Vector3(-4, -1, 0).normalize()
 
-const NB_NAPPES = 6
-/** Étendue d'une citerne : 4 µm du noyau vers le large, 2,5 µm de flanc. */
-const LONGUEUR = 4 * UM
-const LARGEUR = 2.5 * UM
+const NB_NAPPES = 8
+/** Étendue d'une citerne : 5 µm du noyau vers le large, 3 µm de flanc. */
+const LONGUEUR = 5 * UM
+const LARGEUR = 3 * UM
 const SEGMENTS_LONG = 40
 const SEGMENTS_LARGE = 24
 /** Espacement des citernes à l'attache nucléaire. */
@@ -60,7 +60,7 @@ const RECOUVREMENT_ENVELOPPE = 0.12 * UM
 /** Retrait sous le plan de coupe : la pile affleure sans se faire trancher. */
 const MARGE_COUPE = 0.05 * UM
 
-const NB_RIBOSOMES = 1800
+const NB_RIBOSOMES = 2600
 /** Un ribosome mesure 25 nm : à l'échelle vraie, c'est un grain. */
 const RAYON_RIBOSOME = 0.0125 * UM
 
@@ -261,8 +261,10 @@ export function creerReticulumRugueux(): Organite[] {
         'n’en forment qu’un. Sa face cytosolique est couverte de ribosomes — ce sont eux qui la ' +
         'rendent « rugueuse » — qui poussent la protéine naissante dans la lumière des citernes au ' +
         'fur et à mesure qu’ils la lisent. Les protéines y sont repliées, contrôlées, puis ' +
-        'expédiées vers l’appareil de Golgi par vésicules. Une cellule qui sécrète beaucoup, ' +
-        'comme un plasmocyte, en est presque entièrement remplie.',
+        'expédiées vers l’appareil de Golgi par vésicules. Une cellule qui sécrète beaucoup ' +
+        'en est remplie : la cellule bêta, qui fabrique de l’insuline en continu, porte la ' +
+        'pile développée qu’on voit ici — huit citernes de cinq micromètres — et un ' +
+        'plasmocyte en serait plus couvert encore.',
       objet: groupe,
       ancre,
       couleur: TEINTES.reticulumRugueux,

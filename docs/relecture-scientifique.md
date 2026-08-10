@@ -307,7 +307,7 @@ Le centrosome est le point de départ des microtubules, un nuage de matériel p�
 
 **Rôle affiché** : Fabrique et replie les protéines destinées à l’export et aux membranes.
 
-Le réticulum endoplasmique rugueux est un empilement de citernes aplaties dont la membrane prolonge directement celle de l’enveloppe nucléaire : les deux compartiments n’en forment qu’un. Sa face cytosolique est couverte de ribosomes — ce sont eux qui la rendent « rugueuse » — qui poussent la protéine naissante dans la lumière des citernes au fur et à mesure qu’ils la lisent. Les protéines y sont repliées, contrôlées, puis expédiées vers l’appareil de Golgi par vésicules. Une cellule qui sécrète beaucoup, comme un plasmocyte, en est presque entièrement remplie.
+Le réticulum endoplasmique rugueux est un empilement de citernes aplaties dont la membrane prolonge directement celle de l’enveloppe nucléaire : les deux compartiments n’en forment qu’un. Sa face cytosolique est couverte de ribosomes — ce sont eux qui la rendent « rugueuse » — qui poussent la protéine naissante dans la lumière des citernes au fur et à mesure qu’ils la lisent. Les protéines y sont repliées, contrôlées, puis expédiées vers l’appareil de Golgi par vésicules. Une cellule qui sécrète beaucoup en est remplie : la cellule bêta, qui fabrique de l’insuline en continu, porte la pile développée qu’on voit ici — huit citernes de cinq micromètres — et un plasmocyte en serait plus couvert encore.
 
 ### 3.5 Réticulum endoplasmique lisse
 
