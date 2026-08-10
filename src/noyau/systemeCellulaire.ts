@@ -29,6 +29,8 @@ export const CLES_MECANISMES = [
   "beta-oxydation",
   "krebs",
   "respiration",
+  "replication-adn",
+  "mitose",
   "transcription",
   "epissage",
   "export-nucleaire",
@@ -165,6 +167,7 @@ export interface FluxCellulaires {
   autophagie: number;
   transportMoteur: number;
   dynamiqueMicrotubules: number;
+  cycleCellulaire: number;
 }
 
 export interface PointHistorique {
@@ -387,6 +390,7 @@ export function creerSystemeCellulaire(
       autophagie: 0,
       transportMoteur: 0,
       dynamiqueMicrotubules: 0,
+      cycleCellulaire: 0,
     },
     temps: 0,
     graine: graine | 0,
@@ -629,6 +633,12 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   // artifice de scène : privé de GTP, un microtubule cesse de pousser mais
   // continue de s'effondrer — la dynamique ralentit, elle ne gèle pas.
   f.dynamiqueMicrotubules = borner(0.15 + 0.85 * borner(atp, 0, 1), 0, 1);
+  // Pas un vrai cycle cellulaire : une horloge de démonstration pour les
+  // scènes de réplication et de mitose, gagée sur l'énergie (fourche et
+  // fuseau consomment ATP et GTP) et sur la viabilité — une cellule qui meurt
+  // ne se divise pas. Le vrai contrôle, cyclines/CDK et points de contrôle,
+  // n'est pas modélisé, et les fiches des scènes le déclarent.
+  f.cycleCellulaire = borner(atp, 0, 1) * s.viabilite;
 
   const surchargeRE = Math.max(0, e.proinsulineRE + e.proteinesMalRepliees - p.capaciteRE);
   const surchargeGolgi = Math.max(0, e.proinsulineGolgi - p.capaciteGolgi);
@@ -743,6 +753,8 @@ export function activiteMecanisme(
     case "beta-oxydation": return borner(f.betaOxydation / Math.max(EPSILON, p.vmaxBetaOxydation), 0, 1);
     case "krebs": return borner(f.krebs / Math.max(EPSILON, p.vmaxRespiration), 0, 1);
     case "respiration": return borner(f.respiration / Math.max(EPSILON, p.vmaxRespiration), 0, 1);
+    case "replication-adn": return borner(f.cycleCellulaire, 0, 1);
+    case "mitose": return borner(f.cycleCellulaire, 0, 1);
     case "transcription": return borner(f.transcription / Math.max(EPSILON, p.transcriptionINSMax), 0, 1);
     case "epissage": return borner(f.maturation / 0.03, 0, 1);
     case "export-nucleaire": return borner(f.exportNucleaire / 0.025, 0, 1);

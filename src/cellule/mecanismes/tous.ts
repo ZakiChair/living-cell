@@ -16,6 +16,8 @@ import { creerFermentation } from './fermentation.js'
 import { creerRepliementRE } from './repliementRE.js'
 import { creerTransitGolgi } from './transitGolgi.js'
 import { creerMaturationGranule } from './maturationGranule.js'
+import { creerReplicationAdn } from './replicationAdn.js'
+import { creerMitose } from './mitose.js'
 
 /**
  * Tous les mécanismes de la cellule.
@@ -49,7 +51,9 @@ export function creerMecanismes(): Mecanisme[] {
     ...creerBetaOxydation(),
     ...creerKrebs(),
     ...creerRespiration(),
-    // Information — puis la vie d'une protéine, du repliement au granule mûr
+    // Information — d'abord copier le livre, puis le lire
+    ...creerReplicationAdn(),
+    ...creerMitose(),
     ...creerTranscription(),
     ...creerEpissage(),
     ...creerExportNucleaire(),

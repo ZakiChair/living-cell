@@ -149,7 +149,31 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 8 ms · 1,5 s · 160 nm · 130 · 200 · 195 · 160 · 20 · 320 · 820
 
-### 2.6 Transcription de l'ADN en ARN
+### 2.6 Réplication : la fourche et ses fragments d'Okazaki
+
+**Siège** : Noyau · **Facteur temporel affiché** : ralenti ×3
+
+**Justification du facteur.** Une fourche humaine avance à ~30 nucléotides par seconde : un fragment d'Okazaki de 150 nt naît toutes les cinq secondes. Le cycle en prend quinze à l'écran — ralenti ×3, juste assez pour suivre l'amorçage.
+
+**Description lue par l’étudiant.** La réplication est SEMI-CONSERVATIVE — suivez les couleurs : chaque duplex fille garde un brin parental sombre et gagne un brin neuf clair. Et elle est ASYMÉTRIQUE : la polymérase ne lit que dans un sens, alors le brin avancé est copié d'un trait derrière l'hélicase, tandis que l'autre est copié à REBOURS, par fragments : la primase pose une amorce d'ARN — en orange —, la polymérase δ, retenue par son anneau PCNA, étend le fragment le long de la boucle du trombone, FEN1 retire l'amorce du fragment précédent et la ligase soude. L'hélicase n'écarte pas les brins à la main : elle encercle une matrice et avance. Les RPA gainent le simple brin exposé, et en amont la topoisomérase détend la vrille que la fourche pousse devant elle — la même contrainte que montre la transcription.
+
+**Ellision — ce qui est coupé ou échantillonné.** Le fragment est raccourci (22 grains pour ~150 nt) et le duplex échantillonné à un grain pour deux paires de bases. La cellule bêta adulte ne se divise presque jamais — ~0,5 % par an — et cette fourche est donc une démonstration de ce qui se passe dans les cellules qui se divisent, pas un événement fréquent de celle-ci ; la même machinerie sert aussi à la réparation. Pas d'origine de réplication ni de chargement du CMG (phase G1), pas de point de contrôle, pas de télomères. La boucle du trombone est une hypothèse d'école bien étayée, pas une photographie.
+
+> **Chiffres à contrôler** : 150 nt · 30 · 150 · 0,5 % · 22
+
+### 2.7 Mitose : le fuseau, la cohésine, le pincement
+
+**Siège** : Cytosquelette · **Facteur temporel affiché** : accéléré ×120
+
+**Justification du facteur.** Une mitose de cellule humaine dure de l'ordre d'une heure, dont la moitié pour la seule métaphase ; le cycle tient ici en 30 s, soit un accéléré d'environ ×120. L'anaphase réelle, elle, ne prend que quelques minutes : à ce facteur elle reste un instant — et c'en est un.
+
+**Description lue par l’étudiant.** Une cellule ne « copie » pas son noyau : elle le DÉMONTE. La chromatine se condense en chromosomes — deux chromatides sœurs tenues par la COHÉSINE, le grain violet du centromère —, l'enveloppe nucléaire se défait, et le fuseau bâti par les deux centrosomes capture chaque chromosome pour l'amener à la plaque métaphasique, où tout oscille et attend. Le déclic est biochimique : quand le dernier kinétochore est capturé, la séparase clive la cohésine — regardez le grain violet sauter — et les sœurs partent chacune vers son pôle : l'anaphase est une rupture, pas un glissement. Deux enveloppes se referment, les chromosomes se décondensent, et l'anneau d'actomyosine pince le cytoplasme en deux. Toute l'anatomie du reste du site — centrosome dupliqué, microtubules dynamiques, moteurs — trouve ici son emploi.
+
+**Ellision — ce qui est coupé ou échantillonné.** C'EST UNE MAQUETTE, posée dans le cytoplasme comme la vignette levure de la fermentation : la cellule bêta adulte ne se divise presque jamais (~0,5 % par an) et l'écorché entier est interphasique — la mitose est montrée parce qu'elle est universelle, sur une cellule stylisée de un micromètre. Quatre chromosomes pour quarante-six. Le point de contrôle du fuseau est réduit à l'attente métaphasique : aucune capture ratée n'est montrée, alors que la congression réelle en est pleine. Condensine, kinétochores, séparase et Aurora ne sont pas dessinés — on ne voit que leurs effets : la condensation, la capture, l'instant où la cohésine saute.
+
+> **Chiffres à contrôler** : 30 s · 30 · 120 · 0,5 %
+
+### 2.8 Transcription de l'ADN en ARN
 
 **Siège** : Noyau · **Facteur temporel affiché** : ralenti ×20
 
@@ -161,7 +185,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 17 ms · 0,33 s · 3,5 s · 60 nt · 3,6 kb/min · 6 kb/min · 2 kb/min · 60 · 17 · 33 · 20 · 10 · 4 nm · 500 pb · 21 pb · 5 nm · 26 s · 2,5 nm · 500 · 21 · 26
 
-### 2.7 Épissage de l'ARN par le spliceosome
+### 2.9 Épissage de l'ARN par le spliceosome
 
 **Siège** : Noyau · **Facteur temporel affiché** : accéléré ×50
 
@@ -173,7 +197,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 16 737 pb · 2 kb/min · 6 kb/min · 60 nt · 3,6 kb/min · 10 · 50 · 16 737 · 60 · 45 · 5 419 pb · 1,63 µm · 120 pb · 0,036 µm · 0,5 % · 8 % · 5 419 · 63 · 48 · 120 · 036
 
-### 2.8 Export de l'ARN messager
+### 2.10 Export de l'ARN messager
 
 **Siège** : Enveloppe nucléaire · **Facteur temporel affiché** : ralenti ×200
 
@@ -185,7 +209,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 350 ms · 200 · 50 · 350 · 2,5 ms · 7,1 ms
 
-### 2.9 Traduction : un polysome au travail
+### 2.11 Traduction : un polysome au travail
 
 **Siège** : Cytosol · **Facteur temporel affiché** : ralenti ×20
 
@@ -197,7 +221,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20 · 0,9 nm · 1 nm · 300 · 35
 
-### 2.10 Translocation : SRP, Sec61 et peptide signal
+### 2.12 Translocation : SRP, Sec61 et peptide signal
 
 **Siège** : Réticulum endoplasmique rugueux · **Facteur temporel affiché** : ralenti ×20
 
@@ -209,7 +233,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20
 
-### 2.11 Repliement : BiP, PDI et les trois ponts
+### 2.13 Repliement : BiP, PDI et les trois ponts
 
 **Siège** : Réticulum endoplasmique rugueux · **Facteur temporel affiché** : accéléré ×30
 
@@ -221,7 +245,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 20 s · 20 · 30
 
-### 2.12 Golgi : citernes qui mûrissent, sucres qui s'ajoutent
+### 2.14 Golgi : citernes qui mûrissent, sucres qui s'ajoutent
 
 **Siège** : Appareil de Golgi · **Facteur temporel affiché** : accéléré ×50
 
@@ -233,7 +257,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 24 s · 24 · 50
 
-### 2.13 Maturation du granule : convertases, peptide C, cristal de zinc
+### 2.15 Maturation du granule : convertases, peptide C, cristal de zinc
 
 **Siège** : Appareil de Golgi · **Facteur temporel affiché** : accéléré ×150
 
@@ -245,7 +269,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 24 s · 24 · 150
 
-### 2.14 Kinésine et dynéine sur le microtubule
+### 2.16 Kinésine et dynéine sur le microtubule
 
 **Siège** : Cytosquelette · **Facteur temporel affiché** : ralenti ×100
 
@@ -257,7 +281,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 8 nm · 800 nm · 10 ms · 800 · 10 · 1 nm · 0,9 µm · 100 · 52 000
 
-### 2.15 Instabilité dynamique du microtubule
+### 2.17 Instabilité dynamique du microtubule
 
 **Siège** : Cytosquelette · **Facteur temporel affiché** : accéléré ×3
 
@@ -269,7 +293,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 1,8 µm · 17 µm · 0,38 µm · 17 · 38 · 8 nm · 160
 
-### 2.16 Endocytose par puits de clathrine
+### 2.18 Endocytose par puits de clathrine
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : accéléré ×2,3
 
@@ -281,7 +305,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 60 s · 20 s · 45 s · 30 · 60 · 20 · 45
 
-### 2.17 Sécrétion d'insuline : calcium, SNARE et granule
+### 2.19 Sécrétion d'insuline : calcium, SNARE et granule
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : deux temps : accéléré ×5, puis ralenti ×5 000
 
@@ -293,7 +317,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 1 ms · 5 s · 5 000 · 2 nm · 150 nm · 12 nm · 150 · 12 · 13
 
-### 2.18 Pompe Na⁺/K⁺ et canal potassique
+### 2.20 Pompe Na⁺/K⁺ et canal potassique
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : ralenti ×1 000
 
@@ -305,7 +329,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 20 ms · 20
 
-### 2.19 Dégradation par le protéasome
+### 2.21 Dégradation par le protéasome
 
 **Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×10
 
@@ -482,4 +506,4 @@ Ce dossier couvre le TEXTE. Trois choses lui échappent et demandent la page :
 - **Le geste** : donner un brin d'ARN à un ribosome, et couper l'oxygène pour voir la
   traduction s’arrêter.
 
-*Généré depuis 19 mécanismes, 18 familles d'organites et 90 bases.*
+*Généré depuis 21 mécanismes, 18 familles d'organites et 90 bases.*
