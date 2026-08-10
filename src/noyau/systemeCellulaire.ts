@@ -47,6 +47,7 @@ export const CLES_MECANISMES = [
   "proteasome",
   "autophagie",
   "apoptose",
+  "ilot",
 ] as const;
 
 export type CleMecanisme = (typeof CLES_MECANISMES)[number];
@@ -831,6 +832,10 @@ export function activiteMecanisme(
     case "pompe-sodium-potassium": return borner(f.pompeNaK / Math.max(EPSILON, p.pompeNaKMax), 0, 1);
     case "proteasome": return borner(f.proteasome / 0.018, 0, 1);
     case "autophagie": return borner(systeme.stress.autophagie, 0, 1);
+    case "ilot":
+      // L'îlot bat même au repos — oscillations basales — et s'emballe avec
+      // la sécrétion de la cellule qu'il entoure.
+      return borner(0.25 + 0.75 * (f.secretion / Math.max(EPSILON, p.secretionMax)), 0, 1);
     case "apoptose":
       // Dans une cellule saine, la scène ne tourne PAS : l'horloge de
       // l'exécution ne démarre qu'avec le déclin de la viabilité ou le

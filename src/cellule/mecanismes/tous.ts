@@ -20,6 +20,7 @@ import { creerReplicationAdn } from './replicationAdn.js'
 import { creerMitose } from './mitose.js'
 import { creerAutophagie } from './autophagie.js'
 import { creerApoptose } from './apoptose.js'
+import { creerIlot } from './ilot.js'
 
 /**
  * Tous les mécanismes de la cellule.
@@ -71,6 +72,8 @@ export function creerMecanismes(): Mecanisme[] {
     // Le destin — survivre en se recyclant, ou mourir proprement
     ...creerAutophagie(),
     ...creerApoptose(),
+    // Et le zoom arrière final : la cellule dans son organe
+    ...creerIlot(),
     ]),
   )
 }

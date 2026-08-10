@@ -365,6 +365,18 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 30 s · 30 · 120
 
+### 2.24 L'îlot de Langerhans : la cellule dans son organe
+
+**Siège** : Îlot de Langerhans · **Facteur temporel affiché** : accéléré ×15
+
+**Justification du facteur.** Les oscillations calciques lentes d'un îlot stimulé ont une période de trois à cinq minutes ; le tour tient ici en 16 s, soit un accéléré d'environ ×15. Le passage d'une hématie, lui, est bien plus rapide en vrai — le sang traverse un îlot en une seconde.
+
+**Description lue par l’étudiant.** Un pour cent du pancréas, tout le contrôle de la glycémie : un îlot est un organe dans l'organe, mille à trois mille cellules pelotonnées autour de leurs capillaires. Les BÊTA — jaunes — n'y travaillent jamais seules : couplées par la connexine 36, elles partagent leurs ondes calciques et sécrètent EN CHŒUR — regardez l'éclat bleu faire le tour du réseau, et les grains d'insuline partir du PÔLE VASCULAIRE de chaque cellule, jamais du côté opposé : chaque cellule est à moins de vingt micromètres d'un capillaire, et sa sécrétion est dirigée. Les ALPHA — orange — feront le glucagon quand le glucose manquera ; les DELTA — violettes — freinent tout le monde à la somatostatine, en continu. L'îlot humain est entremêlé : alpha et delta au contact des bêta, partout — le manteau bien rangé des schémas est une anatomie de rongeur.
+
+**Ellision — ce qui est coupé ou échantillonné.** C'EST UNE MAQUETTE, posée dans le cytoplasme comme la mitose : douze cellules stylisées d'un demi-micromètre pour un îlot réel de mille à trois mille cellules de dix micromètres — les proportions internes sont fausses et déclarées. L'architecture, elle, est HUMAINE : bêta, alpha et delta entremêlées, pas le manteau des rongeurs. Le glucagon des alpha n'est pas figuré, ni les cellules PP, ni les nerfs ; la somatostatine est réduite à quelques grains, et le couplage électrique des bêta à l'onde qui les parcourt — la connexine 36 est dessinée, pas simulée. Le débit de sécrétion lit le modèle de LA cellule du site.
+
+> **Chiffres à contrôler** : 16 s · 16 · 15 · 36
+
 ---
 
 ## 3. Les 18 familles d'organites
@@ -530,4 +542,4 @@ Ce dossier couvre le TEXTE. Trois choses lui échappent et demandent la page :
 - **Le geste** : donner un brin d'ARN à un ribosome, et couper l'oxygène pour voir la
   traduction s’arrêter.
 
-*Généré depuis 23 mécanismes, 18 familles d'organites et 90 bases.*
+*Généré depuis 24 mécanismes, 18 familles d'organites et 90 bases.*
