@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import { siegeMitochondrie, type MecanismeBrut } from './contrat.js'
+import { contexteRepos } from '../../noyau/contexte.js'
+import { siegeMitochondrie, type ContexteCellule, type MecanismeBrut } from './contrat.js'
 
 /**
  * La chaîne respiratoire et l'ATP synthase.
@@ -289,9 +290,16 @@ export function creerRespiration(): MecanismeBrut[] {
   const phaseEau = new Float32Array(NB_EAU)
   for (let i = 0; i < NB_EAU; i++) phaseEau[i] = alea()
 
-  const animer = (temps: number): void => {
+  const animer = (temps: number, contexte: ContexteCellule = contexteRepos()): void => {
     // ── Le rotor tourne, et c'est le cœur de la démonstration ─────────────
     rotor.rotation.y = (temps / DUREE_TOUR) * Math.PI * 2
+
+    // ── Le gradient LIT le modèle ─────────────────────────────────────────
+    // La densité de protons de l'espace intermembranaire suit la force
+    // proton-motrice simulée : sous oligomycine l'horloge s'arrête mais le
+    // nuage s'ÉPAISSIT — la chaîne pompe dans un réservoir bouché — et sous
+    // anoxie il se vide. C'est l'EDO de etatCellule.ts rendue visible.
+    const fpm = contexte.forceProtonMotrice
 
     // ── Les électrons descendent la chaîne ────────────────────────────────
     for (let i = 0; i < NB_ELECTRONS; i++) {
@@ -360,8 +368,13 @@ export function creerRespiration(): MecanismeBrut[] {
         }
       }
 
+      // Chaque proton a un seuil : plus la force proton-motrice est haute,
+      // plus il en existe. À 1 (repos) : cent sur cent vingt. Sous oligomycine
+      // (~1,24) : tous, et le nuage sature. Sous anoxie : presque aucun.
+      const seuil = (i % NB_PROTONS) / NB_PROTONS
+      const present = seuil < fpm * 0.83 ? 1 : 0.001
       _position.set(x, y, derveProton[i * 2 + 1]! * 0.5)
-      _echelle.setScalar(1)
+      _echelle.setScalar(present)
       _matrice.compose(_position, _rotation, _echelle)
       protons.setMatrixAt(i, _matrice)
     }
@@ -428,7 +441,10 @@ export function creerRespiration(): MecanismeBrut[] {
         "Le débit d'ATP est juste — trois par tour, deux par seconde d'écran — mais les EFFECTIFS " +
         "sont échantillonnés : huit ATP et quatre molécules d'eau en vol à la fois, là où une crête " +
         "réelle en libère un flot continu. Les quatorze électrons et les cent vingt protons sont de " +
-        "même des représentants, pas un inventaire. Une seule crête est montrée sur les quelques " +
+        "même des représentants, pas un inventaire — mais leur DENSITÉ n'est plus un décor : le " +
+        'nuage intermembranaire lit la force proton-motrice du modèle, et le laboratoire le ' +
+        "commande — coupez l'oxygène et il se vide, bloquez la synthase à l'oligomycine et il " +
+        "sature pendant que le rotor s'arrête. Une seule crête est montrée sur les quelques " +
         "dizaines d'une mitochondrie, et les complexes y sont espacés régulièrement alors qu'ils " +
         "sont en réalité rassemblés en supercomplexes mobiles.",
       description:

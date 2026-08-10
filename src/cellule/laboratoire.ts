@@ -115,6 +115,11 @@ export function creerLaboratoireCellulaire(
     ['Ouabaïne', actif => appliquer(traite, ['energie', 'inhibiteurs', 'ouabaine'], actif)],
     ['Bloqueur calcique', actif => appliquer(traite, ['milieu', 'bloqueurCalcique'], actif ? 1 : 0)],
     ['Stress RE', actif => appliquer(traite, ['milieu', 'stressRE'], actif ? 1 : 0)],
+    // Les deux médicaments du canal K-ATP, aux effets opposés : la
+    // sulfonylurée fait sécréter une cellule affamée, le diazoxide fait
+    // taire une cellule gavée. Essayez-les avec la mesure « sécrétion ».
+    ['Sulfonylurée (ferme K-ATP)', actif => appliquer(traite, ['milieu', 'sulfonylure'], actif ? 1 : 0)],
+    ['Diazoxide (ouvre K-ATP)', actif => appliquer(traite, ['milieu', 'diazoxide'], actif ? 1 : 0)],
   ];
   for (const [libelle, action] of definitions) {
     const commande = document.createElement('button');

@@ -94,6 +94,10 @@ export interface MilieuCellulaire {
   renouvellement: number;
   bloqueurCalcique: number;
   stressRE: number;
+  /** Sulfonylurée (0 à 1) : se lie à SUR1 et FERME le canal K-ATP — sécrétion sans glucose. */
+  sulfonylure: number;
+  /** Diazoxide (0 à 1) : OUVRE le canal K-ATP — silence malgré le glucose. */
+  diazoxide: number;
 }
 
 export interface Metabolites {
@@ -322,6 +326,8 @@ export function creerSystemeCellulaire(
       renouvellement: 0.12,
       bloqueurCalcique: 0,
       stressRE: 0,
+      sulfonylure: 0,
+      diazoxide: 0,
     },
     metabolites: {
       glucose: 2.2,
@@ -541,7 +547,16 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     0.02,
     6,
   );
-  i.canalKATP = borner(1 / (1 + Math.pow(rapportAtpAdp / 1.2, 4)), 0, 1);
+  // Le canal Kir6.2/SUR1 lit l'ATP/ADP — puis la pharmacologie tranche : la
+  // sulfonylurée liée à SUR1 le ferme quel que soit le métabolisme, le
+  // diazoxide l'ouvre. Deux médicaments opposés sur la même protéine.
+  const ouvertureMetabolique = 1 / (1 + Math.pow(rapportAtpAdp / 1.2, 4));
+  i.canalKATP = borner(
+    ouvertureMetabolique * (1 - 0.95 * borner(milieu.sulfonylure, 0, 1)) +
+      (1 - ouvertureMetabolique) * 0.92 * borner(milieu.diazoxide, 0, 1),
+    0,
+    1,
+  );
   const permeabiliteKEffective = p.permeabiliteK * (0.12 + 0.88 * i.canalKATP);
   const numerateurGoldman =
     permeabiliteKEffective * i.potassiumExterieur +
@@ -805,5 +820,7 @@ export function regimesAtelier(systeme: SystemeCellulaire): {
 export function estConditionTraitee(systeme: SystemeCellulaire): boolean {
   return inhibiteursActifs(systeme.energie) ||
     systeme.milieu.bloqueurCalcique > 0 ||
-    systeme.milieu.stressRE > 0;
+    systeme.milieu.stressRE > 0 ||
+    systeme.milieu.sulfonylure > 0 ||
+    systeme.milieu.diazoxide > 0;
 }

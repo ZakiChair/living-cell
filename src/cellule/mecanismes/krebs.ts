@@ -872,7 +872,12 @@ export function creerKrebs(): MecanismeBrut[] {
         "carbone-carbone y fait 1,1 nm pour 0,15 réels, sans quoi on ne pourrait pas les " +
         "compter — et compter les carbones est tout l'objet de cette figure. Les " +
         "molécules d'eau, les protons et le coenzyme A libre ne sont pas dessinés, et la vraie " +
-        'matrice est bien plus encombrée que ce brouillard de grains.',
+        'matrice est bien plus encombrée que ce brouillard de grains. Surtout, il manque ' +
+        "l'ANAPLÉROSE : dans la cellule bêta, la pyruvate carboxylase capte près de 40 % du " +
+        'pyruvate pour REMPLIR le cycle en oxaloacétate, et les navettes pyruvate-malate et ' +
+        'pyruvate-citrate qui en repartent fabriquent les signaux amplificateurs de la ' +
+        "sécrétion d'insuline — le cycle de cette cellule n'est pas qu'un four, c'est un " +
+        'générateur de messages, et la scène ne le montre pas encore.',
       description:
         "Huit enzymes en anneau. L'acétyl-CoA à deux carbones — que livrent aussi bien le sucre " +
         'que les acides gras et les acides aminés — se condense sur un oxaloacétate à quatre ' +

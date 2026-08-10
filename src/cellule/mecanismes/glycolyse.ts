@@ -1047,7 +1047,12 @@ export function creerGlycolyse(): MecanismeBrut[] {
       description:
         'La glycolyse coupe un glucose à six carbones en deux pyruvates à trois, dans le cytosol, sans ' +
         "oxygène et sans le moindre organite : c'est la voie la plus ancienne et la plus universelle, " +
-        "et une hématie, qui n'a pas de mitochondrie, ne vit que de celle-là. La cellule doit d'abord " +
+        "et une hématie, qui n'a pas de mitochondrie, ne vit que de celle-là. Dans CETTE cellule, le " +
+        'premier poste n\'est pas une hexokinase ordinaire : c\'est la GLUCOKINASE, demi-saturée vers ' +
+        '8 mM et jamais freinée par son produit — à glycémie de repos elle tourne au tiers de sa ' +
+        'capacité, et c\'est cette marge qui fait de la cellule bêta un CAPTEUR : le flux qui part ' +
+        "d'ici est le signal qui, via l'ATP, fermera les canaux K-ATP et déclenchera l'insuline. " +
+        "La cellule doit d'abord " +
         'INVESTIR — deux ATP sont dépensés aux étapes 1 et 3, et on les voit partir avant que rien ne ' +
         "rentre ; au clivage par l'aldolase le cycle s'ouvre et se coupe en deux trioses, et tout ce " +
         'qui suit se produit en double, ce qui est la seule raison pour laquelle la phase de ' +
