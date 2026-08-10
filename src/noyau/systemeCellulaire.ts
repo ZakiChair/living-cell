@@ -147,6 +147,13 @@ export interface StressCellulaire {
   dommage: number;
   viabilite: number;
   destin: DestinCellulaire;
+  /**
+   * Charge sécrétoire CHRONIQUE, 0 à 1 : l'excès de glycémie intégré avec une
+   * constante de temps de ~40 minutes. C'est elle qui distingue le pic
+   * post-prandial (inoffensif) de l'hyperglycémie installée (toxique) — la
+   * glucotoxicité est une affaire de durée, pas de valeur.
+   */
+  chargeChronique: number;
 }
 
 export interface FluxCellulaires {
@@ -373,6 +380,7 @@ export function creerSystemeCellulaire(
       dommage: 0,
       viabilite: 1,
       destin: "homeostasie",
+      chargeChronique: 0,
     },
     flux: {
       entreeGlucose: 0,
@@ -621,10 +629,19 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   const maturationRegime = borner(atp * (1 - 0.45 * s.stressRE), 0, 1);
   const exportRegime = borner(atp * (1 - 0.30 * s.dommage), 0, 1);
   const traductionRegime = borner(regimeImporte * (1 - 0.70 * s.stressRE), 0, 1);
+  // Le glucose stimule DIRECTEMENT la traduction de la proinsuline —
+  // dérépression traductionnelle par les UTR, ×5 à ×10 publiés en aigu ; le
+  // modèle en retient un facteur ~1,7 pour rester dans sa gamme de flux.
+  const stimulationTraduction =
+    0.3 +
+    0.9 *
+      (Math.pow(milieu.glucoseExterne, 2) / (64 + Math.pow(milieu.glucoseExterne, 2)));
   f.transcription = p.transcriptionINSMax * transcriptionRegime * (1 + 0.015 * bruitCentre(systeme));
   f.maturation = 0.030 * maturationRegime * e.preArnINS;
   f.exportNucleaire = 0.025 * exportRegime * e.arnINSNucleaire;
-  f.traduction = p.traductionMax * traductionRegime * e.arnINSCytosolique / (0.4 + e.arnINSCytosolique);
+  f.traduction =
+    p.traductionMax * traductionRegime * stimulationTraduction *
+    e.arnINSCytosolique / (0.4 + e.arnINSCytosolique);
   f.translocationRE = f.traduction * borner(atp * (1 - s.stressRE), 0, 1);
   f.transportGolgi = 0.035 * borner(atp, 0, 1) * e.proinsulineRE / (0.3 + e.proinsulineRE);
   f.biogeneseGranules = 0.028 * borner(atp, 0, 1) * e.proinsulineGolgi / (0.3 + e.proinsulineGolgi);
@@ -663,16 +680,35 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   e.arnINSNucleaire = borner(e.arnINSNucleaire + dt * (f.maturation - f.exportNucleaire - 0.004 * e.arnINSNucleaire), 0, 10);
   e.arnINSCytosolique = borner(e.arnINSCytosolique + dt * (f.exportNucleaire - 0.008 * e.arnINSCytosolique), 0, 20);
   e.preproinsuline = borner(e.preproinsuline + dt * (f.traduction - f.translocationRE - 0.01 * e.preproinsuline), 0, 10);
-  e.proinsulineRE = borner(e.proinsulineRE + dt * (f.translocationRE - f.transportGolgi - 0.008 * e.proinsulineRE), 0, 10);
+  // Une part de la proinsuline se replie MAL — 15 à 20 % même chez une
+  // cellule saine, publié — et cette part croît avec la charge sécrétoire
+  // que la glycémie impose. C'est le cœur de la glucotoxicité : une
+  // hyperglycémie PONCTUELLE se paie en travail, une hyperglycémie
+  // CHRONIQUE se paie en protéines ratées qui saturent le réticulum.
+  const fractionMalRepliee = borner(0.06 + 0.3 * s.chargeChronique, 0.06, 0.36);
+  e.proinsulineRE = borner(
+    e.proinsulineRE +
+      dt * ((1 - fractionMalRepliee) * f.translocationRE - f.transportGolgi - 0.008 * e.proinsulineRE),
+    0,
+    10,
+  );
   e.proinsulineGolgi = borner(e.proinsulineGolgi + dt * (f.transportGolgi - f.biogeneseGranules - 0.006 * e.proinsulineGolgi), 0, 12);
   e.insulineGranules = borner(e.insulineGranules + dt * (f.biogeneseGranules - f.secretion), 0, p.capaciteGranules);
   e.insulineSecretee = borner(e.insulineSecretee + dt * f.secretion, 0, 1e6);
   e.proteinesMalRepliees = borner(
-    e.proteinesMalRepliees + dt * (0.03 * surchargeRE + 0.01 * surchargeGolgi + 0.02 * milieu.stressRE - f.proteasome),
+    e.proteinesMalRepliees +
+      dt * (fractionMalRepliee * f.translocationRE + 0.03 * surchargeRE + 0.01 * surchargeGolgi + 0.02 * milieu.stressRE - f.proteasome),
     0,
     10,
   );
 
+  // L'excès de glycémie s'intègre lentement : un repas passe, un diabète reste.
+  s.chargeChronique = borner(
+    s.chargeChronique +
+      dt * (1 / 2400) * (borner((milieu.glucoseExterne - 8) / 7, 0, 1) - s.chargeChronique),
+    0,
+    1,
+  );
   const pressionOxydante = 1.8 * f.respiration + 0.8 * f.betaOxydation + 0.25 * s.dommage;
   s.ros = borner(s.ros + dt * (pressionOxydante - p.capaciteAntioxydante * s.ros), 0, 5);
   s.stressRE = borner(

@@ -120,6 +120,12 @@ export function creerLaboratoireCellulaire(
     // taire une cellule gavée. Essayez-les avec la mesure « sécrétion ».
     ['Sulfonylurée (ferme K-ATP)', actif => appliquer(traite, ['milieu', 'sulfonylure'], actif ? 1 : 0)],
     ['Diazoxide (ouvre K-ATP)', actif => appliquer(traite, ['milieu', 'diazoxide'], actif ? 1 : 0)],
+    // Le diabète de type 2 en une consigne : 15 mM SOUTENUS. Un pic passe,
+    // un diabète reste — laissez tourner une heure ou deux à vitesse
+    // accélérée et regardez le stress s'installer, les granules s'épuiser,
+    // le destin basculer. Rien n'est scripté : c'est la glucotoxicité qui
+    // émerge du modèle.
+    ['Hyperglycémie chronique (15 mM, T2D)', actif => appliquer(traite, ['milieu', 'glucoseCible'], actif ? 15 : 5)],
   ];
   for (const [libelle, action] of definitions) {
     const commande = document.createElement('button');
