@@ -1794,7 +1794,12 @@ export function creerFermentation(): MecanismeBrut[] {
         "démarre, l'oxygène local s'épuise puis revient en une trentaine de secondes — 35 s réelles " +
         "deviennent 7 s d'écran, et les deux régimes se comparent dans le même plan, à la suite.",
       ellision:
-        "Trois horloges cohabitent, et une seule porte le facteur affiché. Les actes enzymatiques sont " +
+        "D'abord une réserve d'identité : LA CELLULE BÊTA FERMENTE TRÈS PEU. Elle réprime " +
+        'exprès la lactate déshydrogénase A et le transporteur MCT1 — deux de ses « gènes ' +
+        'interdits » — précisément pour que le pyruvate n\'ait pas d\'échappatoire et que tout ' +
+        'le glucose se lise dans l\'ATP : c\'est la condition du capteur. La scène vaut donc ' +
+        'pour une cellule générique — un muscle à l\'effort, une hématie — et montre ce que la ' +
+        'bêta s\'interdit. Trois horloges cohabitent, et une seule porte le facteur affiché. Les actes enzymatiques sont ' +
         "en réalité RALENTIS d'environ ×1 000 : la lactate déshydrogénase traite quelques centaines de " +
         "molécules par seconde et un électron traverse la chaîne en quelques millisecondes ; à vitesse " +
         "vraie on ne verrait qu'un flou. Les attentes de rencontre sont COUPÉES, et la densité divisée " +

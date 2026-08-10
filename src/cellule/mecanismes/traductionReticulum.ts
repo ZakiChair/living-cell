@@ -1334,11 +1334,11 @@ export function creerTraductionReticulum(): MecanismeBrut[] {
       ralentissement: 20,
       justificationFacteur:
         'Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran, ralenti de 20. ' +
-        'La chaîne traverse la membrane exactement au rythme où elle sort du tunnel. La ' +
-        'pause imposée par la SRP tient dans la même horloge : une douzaine de secondes ' +
-        'd’écran pour un arrêt réel de l’ordre de la minute.',
+        'La chaîne traverse la membrane exactement au rythme où elle sort du tunnel.',
       ellision:
-        'La SRP n’est jouée que sur UN ribosome, en boucle de démonstration : à la fin ' +
+        'La pause SRP est ÉCRASÉE, pas ralentie : ses quelques dizaines de secondes ' +
+        'réelles prendraient dix minutes d’écran à ce ralenti — on n’en garde que le ' +
+        'fait, l’arrêt puis la reprise. La SRP n’est jouée que sur UN ribosome, en boucle de démonstration : à la fin ' +
         'du cycle il s’efface et reparaît au cytosol — dans la cellule, il resterait ' +
         'amarré jusqu’au bout de sa protéine. Les GTPases de la SRP et de son récepteur, ' +
         'et le GTP qu’elles consomment à la remise du ribosome, ne sont pas dessinées. ' +

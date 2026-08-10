@@ -11,8 +11,8 @@ import type { ContexteCellule, MecanismeBrut } from './contrat.js'
  * DISULFURE posés entre les bonnes cystéines parmi les appariements possibles.
  * La PDI catalyse, défait, recommence ; BiP tient la chaîne le temps qu'il
  * faut. Un mauvais appariement, et la proinsuline part à la dégradation —
- * c'est un mécanisme réel de diabète (syndrome de Wolcott-Rallison, mutants
- * Akita chez la souris).
+ * c'est un mécanisme réel de diabète : le MIDY chez l'humain (mutations du
+ * gène INS), la souris Akita au laboratoire (Cys A7 perdue).
  *
  * La scène montre trois chaînes en phase décalée : deux se replient juste,
  * une se trompe et repart vers l'ERAD. La part d'échec LIT LE MODÈLE : quand
@@ -29,7 +29,7 @@ const NB_CHAINES = 3
 /** 26 grains pour 86 résidus de proinsuline : un grain pour ~3 acides aminés. */
 const NB_RESIDUS = 26
 const ESPACE = 0.0035
-/** Les trois ponts : approximations à l'échelle des grains de B7–A7, B19–A19, A6–A11. */
+/** Les trois ponts : approximations à l'échelle des grains de B7–A7, B19–A20, A6–A11. */
 const PONTS: ReadonlyArray<readonly [number, number]> = [
   [2, 17],
   [6, 21],
@@ -360,7 +360,7 @@ export function creerRepliementRE(): MecanismeBrut[] {
         'Un fil n’est pas une protéine. La proinsuline qui vient de traverser ' +
         'Sec61 pend dans la lumière du réticulum ; BiP — violet — la tient le ' +
         'temps qu’elle se compacte, et la PDI — vert d’eau — vient poser ses ' +
-        'TROIS PONTS DISULFURE, les barreaux orange : B7–A7, B19–A19, A6–A11. ' +
+        'TROIS PONTS DISULFURE, les barreaux orange : B7–A7, B19–A20, A6–A11. ' +
         'Parmi les quinze appariements possibles de ses six cystéines, un seul ' +
         'est le bon, et la PDI défait autant qu’elle fait. Suivez les trois ' +
         'chaînes : deux partent vers le Golgi, la troisième s’est trompée — ' +

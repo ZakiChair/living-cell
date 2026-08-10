@@ -6,7 +6,7 @@ import type { MecanismeBrut } from './contrat.js'
  * La mitose, sur une maquette.
  *
  * On ne peut pas diviser LA cellule du site : une bêta adulte se divise
- * environ une fois tous les deux cents ans de vie cellulaaire (~0,5 % par an),
+ * environ une fois tous les deux cents ans de vie cellulaire (~0,5 % par an),
  * et l'écorché entier est bâti sur son anatomie interphasique. La mitose est
  * donc jouée sur une MAQUETTE posée dans le cytoplasme — même statut déclaré
  * que la vignette levure de la fermentation — parce qu'elle est universelle
