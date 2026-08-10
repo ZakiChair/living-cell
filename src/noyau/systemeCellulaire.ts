@@ -204,7 +204,7 @@ export const PROFIL_BETA_HUMAINE: Readonly<ProfilCellulaire> = Object.freeze({
   osmolariteCible: 300,
   glucoseReference: 5.5,
   oxygeneReference: 0.20,
-  vmaxEntreeGlucose: 0.055,
+  vmaxEntreeGlucose: 1.0,
   vmaxGlycolyse: 0.036,
   vmaxRespiration: 0.030,
   vmaxBetaOxydation: 0.006,
@@ -461,14 +461,26 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     1,
   );
 
-  const limiteGlucoseExterne = milieu.glucoseExterne / (7 + milieu.glucoseExterne);
-  const limiteGlucose = m.glucose / (0.20 + m.glucose);
   const limiteOxygeneExterne = milieu.oxygeneExterne / (0.015 + milieu.oxygeneExterne);
   const limiteOxygene = m.oxygene / (0.004 + m.oxygene);
   const limiteAdp = m.adp / (0.15 + m.adp);
   const limitePi = m.pi / (0.20 + m.pi);
-  f.entreeGlucose = p.vmaxEntreeGlucose * limiteGlucoseExterne;
-  f.glycolyse = p.vmaxGlycolyse * limiteGlucose * (0.65 + 0.35 * partGlycolyse);
+  // Le transporteur de glucose est un ÉQUILIBREUR, pas une pompe : le flux suit
+  // le gradient et sa capacité dépasse d'un ordre de grandeur la phosphorylation,
+  // si bien que le glucose interne rejoint l'externe et que l'identité du
+  // transporteur (GLUT1/3 chez l'humain, GLUT2 chez le rongeur) ne porte pas le
+  // signal. Le capteur, c'est l'étape suivante.
+  f.entreeGlucose =
+    p.vmaxEntreeGlucose *
+    (milieu.glucoseExterne - m.glucose) /
+    (17 + milieu.glucoseExterne);
+  // La glucokinase est le vrai capteur : demi-saturation vers 8 mM, coopérativité
+  // proche de 1,7, pas d'inhibition par son produit. À glycémie de repos elle
+  // tourne au tiers de sa capacité — c'est cette MARGE qui transporte le signal,
+  // et que l'ancienne saturation (Km 0,2 mM) écrasait.
+  const glucokinase =
+    Math.pow(m.glucose, 1.7) / (Math.pow(8, 1.7) + Math.pow(m.glucose, 1.7));
+  f.glycolyse = p.vmaxGlycolyse * glucokinase * (0.65 + 0.35 * partGlycolyse);
   f.fermentation = f.glycolyse * (1 - limiteOxygene) * 0.90;
   f.betaOxydation =
     p.vmaxBetaOxydation *
@@ -489,7 +501,7 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     (m.nadh / (0.06 + m.nadh)) *
     facteurRespiration;
 
-  m.glucose = borner(m.glucose + dt * (f.entreeGlucose - f.glycolyse), 0, 30);
+  m.glucose = borner(m.glucose + dt * (f.entreeGlucose - f.glycolyse), 0, 45);
   milieu.glucoseExterne = borner(milieu.glucoseExterne - dt * f.entreeGlucose * 0.05, 0, 40);
   m.oxygene = borner(
     m.oxygene + dt * (0.28 * (milieu.oxygeneExterne - m.oxygene) - 0.55 * f.respiration),
@@ -503,15 +515,15 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   m.pi = borner(m.pi + dt * (0.08 * conso - 0.09 * f.respiration), 0.02, 8);
   m.acidesGras = borner(m.acidesGras - dt * f.betaOxydation + dt * 0.001, 0, 4);
 
-  // Le capteur de glucose de la cellule bêta est la glucokinase : demi-saturation
-  // vers 8-10 mM, coopérativité proche de 2, une plage dynamique exactement
-  // centrée sur la glycémie. Le rapport ATP/ADP porte ce signal, modulé par la
-  // capacité oxydative : l'anoxie ou l'oligomycine le font retomber malgré le
-  // glucose. Les flux métaboliques ci-dessus n'ont pas la marge nécessaire pour
-  // transporter le signal (la glycolyse au repos frôle son vmax) : le capteur
-  // est donc câblé sur le glucose externe, la simplification est assumée.
+  // Le rapport ATP/ADP porte le signal glucokinase EN LE MESURANT SUR LE FLUX :
+  // c'est la glycolyse simulée — donc le glucose entré, phosphorylé, oxydé —
+  // qui ferme les canaux K-ATP, plus le glucose externe en prise directe.
+  // Couper le transport, la glycolyse ou l'oxygène éteint le signal à glycémie
+  // égale, et c'est vérifié par test. La capacité oxydative module le tout :
+  // l'anoxie ou l'oligomycine font retomber le rapport malgré le glucose.
   const signalGlucokinase =
-    Math.pow(milieu.glucoseExterne, 2) / (100 + Math.pow(milieu.glucoseExterne, 2));
+    f.glycolyse /
+    Math.max(EPSILON, p.vmaxGlycolyse * (0.65 + 0.35 * partGlycolyse));
   const facteurEnergie = borner(0.12 + 0.88 * facteurRespiration * limiteOxygene, 0, 1);
   const rapportAtpAdp =
     3.2 * signalGlucokinase * facteurEnergie * borner(0.25 + 0.75 * atp, 0, 1.5);
