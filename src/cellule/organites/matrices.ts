@@ -39,7 +39,9 @@ import { placementsMitochondries } from './mitochondries.js'
  * `mitochondries.ts` publie maintenant `placementsMitochondries()`, calculé sur
  * son propre flux aléatoire. Le couplage a disparu avec le rejeu.
  */
-const NOMBRE_MITOCHONDRIES = 6
+// Dérivé du réseau publié par `mitochondries.ts` : le contenu suit les
+// capsules, quel que soit leur nombre — la constante recopiée a déjà menti.
+const NOMBRE_MITOCHONDRIES = placementsMitochondries().length
 
 const GRAINE_CONTENU = 27_182
 const GRAINE_RIBOSOMES = 16_180

@@ -331,7 +331,7 @@ Une pile de citernes aplaties et incurvées, empilées comme des assiettes creus
 
 **Rôle affiché** : Fabrique l'ATP, la monnaie énergétique de la cellule.
 
-La mitochondrie est enveloppée de deux membranes. L'interne se replie en crêtes qui plongent dans la matrice : ces replis multiplient la surface disponible pour la chaîne respiratoire, là où l'oxygène est consommé et l'ATP assemblée. Plus une cellule travaille, plus ses crêtes sont serrées — un muscle cardiaque en est bourré. Elle garde un ADN circulaire à elle, vestige de la bactérie qu'elle a été.
+La mitochondrie est enveloppée de deux membranes. L'interne se replie en crêtes qui plongent dans la matrice : ces replis multiplient la surface disponible pour la chaîne respiratoire, là où l'oxygène est consommé et l'ATP assemblée. Plus une cellule travaille, plus ses crêtes sont serrées — un muscle cardiaque en est bourré. Elle garde un ADN circulaire à elle, vestige de la bactérie qu'elle a été. Et elle ne vit pas seule : les mitochondries fusionnent et se scindent sans cesse, et les chapelets étranglés qu'on voit ici sont des tubules d'un même réseau, saisis entre deux fissions. Dix-huit segments sont dessinés — une cellule bêta réelle en porte des centaines, quatre à huit pour cent de son volume.
 
 ### 3.9 Lysosomes
 

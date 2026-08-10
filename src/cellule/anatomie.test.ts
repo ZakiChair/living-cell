@@ -2,6 +2,7 @@ import { contexteRepos } from '../noyau/contexte.js'
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import {
+  COMPOSITION_CHAINES,
   calculerPlacements,
   creerMitochondries,
   placementsMitochondries,
@@ -114,8 +115,24 @@ describe('les mitochondries sont posées où elles se déclarent', () => {
   /** Demi-longueur d'une capsule : elle mesure 2 µm de long. */
   const DEMI_LONGUEUR = 1
 
-  it('en pose bien six', () => {
-    expect(placements).toHaveLength(6)
+  it('en pose autant que la composition du réseau en déclare', () => {
+    expect(placements).toHaveLength(
+      COMPOSITION_CHAINES.reduce((somme: number, n: number) => somme + n, 0),
+    )
+  })
+
+  it('les segments consécutifs d’une chaîne se touchent : un tubule, pas un chapelet', () => {
+    // La capsule fait 2 µm ; le pas de chaîne 1,75 : les hémisphères terminaux
+    // s'interpénètrent, et c'est l'étranglement de jonction qui se lit.
+    let index = 0
+    for (const longueur of COMPOSITION_CHAINES) {
+      for (let s = 1; s < longueur; s++) {
+        const ecart = placements[index + s]!.position.distanceTo(placements[index + s - 1]!.position)
+        expect(ecart, `jonction ${index + s} à ${ecart.toFixed(2)} µm`).toBeLessThan(2)
+        expect(ecart, `jonction ${index + s} à ${ecart.toFixed(2)} µm`).toBeGreaterThan(1.4)
+      }
+      index += longueur
+    }
   })
 
   it('les garde dans la coquille cytoplasmique annoncée', () => {

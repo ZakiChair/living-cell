@@ -1,8 +1,16 @@
 /**
- * Les mitochondries : six exemplaires dispersés dans le cytoplasme.
+ * Les mitochondries : un réseau tubulaire en cours de fusion et de fission.
  *
- * Une mitochondrie sans crêtes n'est qu'un haricot orange. Tout le module est
- * donc organisé autour d'une seule idée : rendre visibles les replis de la
+ * Une cellule ne contient pas six haricots isolés : ses mitochondries forment
+ * un réseau dynamique de tubules qui fusionnent et se scindent en permanence.
+ * Les capsules sont donc posées en CHAÎNES — des tubules dont les segments se
+ * suivent bout à bout, avec des étranglements aux jonctions, là où la fission
+ * opère — plus quelques exemplaires isolés, produits de fission récents. La
+ * cellule bêta a un réseau plus fragmenté qu'un fibroblaste, et c'est ce que
+ * disent les chaînes courtes.
+ *
+ * Une mitochondrie sans crêtes n'est qu'un haricot orange. Le reste du module
+ * est donc organisé autour d'une seule idée : rendre visibles les replis de la
  * membrane interne au travers d'une membrane externe translucide. C'est la
  * surface de ces replis qui porte la chaîne respiratoire, donc c'est elle qu'il
  * faut montrer.
@@ -15,6 +23,7 @@ import {
   pointDansCoquille,
   type Organite,
   CENTRE_NOYAU,
+  RAYON_CELLULE,
   RAYON_NOYAU,
 } from '../contrat.js'
 
@@ -24,7 +33,20 @@ const DEMI_LONGUEUR = LONGUEUR / 2
 /** Demi-largeur : la capsule fait 0,7 µm de diamètre. */
 const RAYON = 0.35
 
-const NOMBRE = 6
+/**
+ * Composition du réseau : chaque entrée est une chaîne, sa valeur le nombre de
+ * segments. Dix-huit segments en tout — une cellule bêta réelle porte des
+ * CENTAINES de mitochondries (4 à 8 % de son volume) ; c'est un échantillon,
+ * et la fiche le déclare.
+ */
+export const COMPOSITION_CHAINES = [4, 3, 3, 2, 2, 1, 1, 1, 1] as const
+const NOMBRE = COMPOSITION_CHAINES.reduce((somme, n) => somme + n, 0)
+/**
+ * Pas entre deux segments d'une chaîne : la capsule fait 2 µm, les hémisphères
+ * terminaux s'interpénètrent d'un quart de micromètre — l'étranglement qui en
+ * résulte est la jonction, exactement la silhouette d'un site de fission.
+ */
+const PAS_CHAINE = 1.75
 /** Graine de la FORME des capsules : profil de révolution et crêtes. */
 const GRAINE = 31_415
 /**
@@ -208,42 +230,118 @@ export function placementsMitochondries(): PlacementMitochondrie[] {
  * loterie : avant la garde d'exclusion ci-dessous, 36 graines sur 300 posaient
  * une capsule dans le noyau, et celle du produit passait par chance.
  */
+/** Un point respecte-t-il TOUTES les gardes de placement d'un segment ? */
+function placementValide(position: THREE.Vector3): boolean {
+  const rayon = position.length()
+  if (rayon < 4 || rayon > 8.5) return false
+  if (rayon + DEMI_LONGUEUR >= RAYON_CELLULE) return false
+  if (position.z > 0) return false
+  // Marge franche : repousser pile sur la limite laisse le flottant tomber
+  // des deux côtés, et un test d'invariant n'a rien à arbitrer au bit près.
+  const ecartMinimal = RAYON_NOYAU + DEMI_LONGUEUR + MARGE_NOYAU
+  return position.distanceTo(CENTRE_NOYAU) >= ecartMinimal
+}
+
+/** Repousse un point dans le domaine valide : radialement hors du noyau, sous la coupe, dans la coquille. */
+function rabattre(position: THREE.Vector3): THREE.Vector3 {
+  position.z = -Math.abs(position.z)
+  const rayon = position.length()
+  if (rayon > 8.5) position.multiplyScalar(8.5 / rayon)
+  if (rayon < 4 && rayon > 0) position.multiplyScalar(4 / rayon)
+  _direction.subVectors(position, CENTRE_NOYAU)
+  const distance = _direction.length()
+  const ecartMinimal = RAYON_NOYAU + DEMI_LONGUEUR + MARGE_NOYAU
+  if (distance < ecartMinimal) {
+    _direction.divideScalar(distance || 1)
+    position.copy(CENTRE_NOYAU).addScaledVector(_direction, ecartMinimal)
+    position.z = -Math.abs(position.z)
+  }
+  return position
+}
+
+/**
+ * Deux chaînes ne se traversent pas : chaque segment doit rester à plus d'un
+ * diamètre de tout segment déjà posé, hors son prédécesseur de chaîne — le
+ * seul avec lequel l'interpénétration est voulue, c'est la jonction.
+ */
+function assezLoin(
+  candidate: THREE.Vector3,
+  liste: PlacementMitochondrie[],
+  indicePredecesseur: number,
+): boolean {
+  for (const [i, place] of liste.entries()) {
+    if (i === indicePredecesseur) continue
+    if (candidate.distanceTo(place.position) < 1.15) return false
+  }
+  return true
+}
+
 export function calculerPlacements(graine: number): PlacementMitochondrie[] {
   const alea = creerAlea(graine)
   const pivot = new THREE.Object3D()
   const liste: PlacementMitochondrie[] = []
+  const precedent = new THREE.Vector3()
+  const tangente = new THREE.Vector3()
+  const candidate = new THREE.Vector3()
 
-  for (let index = 0; index < NOMBRE; index++) {
-    // Entre 4 et 8,5 µm du centre : au-delà du noyau, en deçà de la membrane.
-    const position = pointDansCoquille(alea, 4, 8.5, new THREE.Vector3())
-    // L'écorché retire tout ce qui est en z positif : on rabat les six
-    // exemplaires du côté ouvert, sinon la moitié disparaît de la planche.
-    position.z = -Math.abs(position.z)
-
-    // LE NOYAU EST DÉCENTRÉ, la coquille ne l'est pas : rien n'empêchait une
-    // capsule d'y tomber. Un audit par rejeu de graines a trouvé 36 tirages
-    // fautifs sur 300 — l'invariant tenait par chance, et le test qui le
-    // surveillait était une sentinelle au-dessus d'une loterie. On repousse
-    // donc, radialement, plutôt que de tirer à nouveau : la boucle se termine
-    // toujours, et c'est la garde que `matrices.ts` avait déjà de son côté.
-    _direction.subVectors(position, CENTRE_NOYAU)
-    const distance = _direction.length()
-    // Marge franche : repousser pile sur la limite laisse le flottant tomber
-    // des deux côtés, et un test d'invariant n'a rien à arbitrer au bit près.
-    const ecartMinimal = RAYON_NOYAU + DEMI_LONGUEUR + MARGE_NOYAU
-    if (distance < ecartMinimal) {
-      _direction.divideScalar(distance || 1)
-      position.copy(CENTRE_NOYAU).addScaledVector(_direction, ecartMinimal)
-      position.z = -Math.abs(position.z)
+  for (const longueurChaine of COMPOSITION_CHAINES) {
+    // Tête de chaîne : tirée dans la coquille cytoplasmique, rabattue du côté
+    // que l'écorché conserve, repoussée hors du noyau — les gardes historiques,
+    // prouvées par rejeu de deux cents graines. Quatre-vingts essais pour
+    // s'écarter des chaînes déjà posées ; à défaut, le meilleur candidat vu.
+    const tete = new THREE.Vector3()
+    let meilleurEcart = -1
+    for (let essai = 0; essai < 80; essai++) {
+      rabattre(pointDansCoquille(alea, 4.4, 7.9, candidate))
+      let ecartMin = Infinity
+      for (const place of liste) {
+        ecartMin = Math.min(ecartMin, candidate.distanceTo(place.position))
+      }
+      if (ecartMin > meilleurEcart) {
+        meilleurEcart = ecartMin
+        tete.copy(candidate)
+      }
+      if (ecartMin > 2.2) break
     }
+    precedent.copy(tete)
+    // Direction initiale TANGENTIELLE : une chaîne qui part en radial percute
+    // la membrane ou le noyau dès son deuxième segment.
+    pointDansCoquille(alea, 1, 1, tangente).normalize()
+    tangente.addScaledVector(precedent.clone().normalize(), -tangente.dot(precedent.clone().normalize()))
+    if (tangente.lengthSq() < 1e-6) tangente.set(0, 1, 0)
+    tangente.normalize()
 
-    // Orientation quelconque, prise sur la sphère unité, puis roulis autour du
-    // grand axe pour que les crêtes ne se décalent pas toutes dans le même sens.
-    pointDansCoquille(alea, 1, 1, _direction).normalize()
-    pivot.quaternion.setFromUnitVectors(AXE_LONG, _direction)
-    pivot.rotateY(alea() * Math.PI * 2)
+    for (let segment = 0; segment < longueurChaine; segment++) {
+      if (segment > 0) {
+        // Le segment suivant prolonge la chaîne, légèrement infléchi. Si le
+        // pas sort du domaine, on ré-oriente : quarante essais déterministes,
+        // puis la chaîne se brise là — une fission de plus, pas un blocage.
+        let trouve = false
+        for (let essai = 0; essai < 40 && !trouve; essai++) {
+          _direction
+            .set(alea() * 2 - 1, alea() * 2 - 1, alea() * 2 - 1)
+            .multiplyScalar(0.45)
+            .add(tangente)
+            .normalize()
+          candidate.copy(precedent).addScaledVector(_direction, PAS_CHAINE)
+          if (placementValide(candidate) && assezLoin(candidate, liste, liste.length - 1)) {
+            tangente.copy(_direction)
+            precedent.copy(candidate)
+            trouve = true
+          }
+        }
+        if (!trouve) {
+          rabattre(candidate.copy(precedent).addScaledVector(tangente, PAS_CHAINE))
+          precedent.copy(candidate)
+        }
+      }
 
-    liste.push({ position, quaternion: pivot.quaternion.clone() })
+      // Le grand axe suit la TANGENTE de la chaîne : c'est l'alignement qui
+      // fait lire un tubule continu au lieu d'un chapelet de haricots.
+      pivot.quaternion.setFromUnitVectors(AXE_LONG, tangente)
+      pivot.rotateY(alea() * Math.PI * 2)
+      liste.push({ position: precedent.clone(), quaternion: pivot.quaternion.clone() })
+    }
   }
 
   return liste
@@ -317,7 +415,11 @@ export function creerMitochondries(): Organite[] {
         "disponible pour la chaîne respiratoire, là où l'oxygène est consommé et " +
         "l'ATP assemblée. Plus une cellule travaille, plus ses crêtes sont serrées — " +
         'un muscle cardiaque en est bourré. Elle garde un ADN circulaire à elle, ' +
-        "vestige de la bactérie qu'elle a été.",
+        "vestige de la bactérie qu'elle a été. Et elle ne vit pas seule : les " +
+        'mitochondries fusionnent et se scindent sans cesse, et les chapelets ' +
+        "étranglés qu'on voit ici sont des tubules d'un même réseau, saisis entre " +
+        'deux fissions. Dix-huit segments sont dessinés — une cellule bêta réelle ' +
+        'en porte des centaines, quatre à huit pour cent de son volume.',
       objet: groupe,
       ancre,
       couleur: TEINTES.mitochondrie,
