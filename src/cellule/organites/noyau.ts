@@ -8,6 +8,7 @@ import {
   type Organite,
   CENTRE_NOYAU,
   RAYON_NOYAU,
+  SITES_PORES_ENVELOPPE,
 } from '../contrat.js'
 
 /**
@@ -31,9 +32,10 @@ const RAYON_MEDIAN = RAYON_NOYAU - ESPACE_PERINUCLEAIRE / 2
 /**
  * Échantillon de pores. Un noyau réel en porte quelques milliers ; on en pose
  * soixante, assez pour que le criblage se lise sans transformer la surface en
- * grillage. Le chiffre vrai est dans la fiche.
+ * grillage. Le chiffre vrai est dans la fiche. La valeur vient de la source
+ * unique : `poresNucleaires.ts` rejoue la même spirale sur le même nombre.
  */
-const NOMBRE_PORES = 60
+const NOMBRE_PORES = SITES_PORES_ENVELOPPE
 /** Le pore réel fait 100 nm de diamètre externe : rayon 0,035 + tube 0,015. */
 const RAYON_ANNEAU_PORE = 0.035
 const RAYON_TUBE_PORE = 0.015

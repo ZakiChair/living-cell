@@ -3,6 +3,7 @@ import {
   CENTRE_NOYAU,
   creerAlea,
   materiauOrganite,
+  SITES_PORES_ENVELOPPE,
   TEINTES,
   UM,
   type Organite,
@@ -39,9 +40,10 @@ const NOMBRE_PORES = 48
  * chaque panier se pose alors sur un anneau existant, coaxial et 40 nm au-dessus
  * — soit exactement la superposition anneau cytoplasmique / anneau
  * nucléoplasmique de la vraie structure. Les douze sites non retenus gardent
- * leur anneau nu.
+ * leur anneau nu. Le nombre de sites vient de la source unique du contrat :
+ * un module retouché seul ne peut plus semer ses paniers à côté des anneaux.
  */
-const SITES_ENVELOPPE = 60
+const SITES_ENVELOPPE = SITES_PORES_ENVELOPPE
 const ANGLE_OR = Math.PI * (3 - Math.sqrt(5))
 
 /** Symétrie d'ordre 8 : la signature du complexe, comme l'ordre 9 l'est du centriole. */

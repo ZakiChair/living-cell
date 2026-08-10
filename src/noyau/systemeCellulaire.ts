@@ -160,6 +160,8 @@ export interface FluxCellulaires {
   endocytose: number;
   proteasome: number;
   autophagie: number;
+  transportMoteur: number;
+  dynamiqueMicrotubules: number;
 }
 
 export interface PointHistorique {
@@ -380,6 +382,8 @@ export function creerSystemeCellulaire(
       endocytose: 0,
       proteasome: 0,
       autophagie: 0,
+      transportMoteur: 0,
+      dynamiqueMicrotubules: 0,
     },
     temps: 0,
     graine: graine | 0,
@@ -596,6 +600,21 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   f.endocytose = 0.35 * f.secretion * borner(atp, 0, 1);
   f.proteasome = 0.018 * borner(atp, 0, 1) * e.proteinesMalRepliees;
 
+  // Les moteurs moléculaires ne marchent que s'il y a du fret ET de l'ATP. La
+  // kinésine était pilotée par le seul flux RE→Golgi — ni son carburant ni
+  // l'essentiel de sa cargaison. Son flux agrège désormais tout le trafic
+  // vésiculaire : antérograde (RE→Golgi, biogenèse des granules, exocytose)
+  // et rétrograde (endocytose).
+  f.transportMoteur =
+    borner(atp, 0, 1) *
+    (f.transportGolgi + f.biogeneseGranules + f.secretion + f.endocytose);
+  // La tubuline lie le GTP, pas l'ATP, mais le pool de GTP suit la charge
+  // énergétique par la nucléoside-diphosphate kinase : la dynamique des
+  // microtubules est donc asservie à l'ATP relatif. Le plancher n'est pas un
+  // artifice de scène : privé de GTP, un microtubule cesse de pousser mais
+  // continue de s'effondrer — la dynamique ralentit, elle ne gèle pas.
+  f.dynamiqueMicrotubules = borner(0.15 + 0.85 * borner(atp, 0, 1), 0, 1);
+
   const surchargeRE = Math.max(0, e.proinsulineRE + e.proteinesMalRepliees - p.capaciteRE);
   const surchargeGolgi = Math.max(0, e.proinsulineGolgi - p.capaciteGolgi);
   e.preArnINS = borner(e.preArnINS + dt * (f.transcription - f.maturation - 0.006 * e.preArnINS), 0, 10);
@@ -703,7 +722,6 @@ export function activiteMecanisme(
 ): number {
   const f = systeme.flux;
   const p = systeme.profil;
-  const atp = borner(atpRelatif(systeme.energie), 0, 1);
   switch (cle) {
     case "glycolyse": return borner(f.glycolyse / Math.max(EPSILON, p.vmaxGlycolyse), 0, 1);
     case "fermentation": return borner(f.fermentation / Math.max(EPSILON, p.vmaxGlycolyse), 0, 1);
@@ -715,8 +733,15 @@ export function activiteMecanisme(
     case "export-nucleaire": return borner(f.exportNucleaire / 0.025, 0, 1);
     case "traduction-polysome": return borner(f.traduction / Math.max(EPSILON, p.traductionMax), 0, 1);
     case "translocation-sec61": return borner(f.translocationRE / Math.max(EPSILON, p.traductionMax), 0, 1);
-    case "transport-moteur": return borner(f.transportGolgi / 0.035, 0, 1);
-    case "instabilite-dynamique": return borner(0.20 + 0.65 * atp, 0, 1);
+    case "transport-moteur":
+      // Normalisé par le trafic à pleine capacité : voies antérogrades aux
+      // maxima de leurs cinétiques, sécrétion saturée et son retour membranaire.
+      return borner(
+        f.transportMoteur / (0.035 + 0.028 + 1.35 * p.secretionMax),
+        0,
+        1,
+      );
+    case "instabilite-dynamique": return borner(f.dynamiqueMicrotubules, 0, 1);
     case "endocytose-clathrine": return borner(f.endocytose / Math.max(EPSILON, 0.35 * p.secretionMax), 0, 1);
     case "exocytose-snare": return borner(f.secretion / Math.max(EPSILON, p.secretionMax), 0, 1);
     case "pompe-sodium-potassium": return borner(f.pompeNaK / Math.max(EPSILON, p.pompeNaKMax), 0, 1);

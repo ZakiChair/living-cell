@@ -56,6 +56,20 @@ export const CENTRE_NOYAU = new THREE.Vector3(-1, 0.5, 0)
 export const RAYON_NOYAU = 3 * UM
 
 /**
+ * Sites de pores semés sur l'enveloppe nucléaire.
+ *
+ * Deux modules dessinent le même criblage : `noyau.ts` pose un anneau par site,
+ * `poresNucleaires.ts` habille une partie de ces sites d'un panier en rejouant
+ * la même spirale de Fibonacci. Le nombre vivait en double, à 60 ici et 60 là,
+ * et rien n'aurait signalé une dérive : un module retouché seul aurait produit
+ * des paniers posés à côté de leurs anneaux. La source est désormais unique.
+ *
+ * Soixante sites pour un noyau qui en porte des milliers : c'est un
+ * échantillon, et la fiche de l'organite donne le chiffre vrai.
+ */
+export const SITES_PORES_ENVELOPPE = 60
+
+/**
  * Plan de coupe de l'écorché.
  *
  * UN SEUL PLAN, et une normale oblique. Le commentaire décrivait ici deux plans
