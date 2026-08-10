@@ -45,6 +45,8 @@ export const CLES_MECANISMES = [
   "exocytose-snare",
   "pompe-sodium-potassium",
   "proteasome",
+  "autophagie",
+  "apoptose",
 ] as const;
 
 export type CleMecanisme = (typeof CLES_MECANISMES)[number];
@@ -792,6 +794,20 @@ export function activiteMecanisme(
     case "exocytose-snare": return borner(f.secretion / Math.max(EPSILON, p.secretionMax), 0, 1);
     case "pompe-sodium-potassium": return borner(f.pompeNaK / Math.max(EPSILON, p.pompeNaKMax), 0, 1);
     case "proteasome": return borner(f.proteasome / 0.018, 0, 1);
+    case "autophagie": return borner(systeme.stress.autophagie, 0, 1);
+    case "apoptose":
+      // Dans une cellule saine, la scène ne tourne PAS : l'horloge de
+      // l'exécution ne démarre qu'avec le déclin de la viabilité ou le
+      // verdict du modèle. C'est le seul mécanisme dont l'arrêt est le
+      // comportement normal.
+      return borner(
+        1.4 * (1 - systeme.stress.viabilite) +
+          (systeme.stress.destin === "apoptose" || systeme.stress.destin === "necrose"
+            ? 0.5
+            : 0),
+        0,
+        1,
+      );
   }
 }
 

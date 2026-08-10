@@ -241,7 +241,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 **Description lue par l’étudiant.** Un fil n’est pas une protéine. La proinsuline qui vient de traverser Sec61 pend dans la lumière du réticulum ; BiP — violet — la tient le temps qu’elle se compacte, et la PDI — vert d’eau — vient poser ses TROIS PONTS DISULFURE, les barreaux orange : B7–A7, B19–A19, A6–A11. Parmi les quinze appariements possibles de ses six cystéines, un seul est le bon, et la PDI défait autant qu’elle fait. Suivez les trois chaînes : deux partent vers le Golgi, la troisième s’est trompée — mauvais pont, repliement de travers — et prend l’autre chemin, vers la dégradation. Chez la souris Akita, une seule cystéine mutée suffit : la proinsuline s’accumule, le réticulum sature, la cellule bêta meurt. Le repliement n’est pas un détail de fabrication, c’est là que se joue le diabète néonatal.
 
-**Ellision — ce qui est coupé ou échantillonné.** Un grain pour trois acides aminés, et des positions de cystéines approchées à cette échelle. La calnexine et la calréticuline, qui surveillent les protéines GLYCOSYLÉES, ne sont pas dessinées — la proinsuline n’est pas glycosylée, et c’est BiP qui la tient. Le glutathion qui fixe le potentiel rédox de la lumière est invisible. La chaîne ratée part vers la dégradation en ligne droite : la rétrotranslocation par ERAD n’est pas encore montrée. La part d’échec lit le stress du réticulum dans le modèle — au repos une chaîne sur trois, davantage quand l’atelier déborde.
+**Ellision — ce qui est coupé ou échantillonné.** Un grain pour trois acides aminés, et des positions de cystéines approchées à cette échelle. La calnexine et la calréticuline, qui surveillent les protéines GLYCOSYLÉES, ne sont pas dessinées — la proinsuline n’est pas glycosylée, et c’est BiP qui la tient. Le glutathion qui fixe le potentiel rédox de la lumière est invisible. La rétrotranslocation ERAD est résumée : Hrd1 et les ubiquitines sont là, mais pas p97 qui tire, ni le voyage jusqu’au protéasome — sa scène existe, ailleurs. XBP1, l’ARN qu’IRE1 épisse une fois activé, et les gènes que l’UPR rallume ne sont pas montrés : on ne voit que les capteurs qui dimérisent et ATF6 qui part vers le Golgi. La part d’échec lit le stress du réticulum dans le modèle — au repos une chaîne sur trois, davantage quand l’atelier déborde, et le levier « Stress RE » du laboratoire se voit dans cette scène.
 
 > **Chiffres à contrôler** : 20 s · 20 · 30
 
@@ -340,6 +340,30 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 **Ellision — ce qui est coupé ou échantillonné.** Trois horloges cohabitent ici, et une seule est au facteur affiché. L'attente entre deux rencontres est COUPÉE, pas ralentie : dans le cytosol une cible met des minutes à des heures avant de croiser une E3 puis un protéasome. L'agitation thermique est à l'inverse RALENTIE d'environ cent mille — le coefficient de diffusion dessiné vaut 3·10⁻⁵ µm²/s contre 3 µm²/s en cytosol, où une protéine traverserait ce champ en un cinquième de milliseconde et ne montrerait qu'un flou. La densité, enfin, est divisée par quarante : ce volume contient réellement quelques centaines de protéines, on en dessine sept ; les ubiquitines libres sont au contraire bien plus nombreuses ici qu'en solution, sans quoi le recyclage serait invisible. Sont absents l'enzyme d'activation E1, l'enzyme de conjugaison E2, et les chaînes K63 ou K11, qui ne mènent pas au protéasome.
 
 > **Chiffres à contrôler** : 23 s · 2,3 s · 23 · 10 · 05 · 1,3 nm · 3 µm
+
+### 2.22 Autophagie : le phagophore, LC3 et le recyclage
+
+**Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×30
+
+**Justification du facteur.** Un autophagosome se forme et se referme en cinq à dix minutes ; le cycle tient ici en 20 s, soit un accéléré de ×30 sur un cycle moyen de dix minutes, fusion lysosomale comprise.
+
+**Description lue par l’étudiant.** Une membrane naît presque de rien et GRANDIT en coupe autour de sa proie : c'est le phagophore, et sa signature est sa DOUBLE paroi — aucune autre vésicule de la cellule n'en a. Balisé de LC3, il se referme sur une mitochondrie usée : un autophagosome. Un lysosome vient alors fusionner — ses hydrolases ne travaillent qu'à pH acide, et c'est lui qui l'apporte — et la proie est démontée en briques : acides aminés, lipides, rendus au cytosol pour resservir. La cellule affamée survit en se mangeant avec méthode ; la cellule encombrée fait le ménage. Pour la bêta, ce ménage est vital : une mitochondrie qui fuit ses électrons fabrique des radicaux, et le modèle le sait — l'autophagie y monte avec le stress.
+
+**Ellision — ce qui est coupé ou échantillonné.** Une seule proie, choisie : une mitochondrie dépolarisée — c'est la mitophagie, le cas le plus lisible. La machinerie ATG qui bâtit la membrane (ULK1, PI3K de classe III, les systèmes de conjugaison) est réduite aux balises LC3 ; PINK1 et Parkin, qui désignent la proie, ne sont pas dessinées. Le phagophore réel naît d'un contact avec le réticulum, hors cadre. Les briques rendues au cytosol sont figurées par quelques grains — la réalité est un flux de nutriments.
+
+> **Chiffres à contrôler** : 20 s · 20 · 30
+
+### 2.23 Apoptose : la mitochondrie signe, les caspases exécutent
+
+**Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×120
+
+**Justification du facteur.** Du percement de la membrane mitochondriale aux bourgeonnements de la membrane plasmique, l'exécution apoptotique prend de l'ordre d'une heure ; le cycle tient ici en 30 s, soit un accéléré d'environ ×120. La libération du cytochrome c, elle, est étonnamment brutale : quelques minutes dans la cellule réelle.
+
+**Description lue par l’étudiant.** L'organite qui fait vivre la cellule est celui qui signe sa mort. Quand les dégâts l'emportent, Bax et Bak s'assemblent en PORES — les anneaux sombres — dans la membrane externe de la mitochondrie, et le cytochrome c s'échappe : le même transporteur d'électrons qui, à quelques nanomètres de là, nourrissait la chaîne respiratoire. Dans le cytosol, il assemble l'APOPTOSOME — une roue à sept rayons d'Apaf-1 — qui active les caspases : des ciseaux à protéines qui démontent la cellule de l'intérieur, proprement. La membrane bouillonne en BLEBS mais ne se rompt jamais : rien ne fuit, rien ne s'enflamme — c'est toute la différence avec la nécrose. Un adulte perd cinquante à soixante-dix milliards de cellules par jour, par ce chemin exact.
+
+**Ellision — ce qui est coupé ou échantillonné.** DANS UNE CELLULE SAINE, CETTE SCÈNE NE TOURNE PAS : son horloge lit le destin du modèle et reste arrêtée tant que la cellule va bien — poussez le stress au laboratoire pour la voir s'engager, et les pores Bax s'ébaucher avant même l'exécution. Bcl-2 et les gardiens qui retiennent Bax, la boucle p53, les caspases initiatrices (la 9 au moyeu de la roue) distinguées des exécutrices (la 3), SMAC/DIABLO et les IAP ne sont pas dessinés. La fragmentation de l'ADN et le découpage en corps apoptotiques, mangés par les voisines, sont hors cadre. La nécrose — la mort par déchirure, inflammatoire — n'a pas de scène : le modèle la connaît pourtant, aux grands délabrements.
+
+> **Chiffres à contrôler** : 30 s · 30 · 120
 
 ---
 
@@ -506,4 +530,4 @@ Ce dossier couvre le TEXTE. Trois choses lui échappent et demandent la page :
 - **Le geste** : donner un brin d'ARN à un ribosome, et couper l'oxygène pour voir la
   traduction s’arrêter.
 
-*Généré depuis 21 mécanismes, 18 familles d'organites et 90 bases.*
+*Généré depuis 23 mécanismes, 18 familles d'organites et 90 bases.*

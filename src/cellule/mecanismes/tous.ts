@@ -18,6 +18,8 @@ import { creerTransitGolgi } from './transitGolgi.js'
 import { creerMaturationGranule } from './maturationGranule.js'
 import { creerReplicationAdn } from './replicationAdn.js'
 import { creerMitose } from './mitose.js'
+import { creerAutophagie } from './autophagie.js'
+import { creerApoptose } from './apoptose.js'
 
 /**
  * Tous les mécanismes de la cellule.
@@ -66,6 +68,9 @@ export function creerMecanismes(): Mecanisme[] {
     ...creerEndoExocytose(),
     ...creerPompeSodiumPotassium(),
       ...creerProteasome(),
+    // Le destin — survivre en se recyclant, ou mourir proprement
+    ...creerAutophagie(),
+    ...creerApoptose(),
     ]),
   )
 }

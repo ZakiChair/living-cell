@@ -155,6 +155,40 @@ export function creerRepliementRE(): MecanismeBrut[] {
     groupe.add(bip, pdi)
   }
 
+  // ── Les capteurs de l'UPR, plantés dans la membrane ─────────────────────
+  // IRE1, PERK et ATF6 mesurent l'encombrement de la lumière : tant que BiP
+  // les tient, ils dorment ; quand les chaînes mal repliées séquestrent BiP,
+  // ils s'activent — IRE1 et PERK en DIMÉRISANT. C'est la réponse aux
+  // protéines mal repliées, et elle lit ici le stress du modèle.
+  const matCapteur = materiauOrganite(0xcc79a7, { doubleFace: false })
+  const geoCapteur = new THREE.CylinderGeometry(0.0022, 0.0022, 0.011, 8)
+  const ire1a = new THREE.Mesh(geoCapteur, matCapteur)
+  const ire1b = new THREE.Mesh(geoCapteur, matCapteur)
+  const perkA = new THREE.Mesh(geoCapteur, matCapteur)
+  const perkB = new THREE.Mesh(geoCapteur, matCapteur)
+  const atf6 = new THREE.Mesh(geoCapteur, matCapteur)
+  const capteurs = [ire1a, ire1b, perkA, perkB, atf6]
+  for (const capteur of capteurs) groupe.add(capteur)
+
+  // ── Le port ERAD ────────────────────────────────────────────────────────
+  // La chaîne ratée ne part pas « en ligne droite » : elle est rétrotransloquée
+  // par Hrd1 et étiquetée d'ubiquitines — le protéasome, une autre scène,
+  // l'attend de l'autre côté.
+  const hrd1 = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.004, 0.0032, 0.009, 10, 1, true),
+    matAmarre,
+  )
+  hrd1.position.set(-0.155, 0.016, -0.02)
+  groupe.add(hrd1)
+  const NB_UBIQUITINES = 4
+  const ubiquitines = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(0.0014, 0),
+    materiauOrganite(0xd55e00, { doubleFace: false }),
+    NB_UBIQUITINES,
+  )
+  ubiquitines.frustumCulled = false
+  groupe.add(ubiquitines)
+
   // Phases décalées, et une graine de désordre par chaîne.
   const dephasages = [0, 0.37, 0.71]
   const desordres = [alea() * 7, alea() * 7, alea() * 7]
@@ -249,6 +283,42 @@ export function creerRepliementRE(): MecanismeBrut[] {
       pdis[k]!.scale.setScalar(Math.max(0.35, fenetrePdi))
     }
     ponts.instanceMatrix.needsUpdate = true
+
+    // ── L'UPR lit le stress : dormants dispersés, actifs par paires ───────
+    // IRE1 et PERK dimérisent (les deux cylindres se rejoignent), ATF6 quitte
+    // la membrane pour le Golgi. L'activation suit le stress du MODÈLE : le
+    // levier « Stress RE » du laboratoire se voit ici.
+    const activation = lissage((stress - 0.15) / 0.5)
+    const ecartDimere = 0.012 * (1 - activation) + 0.0025
+    ire1a.position.set(0.13 - ecartDimere / 2, 0.021, 0.05)
+    ire1b.position.set(0.13 + ecartDimere / 2, 0.021, 0.05)
+    perkA.position.set(0.145 - ecartDimere / 2, 0.021, -0.045)
+    perkB.position.set(0.145 + ecartDimere / 2, 0.021, -0.045)
+    // ATF6 part vers le Golgi quand le stress monte : il se détache et s'élève.
+    atf6.position.set(0.1, 0.021 + activation * 0.03, 0.008)
+    atf6.scale.setScalar(1 - 0.5 * activation)
+    // Les dimères actifs pulsent : la kinase phosphoryle.
+    const pulse = 1 + activation * 0.25 * Math.abs(Math.sin(temps * 2.1))
+    ire1a.scale.setScalar(pulse)
+    ire1b.scale.setScalar(pulse)
+    perkA.scale.setScalar(pulse)
+    perkB.scale.setScalar(pulse)
+
+    // ── Les ubiquitines de l'ERAD suivent la chaîne ratée ─────────────────
+    // Elles s'accrochent à mesure qu'elle passe par Hrd1, en file K48.
+    const pRate = ((temps / PERIODE + dephasages[2]!) % 1 + 1) % 1
+    const marquage = lissage((pRate - P_LIBERE) / (1 - P_LIBERE))
+    for (let u = 0; u < NB_UBIQUITINES; u++) {
+      const pose = lissage((marquage - u * 0.12) / 0.1)
+      _position.set(
+        ancres[2]!.x - marquage * 0.06 + 0.004 + u * 0.0028,
+        ancres[2]!.y - NB_RESIDUS * ESPACE * 0.35 - marquage * 0.05 + 0.006,
+        ancres[2]!.z + 0.003,
+      )
+      _matrice.compose(_position, _quat.identity(), _echelle.setScalar(Math.max(0.001, pose)))
+      ubiquitines.setMatrixAt(u, _matrice)
+    }
+    ubiquitines.instanceMatrix.needsUpdate = true
     _echelle.setScalar(1)
   }
 
@@ -278,10 +348,14 @@ export function creerRepliementRE(): MecanismeBrut[] {
         'surveillent les protéines GLYCOSYLÉES, ne sont pas dessinées — la ' +
         'proinsuline n’est pas glycosylée, et c’est BiP qui la tient. Le ' +
         'glutathion qui fixe le potentiel rédox de la lumière est invisible. La ' +
-        'chaîne ratée part vers la dégradation en ligne droite : la ' +
-        'rétrotranslocation par ERAD n’est pas encore montrée. La part d’échec ' +
+        'rétrotranslocation ERAD est résumée : Hrd1 et les ubiquitines sont là, ' +
+        'mais pas p97 qui tire, ni le voyage jusqu’au protéasome — sa scène ' +
+        'existe, ailleurs. XBP1, l’ARN qu’IRE1 épisse une fois activé, et les ' +
+        'gènes que l’UPR rallume ne sont pas montrés : on ne voit que les ' +
+        'capteurs qui dimérisent et ATF6 qui part vers le Golgi. La part d’échec ' +
         'lit le stress du réticulum dans le modèle — au repos une chaîne sur ' +
-        'trois, davantage quand l’atelier déborde.',
+        'trois, davantage quand l’atelier déborde, et le levier « Stress RE » ' +
+        'du laboratoire se voit dans cette scène.',
       description:
         'Un fil n’est pas une protéine. La proinsuline qui vient de traverser ' +
         'Sec61 pend dans la lumière du réticulum ; BiP — violet — la tient le ' +
