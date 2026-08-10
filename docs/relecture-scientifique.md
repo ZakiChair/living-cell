@@ -197,15 +197,15 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20 · 0,9 nm · 1 nm · 300 · 35
 
-### 2.10 Translocation dans le réticulum
+### 2.10 Translocation : SRP, Sec61 et peptide signal
 
 **Siège** : Réticulum endoplasmique rugueux · **Facteur temporel affiché** : ralenti ×20
 
-**Justification du facteur.** Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran, ralenti de 20. La chaîne traverse la membrane exactement au rythme où elle sort du tunnel.
+**Justification du facteur.** Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran, ralenti de 20. La chaîne traverse la membrane exactement au rythme où elle sort du tunnel. La pause imposée par la SRP tient dans la même horloge : une douzaine de secondes d’écran pour un arrêt réel de l’ordre de la minute.
 
-**Description lue par l’étudiant.** Le même mécanisme, mais le ribosome est amarré à un canal Sec61 planté dans la membrane du réticulum : la chaîne qu’il fabrique ne part pas dans le cytosol, elle traverse la membrane à mesure qu’elle sort du tunnel et s’accumule dans la lumière, où elle rejoint les protéines déjà faites. C’est là, à ce canal, que se décide la différence entre une protéine cytosolique et une protéine destinée à l’export — le ribosome libre qui dérive au-dessus fait exactement le même travail, mais sa chaîne reste dehors. Trois autres ribosomes amarrés à côté font la même chose sur le même ARNm, et quelques-uns viennent cogner la membrane sans y trouver de canal et repartent : sans peptide signal, rien ne les retient.
+**Description lue par l’étudiant.** Comment un ribosome se retrouve-t-il amarré à la membrane ? Suivez celui qui dérive en haut : dès que le PEPTIDE SIGNAL — les premiers résidus de sa chaîne, en orange — émerge du tunnel, la particule violette le reconnaît. C’est la SRP, six protéines sur un ARN : son domaine M coiffe le peptide, son domaine Alu occupe le site des facteurs d’élongation, et la traduction S’ARRÊTE — le ribosome est escorté, remis à son récepteur SR contre un canal Sec61 libre, et là seulement la lecture repart. Dès lors la chaîne ne sort plus dans le cytosol : elle traverse la membrane à mesure qu’elle sort du tunnel. Sous chaque canal, la PEPTIDASE DU SIGNAL coupe l’adresse sitôt émergée — regardez le bout orange se détacher et se dissoudre : la protéine mûre ne le porte plus. Les ribosomes qui cognent la membrane sans peptide signal repartent : rien ne les retient.
 
-**Ellision — ce qui est coupé ou échantillonné.** Le début manque : la reconnaissance du peptide signal par la SRP, l’arrêt momentané de la traduction et l’accostage au translocon ont déjà eu lieu quand la scène commence. Le clivage du peptide signal et le repliement assisté par les chaperons ne sont pas montrés non plus. Douze codons, puis on reprend — comme pour le polysome. Sur les cent cinquante ribosomes de ce fragment de membrane, on ne suit la chaîne que de quatre.
+**Ellision — ce qui est coupé ou échantillonné.** La SRP n’est jouée que sur UN ribosome, en boucle de démonstration : à la fin du cycle il s’efface et reparaît au cytosol — dans la cellule, il resterait amarré jusqu’au bout de sa protéine. Les GTPases de la SRP et de son récepteur, et le GTP qu’elles consomment à la remise du ribosome, ne sont pas dessinées. Le repliement assisté par les chaperons n’est pas montré ici — il a sa propre scène. Douze codons, puis on reprend — comme pour le polysome. Sur les cent cinquante ribosomes de ce fragment de membrane, on ne suit la chaîne que de quatre.
 
 > **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20
 

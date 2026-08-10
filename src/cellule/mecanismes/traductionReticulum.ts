@@ -861,6 +861,71 @@ export function creerTraductionReticulum(): MecanismeBrut[] {
     groupe2.add(canal)
   }
 
+  // ── L'arrivée : SRP, récepteur SR, canal libre ──────────────────────────
+  // Comment un ribosome amarré l'est-il devenu ? Le début manquait : la scène
+  // commençait après la reconnaissance du peptide signal. Elle est jouée
+  // maintenant, sur le cinquième canal — vide — par le ribosome libre.
+  const POSE_CANAL_LIBRE = new THREE.Vector3(
+    -2 * ESPACEMENT,
+    hauteurMembrane(-2 * ESPACEMENT, Math.sin(-1.4) * 0.005),
+    Math.sin(-1.4) * 0.005,
+  )
+  const canalLibre = new THREE.Mesh(geoTranslocon, mats.amarre)
+  canalLibre.position.copy(POSE_CANAL_LIBRE)
+  groupe2.add(canalLibre)
+
+  // Le récepteur SR, planté à côté du canal : c'est lui que la SRP reconnaît —
+  // le ribosome est REMIS au translocon, il ne le trouve pas tout seul.
+  const matiereSrp = materiauOrganite(TEINTES.lysosome, { doubleFace: false })
+  const recepteurSR = new THREE.Mesh(new THREE.IcosahedronGeometry(0.004, 1), matiereSrp)
+  recepteurSR.position.set(
+    POSE_CANAL_LIBRE.x + 0.011,
+    POSE_CANAL_LIBRE.y + 0.004,
+    POSE_CANAL_LIBRE.z + 0.004,
+  )
+  groupe2.add(recepteurSR)
+
+  // La SRP : une particule ALLONGÉE — six protéines sur un ARN de 300 bases,
+  // 24 nm du domaine M (qui coiffe le peptide signal) au domaine Alu (qui
+  // bloque le site d'entrée des facteurs d'élongation : c'est la pause).
+  const srp = new THREE.Group()
+  const corpsSrp = new THREE.Mesh(geos.arnt, matiereSrp)
+  corpsSrp.scale.set(1.1, 3.2, 1.1)
+  const teteSrp = new THREE.Mesh(new THREE.IcosahedronGeometry(0.0024, 1), matiereSrp)
+  teteSrp.position.y = 0.012
+  srp.add(corpsSrp, teteSrp)
+  groupe2.add(srp)
+
+  // ── Le clivage du peptide signal ────────────────────────────────────────
+  // La peptidase du signal siège contre chaque canal, côté lumière. Le bout
+  // qui a servi d'adresse est coupé dès qu'il émerge, et s'en va — la
+  // protéine mûre ne le porte plus.
+  const peptidases = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(0.0035, 1),
+    mats.amarre,
+    NB_AMARRES,
+  )
+  peptidases.frustumCulled = false
+  groupe2.add(peptidases)
+  for (let k = 0; k < NB_AMARRES; k++) {
+    const pose = posesAmarrees[k]!
+    _position.set(pose.x + 0.009, pose.y - 0.014, pose.z + 0.003)
+    _matrice.compose(_position, _quatDroit, _echelle.setScalar(1))
+    peptidases.setMatrixAt(k, _matrice)
+  }
+  peptidases.instanceMatrix.needsUpdate = true
+
+  /** Six résidus de peptide signal par canal, teinte à part : l'adresse, pas la protéine. */
+  const RESIDUS_SIGNAL = 6
+  const matiereSignal = materiauOrganite(TEINTES.proteineMembranaire, { opacite: 0.85 })
+  const stubsSignal = new THREE.InstancedMesh(
+    geos.residu,
+    matiereSignal,
+    NB_AMARRES * RESIDUS_SIGNAL,
+  )
+  stubsSignal.frustumCulled = false
+  groupe2.add(stubsSignal)
+
   const atelier2 = creerAtelier(NB_RIBOSOMES_2, alea, geos, mats, groupe2)
 
   // Le ribosome libre : même machine, même chaîne, mais rien pour l'amarrer.
@@ -958,9 +1023,33 @@ export function creerTraductionReticulum(): MecanismeBrut[] {
   const phasesProteines = new Float32Array(freqProteines.length)
   tirerErrance(alea, freqProteines, phasesProteines)
 
+  // ── Le cycle SRP du ribosome libre ────────────────────────────────────
+  // Une génération du cycle partagé : traduction libre, capture par la SRP,
+  // PAUSE (le domaine Alu occupe le site des facteurs d'élongation : le temps
+  // du ribosome s'arrête, littéralement), escorte au canal, reprise.
+  const PERIODE_SRP = PAS_CYCLE * DUREE_CODON
+  const P_CAPTURE = 0.3
+  const P_PAUSE_FIN = 0.62
+  const P_LARGAGE = 0.68
+  const P_FONDU = 0.96
+  /** Temps du ribosome escorté : plateau pendant la pause, rattrapage ensuite — g(1) = 1 garde le cycle partagé en phase. */
+  const tempsEscorte = (temps: number): number => {
+    const n = Math.floor(temps / PERIODE_SRP)
+    const p = temps / PERIODE_SRP - n
+    let g: number
+    if (p < P_CAPTURE + 0.06) g = p
+    else if (p < P_PAUSE_FIN) g = P_CAPTURE + 0.06
+    else g = P_CAPTURE + 0.06 + ((p - P_PAUSE_FIN) / (1 - P_PAUSE_FIN)) * (1 - P_CAPTURE - 0.06)
+    return (n + g) * PERIODE_SRP
+  }
+
   const animer2 = (temps: number): void => {
+    const pSrp = ((temps / PERIODE_SRP) % 1 + 1) % 1
+    const arrimage = lissage((pSrp - (P_CAPTURE + 0.06)) / (P_PAUSE_FIN - P_CAPTURE - 0.06))
     for (let r = 0; r < NB_RIBOSOMES_2; r++) {
-      poser(temps, r, NB_RIBOSOMES_2, etat)
+      const estEscorte = r === NB_AMARRES
+      const tempsR = estEscorte ? tempsEscorte(temps) : temps
+      poser(tempsR, r, NB_RIBOSOMES_2, etat)
       const pas = etat[0]!
       const p = etat[1]!
       const base = CHAINES_DEPART[r]! - RESIDUS_TUNNEL
@@ -998,16 +1087,42 @@ export function creerTraductionReticulum(): MecanismeBrut[] {
         ex.set(1, 0, 0)
         ey.set(0, -1, 0)
       } else {
-        // Libre : il dérive dans le cytosol, tunnel vers le haut.
-        derive(r, temps * 0.5, 0.02, atelier2.frequences, atelier2.phases, _errance)
+        // Le ribosome escorté : libre au départ, remis au canal par la SRP.
+        derive(r, tempsR * 0.5, 0.02, atelier2.frequences, atelier2.phases, _errance)
         origine.copy(CENTRE_LIBRE).add(_errance)
-        ex.set(Math.cos(ANGLE_LIBRE), Math.sin(ANGLE_LIBRE), 0)
-        ey.set(-Math.sin(ANGLE_LIBRE), Math.cos(ANGLE_LIBRE), 0)
+        if (arrimage > 0) {
+          _cible.set(
+            POSE_CANAL_LIBRE.x,
+            POSE_CANAL_LIBRE.y + HAUT_RIBOSOME_AMARRE,
+            POSE_CANAL_LIBRE.z,
+          )
+          origine.lerp(_cible, arrimage)
+        }
+        ex.set(Math.cos(ANGLE_LIBRE * (1 - arrimage)), Math.sin(ANGLE_LIBRE * (1 - arrimage)), 0)
+        // Le tunnel bascule du cytosol vers le pore : l'axe ey se retourne.
+        ey.set(
+          -Math.sin(ANGLE_LIBRE) * (1 - arrimage),
+          Math.cos(ANGLE_LIBRE) * (1 - arrimage) - arrimage,
+          0,
+        )
+        if (ey.lengthSq() < 0.04) ey.set(-0.2, ey.y < 0 ? -0.1 : 0.1, 0)
+        ey.normalize()
+        // Fin de démonstration : le ribosome s'efface et le cycle reprend au
+        // cytosol — c'est une boucle de démonstration, pas une téléportation.
+        const enveloppe =
+          pSrp < 0.04
+            ? lissage(pSrp / 0.04)
+            : pSrp > P_FONDU
+              ? 1 - lissage((pSrp - P_FONDU) / (1 - P_FONDU))
+              : 1
+        presence *= enveloppe
+        presenceChaine *= enveloppe
         porteurLibre.position.copy(origine)
+        porteurLibre.scale.setScalar(Math.max(0.001, enveloppe * (1 - arrimage)))
       }
       atelier2.ez[r]!.crossVectors(ex, ey)
 
-      animerRibosome(atelier2, r, temps, pas, p, presence, presenceChaine, longueur, fuite)
+      animerRibosome(atelier2, r, tempsR, pas, p, presence, presenceChaine, longueur, fuite)
     }
     atelier2.arnt.instanceMatrix.needsUpdate = true
     atelier2.acides.instanceMatrix.needsUpdate = true
@@ -1066,6 +1181,69 @@ export function creerTraductionReticulum(): MecanismeBrut[] {
     }
     candidatsGrande.instanceMatrix.needsUpdate = true
     candidatsPetite.instanceMatrix.needsUpdate = true
+
+    // ── La SRP elle-même ──────────────────────────────────────────────────
+    const origineLibre = atelier2.origines[NB_AMARRES]!
+    const eyLibre = atelier2.ey[NB_AMARRES]!
+    if (pSrp < P_CAPTURE) {
+      // Elle rôde, et converge sur la sortie du tunnel à mesure que le
+      // peptide signal s'allonge : c'est lui qu'elle reconnaît, rien d'autre.
+      // Errance décorrélée des candidats par un décalage de temps : les
+      // tableaux de fréquences ne comptent que quatre entrées.
+      derive(2, temps * 0.6 + 7.3, 0.05, freqCandidats, phasesCandidats, _errance)
+      const approche = lissage((pSrp - 0.12) / (P_CAPTURE - 0.12))
+      _position
+        .copy(CENTRE_LIBRE)
+        .add(_errance)
+        .lerp(_cible.copy(origineLibre).addScaledVector(eyLibre, 0.021), approche)
+      srp.scale.setScalar(1)
+    } else if (pSrp < P_LARGAGE) {
+      // Accrochée au ribosome, elle voyage avec lui — domaine M sur le
+      // peptide, domaine Alu dans le site des facteurs : la pause, c'est elle.
+      _position.copy(origineLibre).addScaledVector(eyLibre, 0.021)
+      srp.scale.setScalar(1)
+    } else {
+      // Largage sur le récepteur SR, puis elle s'efface : recyclée, elle
+      // repart chercher un autre peptide signal.
+      const largage = lissage((pSrp - P_LARGAGE) / 0.1)
+      _position
+        .copy(origineLibre)
+        .addScaledVector(eyLibre, 0.021)
+        .lerp(recepteurSR.position, largage)
+      srp.scale.setScalar(Math.max(0.001, 1 - lissage((pSrp - P_LARGAGE - 0.08) / 0.12)))
+    }
+    srp.position.copy(_position)
+    _quat.setFromUnitVectors(AXE_Y, _axe.copy(eyLibre))
+    srp.quaternion.copy(_quat)
+
+    // ── Peptide signal : émergence, clivage, départ ───────────────────────
+    for (let k = 0; k < NB_AMARRES; k++) {
+      poser(temps, k, NB_RIBOSOMES_2, etat)
+      let age = etat[0]! + etat[1]! - CODONS_MONTRES
+      if (age < 0) age += PAS_CYCLE
+      const pose = posesAmarrees[k]!
+      const clive = age > 2.5
+      const disparu = age > 6
+      const glisse = clive ? (age - 2.5) * 0.006 : 0
+      const echSignal = disparu
+        ? 0
+        : clive
+          ? Math.max(0, 1 - (age - 2.5) / 3.5)
+          : lissage(age / 0.5)
+      for (let j = 0; j < RESIDUS_SIGNAL; j++) {
+        // Avant clivage : le bout N de la chaîne qui descend du pore. Après :
+        // il dérive vers la peptidase et se dissout — l'adresse a servi.
+        _position.set(
+          pose.x + glisse + (clive ? Math.sin(age * 2 + j) * 0.0012 : 0),
+          pose.y - 0.021 - age * 0.0026 - j * 0.0011 + (clive ? (age - 2.5) * 0.0015 : 0),
+          pose.z + glisse * 0.4,
+        )
+        _matrice.compose(_position, _quatDroit, _echelle.setScalar(Math.max(0.001, echSignal)))
+        stubsSignal.setMatrixAt(k * RESIDUS_SIGNAL + j, _matrice)
+      }
+    }
+    stubsSignal.instanceMatrix.needsUpdate = true
+    _echelle.setScalar(1)
   }
 
   // Les ARNt libres du cytosol, au-dessus de la membrane seulement : dans la
@@ -1151,30 +1329,36 @@ export function creerTraductionReticulum(): MecanismeBrut[] {
     },
     {
       cle: 'translocation-sec61',
-      nom: 'Translocation dans le réticulum',
+      nom: 'Translocation : SRP, Sec61 et peptide signal',
       siege: 'Réticulum endoplasmique rugueux',
       ralentissement: 20,
       justificationFacteur:
         'Même horloge que le polysome : 170 ms par codon, 3,4 s à l’écran, ralenti de 20. ' +
-        'La chaîne traverse la membrane exactement au rythme où elle sort du tunnel.',
+        'La chaîne traverse la membrane exactement au rythme où elle sort du tunnel. La ' +
+        'pause imposée par la SRP tient dans la même horloge : une douzaine de secondes ' +
+        'd’écran pour un arrêt réel de l’ordre de la minute.',
       ellision:
-        'Le début manque : la reconnaissance du peptide signal par la SRP, l’arrêt ' +
-        'momentané de la traduction et l’accostage au translocon ont déjà eu lieu quand ' +
-        'la scène commence. Le clivage du peptide signal et le repliement assisté par ' +
-        'les chaperons ne sont pas montrés non plus. Douze codons, puis on reprend — ' +
-        'comme pour le polysome. Sur les cent cinquante ribosomes de ce fragment de ' +
-        'membrane, on ne suit la chaîne que de quatre.',
+        'La SRP n’est jouée que sur UN ribosome, en boucle de démonstration : à la fin ' +
+        'du cycle il s’efface et reparaît au cytosol — dans la cellule, il resterait ' +
+        'amarré jusqu’au bout de sa protéine. Les GTPases de la SRP et de son récepteur, ' +
+        'et le GTP qu’elles consomment à la remise du ribosome, ne sont pas dessinées. ' +
+        'Le repliement assisté par les chaperons n’est pas montré ici — il a sa propre ' +
+        'scène. Douze codons, puis on reprend — comme pour le polysome. Sur les cent ' +
+        'cinquante ribosomes de ce fragment de membrane, on ne suit la chaîne que de ' +
+        'quatre.',
       description:
-        'Le même mécanisme, mais le ribosome est amarré à un canal Sec61 planté dans la ' +
-        'membrane du réticulum : la chaîne qu’il fabrique ne part pas dans le cytosol, ' +
-        'elle traverse la membrane à mesure qu’elle sort du tunnel et s’accumule dans la ' +
-        'lumière, où elle rejoint les protéines déjà faites. C’est là, à ce canal, que ' +
-        'se décide la différence entre une protéine cytosolique et une protéine destinée ' +
-        'à l’export — le ribosome libre qui dérive au-dessus fait exactement le même ' +
-        'travail, mais sa chaîne reste dehors. Trois autres ribosomes amarrés à côté ' +
-        'font la même chose sur le même ARNm, et quelques-uns viennent cogner la ' +
-        'membrane sans y trouver de canal et repartent : sans peptide signal, rien ne ' +
-        'les retient.',
+        'Comment un ribosome se retrouve-t-il amarré à la membrane ? Suivez celui qui ' +
+        'dérive en haut : dès que le PEPTIDE SIGNAL — les premiers résidus de sa chaîne, ' +
+        'en orange — émerge du tunnel, la particule violette le reconnaît. C’est la SRP, ' +
+        'six protéines sur un ARN : son domaine M coiffe le peptide, son domaine Alu ' +
+        'occupe le site des facteurs d’élongation, et la traduction S’ARRÊTE — le ' +
+        'ribosome est escorté, remis à son récepteur SR contre un canal Sec61 libre, et ' +
+        'là seulement la lecture repart. Dès lors la chaîne ne sort plus dans le ' +
+        'cytosol : elle traverse la membrane à mesure qu’elle sort du tunnel. Sous ' +
+        'chaque canal, la PEPTIDASE DU SIGNAL coupe l’adresse sitôt émergée — regardez ' +
+        'le bout orange se détacher et se dissoudre : la protéine mûre ne le porte ' +
+        'plus. Les ribosomes qui cognent la membrane sans peptide signal repartent : ' +
+        'rien ne les retient.',
       objet: groupe2,
       ancre: groupe2.position.clone(),
       rayonCadrage: 0.3,
