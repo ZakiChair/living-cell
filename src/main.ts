@@ -38,6 +38,7 @@ import {
   regimesAtelier,
 } from './noyau/systemeCellulaire.js'
 import { creerLaboratoireCellulaire } from './cellule/laboratoire.js'
+import { creerFrise } from './cellule/frise.js'
 
 const vue = creerVue(document.body)
 
@@ -129,6 +130,18 @@ for (const [siege, liste] of parSiege) {
     bouton.addEventListener('click', () => allerAuMecanisme(m))
     panneauFlux.appendChild(bouton)
     boutonsMecanisme.set(m.cle, bouton)
+  }
+}
+
+// ── La frise des horloges ─────────────────────────────────────────────────
+// Toutes les échelles de temps mesurées, sur un axe logarithmique : la
+// doctrine « couper n'est pas ralentir » enfin visible d'un seul regard.
+// Cliquer une entrée délègue au bouton du panneau : même caméra, même fiche.
+{
+  const hoteFrise = document.querySelector<HTMLElement>('#reglages')
+  if (hoteFrise) {
+    const frise = creerFrise(mecanismes, (cle) => boutonsMecanisme.get(cle)?.click())
+    hoteFrise.append(frise.bouton, frise.panneau)
   }
 }
 
