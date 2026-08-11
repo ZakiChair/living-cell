@@ -108,6 +108,14 @@ export interface MilieuCellulaire {
    * sécurité des agonistes (sémaglutide) face aux sulfonylurées.
    */
   glp1: number;
+  /**
+   * Thapsigargine (0 à 1) : bloque la SERCA. Le réservoir calcique fuit sans
+   * retour, les vagues cessent, et les chaperons de la lumière — qui
+   * travaillent AU calcium — lâchent leurs clients : l'UPR s'allume. L'outil
+   * classique pour montrer que le RE est un organite du calcium ET du
+   * repliement, d'un seul geste.
+   */
+  thapsigargine: number;
 }
 
 export interface Metabolites {
@@ -252,8 +260,13 @@ export const PROFIL_BETA_HUMAINE: Readonly<ProfilCellulaire> = Object.freeze({
   permeabiliteNa: 0.040,
   permeabiliteK: 1.0,
   permeabiliteCl: 0.080,
-  fuiteNa: 0.010,
-  fuiteK: 0.008,
+  // Fuites calibrées pour que le repos ionique soit STATIONNAIRE par
+  // construction : fuite = pompe de repos × 140/(gradient de repos), pour
+  // 3 Na⁺ et 2 K⁺ par cycle. Les anciennes valeurs (0,010/0,008) perdaient
+  // 10 mM de K⁺ par heure au repos — invisible en cinq minutes, dévastateur
+  // sur la journée que le scénario du laboratoire fait vivre.
+  fuiteNa: 0.0079,
+  fuiteK: 0.0052,
   pompeNaKMax: 0.010,
   canalCalciqueMax: 0.0018,
   extrusionCalcium: 0.90,
@@ -360,6 +373,7 @@ export function creerSystemeCellulaire(
       sulfonylure: 0,
       diazoxide: 0,
       glp1: 0,
+      thapsigargine: 0,
     },
     metabolites: {
       glucose: 2.2,
@@ -617,9 +631,16 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     45,
   );
 
+  // La vraie pompe répond au sodium interne (Hill sur Na⁺, K½ ~15 mM) :
+  // c'est elle qui répare les gradients après l'effort — une pompe à débit
+  // fixe laisserait la cellule dépolarisée toute la nuit.
+  const reponseSodium = 0.4 + 1.6 *
+    (Math.pow(i.sodiumInterieur, 2) /
+      (Math.pow(15, 2) + Math.pow(i.sodiumInterieur, 2)));
   f.pompeNaK =
     p.pompeNaKMax *
     partPompe *
+    reponseSodium *
     borner(atp, 0, 1.5) *
     (0.7 + 0.3 * bilan) *
     (1 - ouabaine);
@@ -654,8 +675,12 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   // ryanodine — le rendent. Le facteur 20 est le rapport des volumes : un
   // flux cytosolique se concentre d'autant dans la lumière.
   const ca = i.calciumCytosolique;
+  // La fuite passive du réticulum est réelle et permanente (le translocon
+  // lui-même fuit) : la SERCA pompe sans cesse contre elle — c'est pourquoi
+  // la thapsigargine vide le coffre en un quart d'heure.
   const fluxSerca =
-    0.0004 * borner(atp, 0, 1) * (ca * ca) / (0.0004 * 0.0004 + ca * ca);
+    0.001 * borner(atp, 0, 1) * (1 - borner(milieu.thapsigargine, 0, 1)) *
+    (ca * ca) / (0.0004 * 0.0004 + ca * ca);
   // Le RyR est sensibilisé par le calcium LUMINAL : un réservoir plein se
   // déclenche, un réservoir vidé se tait. C'est cette sensibilité — mesurée
   // sur le récepteur réel — qui fait du couple SERCA/RyR un oscillateur :
@@ -671,7 +696,7 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     (Math.pow(ca, 4) / (Math.pow(0.0008, 4) + Math.pow(ca, 4))) *
     sensibiliteLuminale;
   const fluxVidangeRE =
-    (0.0001 + ouvertureRyR) * Math.max(0, i.calciumRE - ca);
+    (0.0005 + ouvertureRyR) * Math.max(0, i.calciumRE - ca);
   // Facteur 2, pas 10 : le rapport des volumes donnerait ×10, mais la lumière
   // est massivement TAMPONNÉE (calséquestrine, calréticuline — plus de 90 %
   // du calcium y est lié). C'est ce tampon qui fait du réservoir la variable
@@ -822,8 +847,11 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   );
   const pressionOxydante = 1.8 * f.respiration + 0.8 * f.betaOxydation + 0.25 * s.dommage;
   s.ros = borner(s.ros + dt * (pressionOxydante - p.capaciteAntioxydante * s.ros), 0, 5);
+  // Les chaperons de la lumière travaillent AU calcium : un réticulum vidé
+  // (thapsigargine, stress prolongé) replie mal, quel que soit le flux entrant.
+  const carenceCalciumRE = Math.max(0, (0.12 - i.calciumRE) / 0.12);
   s.stressRE = borner(
-    s.stressRE + dt * (0.12 * surchargeRE + 0.10 * e.proteinesMalRepliees + 0.18 * milieu.stressRE - 0.08 * s.autophagie - 0.06 * s.stressRE),
+    s.stressRE + dt * (0.12 * surchargeRE + 0.10 * e.proteinesMalRepliees + 0.18 * milieu.stressRE + 0.045 * carenceCalciumRE - 0.08 * s.autophagie - 0.06 * s.stressRE),
     0,
     1,
   );

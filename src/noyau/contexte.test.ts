@@ -38,7 +38,15 @@ describe("le contexte cellulaire, pont en lecture seule vers les scènes", () =>
 
   it("stimulé au glucose, le contexte change de régime, pas seulement de vitesse", () => {
     const repos = contexteDe(systemeAuRepos());
-    const stimule = contexteDe(systemeStimule());
+    // Le régime stimulé PULSE (vagues calciques) : on retient le pic d'une
+    // minute — c'est l'instantané qui mentirait, pas la moyenne.
+    const systeme = systemeStimule();
+    let stimule = contexteDe(systeme);
+    for (let n = 0; n < 48; n++) {
+      avancerSystemeCellulaire(systeme, 5);
+      const instantane = contexteDe(systeme);
+      if (instantane.calciumCytosolique > stimule.calciumCytosolique) stimule = instantane;
+    }
     expect(stimule.ouvertureKATP).toBeLessThan(repos.ouvertureKATP - 0.3);
     expect(stimule.potentielMembrane).toBeGreaterThan(repos.potentielMembrane + 15);
     expect(stimule.calciumCytosolique).toBeGreaterThan(repos.calciumCytosolique * 2);

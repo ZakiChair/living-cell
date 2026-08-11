@@ -1,7 +1,9 @@
 import {
+  avancerSystemeCellulaire,
   reinitialiserSystemeCellulaire,
   type SystemeCellulaire,
 } from '../noyau/systemeCellulaire.js';
+import { ACCELERATION_JOURNEE, glycemieJournee } from '../noyau/journee.js';
 
 export interface LaboratoireCellulaire {
   rafraichir(): void;
@@ -130,6 +132,15 @@ export function creerLaboratoireCellulaire(
     // glucose sans jamais déclencher seule — essayez-la à jeun, puis nourrie,
     // avec la mesure « insuline sécrétée ». Comparez à la sulfonylurée.
     ['GLP-1 (incrétine)', actif => appliquer(traite, ['milieu', 'glp1'], actif ? 1 : 0)],
+    // L'outil classique de la biologie du calcium : SERCA bloquée, le coffre
+    // se vide, les vagues cessent, et l'UPR s'allume — le lien calcium ↔
+    // repliement, produit par le modèle.
+    ['Thapsigargine (bloque SERCA)', actif => appliquer(traite, ['milieu', 'thapsigargine'], actif ? 1 : 0)],
+    // Une journée entière — trois repas, une nuit — vécue en deux minutes.
+    // La cellule traitée mange ; le témoin reste perfusé au repos. Trois
+    // vagues biphasiques, et le calme qui revient : comparez au bouton T2D,
+    // où il ne revient jamais.
+    ['Journée type (24 h ≈ 2 min)', actif => basculerJournee(actif)],
   ];
   for (const [libelle, action] of definitions) {
     const commande = document.createElement('button');
@@ -154,8 +165,54 @@ export function creerLaboratoireCellulaire(
     trace(b, BLEU); trace(a, ORANGE);
   }
 
+  // ── Le scénario « journée type » ────────────────────────────────────────
+  // Quand il est actif, le laboratoire avance LUI-MÊME les deux systèmes en
+  // accéléré (×720) et pilote la consigne de glucose sur la courbe d'une
+  // journée saine. L'historique passe au pas de 3 minutes simulées pour que
+  // la fenêtre des courbes couvre les 24 h.
+  const journee = { active: false, heure: 6, dernierInstant: 0 };
+
+  function reglerHistorique(pas: number): void {
+    for (const systeme of [traite, temoin]) {
+      (systeme as any).profil = { ...(systeme as any).profil, periodeHistorique: pas };
+      systeme.historique.length = 0;
+      systeme.curseurHistorique = 0;
+      systeme.prochainEchantillon = systeme.temps;
+    }
+    derniereTaille = -1;
+  }
+
+  function basculerJournee(actif: boolean): void {
+    journee.active = actif;
+    if (actif) {
+      journee.heure = 6;
+      journee.dernierInstant = performance.now();
+      reglerHistorique(180);
+    } else {
+      reglerHistorique(0.5);
+      appliquer(traite, ['milieu', 'glucoseCible'], 5);
+    }
+  }
+
+  function avancerJournee(): void {
+    if (!journee.active) return;
+    const maintenant = performance.now();
+    const dtReel = Math.min((maintenant - journee.dernierInstant) / 1000, 0.2);
+    journee.dernierInstant = maintenant;
+    const dtSimule = dtReel * ACCELERATION_JOURNEE;
+    journee.heure = (journee.heure + dtSimule / 3600) % 24;
+    appliquer(traite, ['milieu', 'glucoseCible'], glycemieJournee(journee.heure));
+    // Le témoin vit la même journée, perfusé à sa référence : c'est le jeûne.
+    avancerSystemeCellulaire(traite, dtSimule);
+    avancerSystemeCellulaire(temoin, dtSimule);
+  }
+
   function rafraichir(): void {
+    avancerJournee();
     const valeurs: Array<[string, string]> = [
+      ...(journee.active
+        ? [['Heure de la journée', `${Math.floor(journee.heure)} h ${String(Math.floor((journee.heure % 1) * 60)).padStart(2, '0')}`] as [string, string]]
+        : []),
       ['Temps simulé', `${lire(traite, ['temps'], lire(traite, ['tempsSimule'])) .toFixed(1)} s`], ['ATP', `${valeur(traite, 'atp').toFixed(2)} mM`], ['Vm', `${valeur(traite, 'potentielMembrane').toFixed(1)} mV`], ['Ca cytosolique', `${(valeur(traite, 'calcium') * 1000).toPrecision(3)} µM`], ['Granules', lire(traite, ['expression', 'insulineGranules']).toFixed(0)], ['Insuline sécrétée', valeur(traite, 'secretionInsuline').toFixed(2)], ['ROS', valeur(traite, 'ros').toFixed(2)], ['Viabilité', `${(valeur(traite, 'viabilite') * 100).toFixed(1)} %`], ['Destin', String((traite as any).stress?.destin ?? '—')],
     ];
     mesures.innerHTML = valeurs.map(([nom, v]) => `<dt>${nom}</dt><dd>${v}</dd>`).join(''); dessiner();

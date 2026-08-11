@@ -72,9 +72,15 @@ describe('la boucle glucose → KATP → Vm → Ca → insuline', () => {
   })
 
   it('un glucose à 12 mM fait entrer le calcium', () => {
-    expect(systemeStimule().ions.calciumCytosolique).toBeGreaterThan(
-      3 * systemeAuRepos().ions.calciumCytosolique,
-    )
+    // Le calcium stimulé OSCILLE (vagues SERCA/RyR) : on compare son pic sur
+    // une minute au repos, pas un instantané qui peut tomber dans un creux.
+    const stimule = systemeStimule()
+    let pic = 0
+    for (let n = 0; n < 48; n++) {
+      avancerSystemeCellulaire(stimule, 5)
+      pic = Math.max(pic, stimule.ions.calciumCytosolique)
+    }
+    expect(pic).toBeGreaterThan(3 * systemeAuRepos().ions.calciumCytosolique)
   })
 
   it('un glucose à 12 mM déclenche une sécrétion nettement au-dessus du bruit basal', () => {

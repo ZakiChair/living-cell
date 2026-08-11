@@ -36,8 +36,9 @@ describe("le signal glucokinase traverse le métabolisme simulé", () => {
       s.profil = { ...s.profil, vmaxEntreeGlucose: 0 };
     });
     expect(sansTransport.ions.canalKATP).toBeGreaterThan(0.8);
-    expect(sansTransport.flux.secretion).toBeLessThan(
-      0.2 * stimuleAvec(() => {}).flux.secretion,
+    // Cumul plutôt qu'instantané : la sécrétion stimulée pulse désormais.
+    expect(sansTransport.expression.insulineSecretee).toBeLessThan(
+      0.2 * stimuleAvec(() => {}).expression.insulineSecretee,
     );
   });
 
