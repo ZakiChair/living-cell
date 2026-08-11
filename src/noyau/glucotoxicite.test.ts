@@ -40,8 +40,11 @@ describe("l'hyperglycémie chronique abîme la cellule — la glucotoxicité ém
   });
 
   it("les granules s'épuisent : la sécrétion soutenue vide le pool plus vite qu'il ne se remplit", () => {
-    const malade = apresChronique(2);
-    const repos = auRepos(2);
+    // Trois heures, pas deux : la première heure est un transitoire — la
+    // dégranulation est un fait de DURÉE, comme tout le reste de la
+    // glucotoxicité. (La vraie prend des jours ; le modèle la comprime.)
+    const malade = apresChronique(3);
+    const repos = auRepos(3);
     expect(malade.expression.insulineGranules).toBeLessThan(
       0.6 * repos.expression.insulineGranules,
     );

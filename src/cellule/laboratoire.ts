@@ -126,6 +126,10 @@ export function creerLaboratoireCellulaire(
     // le destin basculer. Rien n'est scripté : c'est la glucotoxicité qui
     // émerge du modèle.
     ['Hyperglycémie chronique (15 mM, T2D)', actif => appliquer(traite, ['milieu', 'glucoseCible'], actif ? 15 : 5)],
+    // L'incrétine des agonistes (sémaglutide) : elle AMPLIFIE la réponse au
+    // glucose sans jamais déclencher seule — essayez-la à jeun, puis nourrie,
+    // avec la mesure « insuline sécrétée ». Comparez à la sulfonylurée.
+    ['GLP-1 (incrétine)', actif => appliquer(traite, ['milieu', 'glp1'], actif ? 1 : 0)],
   ];
   for (const [libelle, action] of definitions) {
     const commande = document.createElement('button');

@@ -409,7 +409,7 @@ Le réticulum endoplasmique rugueux est un empilement de citernes aplaties dont 
 
 **Rôle affiché** : Fabrique les lipides et neutralise les toxiques.
 
-Le réticulum lisse prolonge le rugueux, mais sa membrane ne porte aucun ribosome : elle est nue, et le voisin grenu s'arrête net à la frontière. Au lieu de citernes aplaties, il forme un lacis de tubules ramifiés qui se rejoignent en carrefours renflés. Ses enzymes y assemblent les lipides des membranes et les hormones stéroïdes, et y dégradent alcool et médicaments. Il sert enfin de coffre à calcium, qu'il relâche dans le cytosol au moment voulu.
+Le réticulum lisse prolonge le rugueux, mais sa membrane ne porte aucun ribosome : elle est nue, et le voisin grenu s'arrête net à la frontière. Au lieu de citernes aplaties, il forme un lacis de tubules ramifiés qui se rejoignent en carrefours renflés. Ses enzymes y assemblent les lipides des membranes et les hormones stéroïdes, et y dégradent alcool et médicaments. Il est enfin le coffre à calcium de la cellule — et dans le modèle de ce site, c'est un vrai coffre : la pompe SERCA y entasse le calcium contre trois ordres de grandeur, massivement tamponné par la calséquestrine, et le récepteur de la ryanodine le relâche par vagues régénératives — le calcium qui appelle le calcium. Ce sont ces vidanges-recharges, visibles au laboratoire, qui font pulser la sécrétion d'insuline toutes les quatre minutes.
 
 ### 3.6 Noyau
 

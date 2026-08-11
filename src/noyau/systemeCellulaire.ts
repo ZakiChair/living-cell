@@ -101,6 +101,13 @@ export interface MilieuCellulaire {
   sulfonylure: number;
   /** Diazoxide (0 à 1) : OUVRE le canal K-ATP — silence malgré le glucose. */
   diazoxide: number;
+  /**
+   * GLP-1 / incrétine (0 à 1) : via son récepteur et l'AMPc, AMPLIFIE
+   * l'exocytose calcium-dépendante et la mobilisation des granules — mais ne
+   * déclenche rien : sans calcium, multiplier zéro donne zéro. C'est la
+   * sécurité des agonistes (sémaglutide) face aux sulfonylurées.
+   */
+  glp1: number;
 }
 
 export interface Metabolites {
@@ -123,10 +130,19 @@ export interface IonsCellulaires {
   chlorureExterieur: number;
   calciumCytosolique: number;
   calciumExterieur: number;
+  /** Calcium de la lumière du réticulum, en mM : des CENTAINES de fois le cytosol. */
+  calciumRE: number;
   potentielMembrane: number;
   volumePicolitre: number;
   canalKATP: number;
   canalCalcique: number;
+  /**
+   * Activation LENTE des canaux K⁺ calcium-dépendants (KCa), 0 à 1. C'est le
+   * frein différé qui fait OSCILLER la cellule stimulée : le calcium l'arme
+   * en une minute, il repolarise, le calcium retombe, il se désarme — et la
+   * vague repart. Une cellule bêta stimulée ne plafonne jamais, elle pulse.
+   */
+  kCa: number;
 }
 
 export interface ExpressionProteique {
@@ -136,7 +152,12 @@ export interface ExpressionProteique {
   preproinsuline: number;
   proinsulineRE: number;
   proinsulineGolgi: number;
+  /** Somme des deux pools ci-dessous, maintenue à chaque pas : l'affichage et les fiches lisent le total. */
   insulineGranules: number;
+  /** Pool AMARRÉ à la membrane (readily releasable) : ce que la première phase vide. */
+  granulesAmarres: number;
+  /** Pool de RÉSERVE : mobilisé vers la membrane en quelques minutes — la deuxième phase. */
+  granulesReserve: number;
   insulineSecretee: number;
   proteinesMalRepliees: number;
 }
@@ -150,7 +171,7 @@ export interface StressCellulaire {
   destin: DestinCellulaire;
   /**
    * Charge sécrétoire CHRONIQUE, 0 à 1 : l'excès de glycémie intégré avec une
-   * constante de temps de ~40 minutes. C'est elle qui distingue le pic
+   * constante de temps de ~50 minutes. C'est elle qui distingue le pic
    * post-prandial (inoffensif) de l'hyperglycémie installée (toxique) — la
    * glucotoxicité est une affaire de durée, pas de valeur.
    */
@@ -338,6 +359,7 @@ export function creerSystemeCellulaire(
       stressRE: 0,
       sulfonylure: 0,
       diazoxide: 0,
+      glp1: 0,
     },
     metabolites: {
       glucose: 2.2,
@@ -358,10 +380,12 @@ export function creerSystemeCellulaire(
       chlorureExterieur: 120,
       calciumCytosolique: 0.0001,
       calciumExterieur: 1.8,
+      calciumRE: 0.3,
       potentielMembrane: -70,
       volumePicolitre: PROFIL_BETA_HUMAINE.volumeReposPicolitre,
       canalKATP: 0.8,
       canalCalcique: 0,
+      kCa: 0,
     },
     expression: {
       preArnINS: 0.22,
@@ -371,6 +395,8 @@ export function creerSystemeCellulaire(
       proinsulineRE: 0.45,
       proinsulineGolgi: 0.55,
       insulineGranules: 8.0,
+      granulesAmarres: 0.9,
+      granulesReserve: 7.1,
       insulineSecretee: 0,
       proteinesMalRepliees: 0.05,
     },
@@ -568,7 +594,12 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     0,
     1,
   );
-  const permeabiliteKEffective = p.permeabiliteK * (0.12 + 0.88 * i.canalKATP);
+  // Deux familles de canaux K⁺ tirent le potentiel vers le bas : les K-ATP,
+  // que le métabolisme ferme, et les KCa, que le calcium OUVRE — lentement.
+  // Ce second frein, différé d'une minute, est ce qui fait pulser la cellule
+  // stimulée au lieu de la laisser plafonner.
+  const permeabiliteKEffective =
+    p.permeabiliteK * (0.12 + 0.88 * i.canalKATP) + 0.10 * i.kCa;
   const numerateurGoldman =
     permeabiliteKEffective * i.potassiumExterieur +
     p.permeabiliteNa * i.sodiumExterieur +
@@ -617,12 +648,50 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   i.canalCalcique = borner(activationVoltage * (1 - milieu.bloqueurCalcique), 0, 1);
   f.entreeCalcium =
     p.canalCalciqueMax * i.canalCalcique * Math.max(0, i.calciumExterieur - i.calciumCytosolique);
+  // Le réticulum est un vrai coffre à calcium : la SERCA le remplit contre
+  // trois ordres de grandeur (elle brûle de l'ATP pour ça), une fuite et le
+  // CICR — le calcium qui appelle le calcium par les récepteurs de la
+  // ryanodine — le rendent. Le facteur 20 est le rapport des volumes : un
+  // flux cytosolique se concentre d'autant dans la lumière.
+  const ca = i.calciumCytosolique;
+  const fluxSerca =
+    0.0004 * borner(atp, 0, 1) * (ca * ca) / (0.0004 * 0.0004 + ca * ca);
+  // Le RyR est sensibilisé par le calcium LUMINAL : un réservoir plein se
+  // déclenche, un réservoir vidé se tait. C'est cette sensibilité — mesurée
+  // sur le récepteur réel — qui fait du couple SERCA/RyR un oscillateur :
+  // recharge lente (~2 min), décharge brève, et la vague repart.
+  // L'oscillation exige que l'équilibre soit INSTABLE : le CICR cytosolique
+  // est régénératif — un début de libération élève le calcium, qui ouvre le
+  // récepteur davantage — et l'emballement ne s'arrête que quand le réservoir
+  // est vide. La sensibilité luminale arme le système à réservoir plein.
+  const sensibiliteLuminale =
+    Math.pow(i.calciumRE, 6) / (Math.pow(0.4, 6) + Math.pow(i.calciumRE, 6));
+  const ouvertureRyR =
+    0.02 *
+    (Math.pow(ca, 4) / (Math.pow(0.0008, 4) + Math.pow(ca, 4))) *
+    sensibiliteLuminale;
+  const fluxVidangeRE =
+    (0.0001 + ouvertureRyR) * Math.max(0, i.calciumRE - ca);
+  // Facteur 2, pas 10 : le rapport des volumes donnerait ×10, mais la lumière
+  // est massivement TAMPONNÉE (calséquestrine, calréticuline — plus de 90 %
+  // du calcium y est lié). C'est ce tampon qui fait du réservoir la variable
+  // LENTE de l'oscillateur : il se vide en trente secondes, se recharge en
+  // quatre minutes, et c'est la période des vagues.
+  i.calciumRE = borner(i.calciumRE + dt * 2 * (fluxSerca - fluxVidangeRE), 0.02, 1.0);
   i.calciumCytosolique = borner(
-    i.calciumCytosolique +
-      dt * (f.entreeCalcium - p.extrusionCalcium * Math.max(0, i.calciumCytosolique - 0.0001)),
+    ca +
+      dt *
+        (f.entreeCalcium + fluxVidangeRE - fluxSerca -
+          p.extrusionCalcium * Math.max(0, ca - 0.0001)),
     0.00005,
     0.02,
   );
+  // Le frein KCa s'arme sur le calcium avec une minute de retard, et se
+  // désarme de même : c'est ce décalage qui fabrique les vagues.
+  const cibleKCa =
+    Math.pow(i.calciumCytosolique, 3) /
+    (Math.pow(0.0006, 3) + Math.pow(i.calciumCytosolique, 3));
+  i.kCa = borner(i.kCa + dt * (1 / 55) * (cibleKCa - i.kCa), 0, 1);
 
   const glucoseSignal = milieu.glucoseExterne / (8 + milieu.glucoseExterne);
   const regimeImporte = borner(lireSignal(regimeTraduction, systeme.energie, atp), 0, 1);
@@ -645,12 +714,43 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     e.arnINSCytosolique / (0.4 + e.arnINSCytosolique);
   f.translocationRE = f.traduction * borner(atp * (1 - s.stressRE), 0, 1);
   f.transportGolgi = 0.035 * borner(atp, 0, 1) * e.proinsulineRE / (0.3 + e.proinsulineRE);
-  f.biogeneseGranules = 0.028 * borner(atp, 0, 1) * e.proinsulineGolgi / (0.3 + e.proinsulineGolgi);
+  // Le stress du réticulum étrangle la voie sécrétoire entière : une cellule
+  // en crise fabrique moins de granules. Le trop-plein du stock, lui, est
+  // écrêté par la borne de capacité — c'est la crinophagie implicite : les
+  // granules excédentaires partent à la dégradation lysosomale.
+  f.biogeneseGranules =
+    0.028 * borner(atp, 0, 1) *
+    (e.proinsulineGolgi / (0.3 + e.proinsulineGolgi)) *
+    borner(1 - 2.6 * s.stressRE, 0, 1);
   const calciumHill = Math.pow(i.calciumCytosolique, 3) /
     (Math.pow(0.0007, 3) + Math.pow(i.calciumCytosolique, 3));
+  // Le GLP-1 AMPLIFIE l'exocytose calcium-dépendante et la mobilisation des
+  // granules (récepteur → AMPc → PKA/Epac2, non détaillés individuellement).
+  // Sans calcium, multiplier zéro donne zéro : la glucose-dépendance des
+  // agonistes n'est pas une règle ajoutée, elle émerge de la chaîne.
+  // L'amplification est PONDÉRÉE par le calcium : Epac2 agit sur la fusion
+  // que le calcium déclenche, pas sur le bruit basal — c'est ce qui rend le
+  // GLP-1 incapable de provoquer une hypoglycémie.
+  const incretine =
+    1 + 1.3 * borner(milieu.glp1, 0, 1) * (calciumHill / (0.08 + calciumHill));
+  // Seul le pool AMARRÉ peut fusionner, et il fusionne VITE : la première
+  // phase de la sécrétion est sa vidange, en deux ou trois minutes.
+  const CAPACITE_AMARRES = 1.2;
   f.secretion =
-    p.secretionMax * calciumHill * borner(atp, 0, 1) * e.insulineGranules /
-    (1 + e.insulineGranules);
+    3.0 * p.secretionMax * calciumHill * borner(atp, 0, 1) * incretine *
+    (e.granulesAmarres / (0.35 + e.granulesAmarres));
+  // La réserve rejoint la membrane bien plus lentement — transport sur
+  // l'actine corticale, amorçage — et c'est ELLE qui fixe la deuxième phase :
+  // un plateau sous le pic, jamais un arrêt.
+  // Le recrutement est lui-même calcium-dépendant : la deuxième phase GRANDIT
+  // avec le stimulus, elle ne fait pas que survivre au pic.
+  const mobilisation =
+    0.006 *
+    (0.3 + 0.7 * (calciumHill / (0.15 + calciumHill))) *
+    (1 - borner(e.granulesAmarres / CAPACITE_AMARRES, 0, 1)) *
+    (e.granulesReserve / (2 + e.granulesReserve)) *
+    (1 + 0.8 * borner(milieu.glp1, 0, 1)) *
+    borner(atp, 0, 1);
   f.endocytose = 0.35 * f.secretion * borner(atp, 0, 1);
   f.proteasome = 0.018 * borner(atp, 0, 1) * e.proteinesMalRepliees;
 
@@ -686,7 +786,7 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   // que la glycémie impose. C'est le cœur de la glucotoxicité : une
   // hyperglycémie PONCTUELLE se paie en travail, une hyperglycémie
   // CHRONIQUE se paie en protéines ratées qui saturent le réticulum.
-  const fractionMalRepliee = borner(0.06 + 0.3 * s.chargeChronique, 0.06, 0.36);
+  const fractionMalRepliee = borner(0.06 + 0.52 * s.chargeChronique, 0.06, 0.55);
   e.proinsulineRE = borner(
     e.proinsulineRE +
       dt * ((1 - fractionMalRepliee) * f.translocationRE - f.transportGolgi - 0.008 * e.proinsulineRE),
@@ -694,7 +794,17 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     10,
   );
   e.proinsulineGolgi = borner(e.proinsulineGolgi + dt * (f.transportGolgi - f.biogeneseGranules - 0.006 * e.proinsulineGolgi), 0, 12);
-  e.insulineGranules = borner(e.insulineGranules + dt * (f.biogeneseGranules - f.secretion), 0, p.capaciteGranules);
+  e.granulesReserve = borner(
+    e.granulesReserve + dt * (f.biogeneseGranules - mobilisation),
+    0,
+    p.capaciteGranules,
+  );
+  e.granulesAmarres = borner(
+    e.granulesAmarres + dt * (mobilisation - f.secretion),
+    0,
+    CAPACITE_AMARRES,
+  );
+  e.insulineGranules = e.granulesAmarres + e.granulesReserve;
   e.insulineSecretee = borner(e.insulineSecretee + dt * f.secretion, 0, 1e6);
   e.proteinesMalRepliees = borner(
     e.proteinesMalRepliees +
@@ -706,7 +816,7 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   // L'excès de glycémie s'intègre lentement : un repas passe, un diabète reste.
   s.chargeChronique = borner(
     s.chargeChronique +
-      dt * (1 / 2400) * (borner((milieu.glucoseExterne - 8) / 7, 0, 1) - s.chargeChronique),
+      dt * (1 / 3000) * (borner((milieu.glucoseExterne - 8) / 7, 0, 1) - s.chargeChronique),
     0,
     1,
   );
