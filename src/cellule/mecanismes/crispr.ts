@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { CENTRE_NOYAU, TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
+import { poserSilhouette } from '../silhouette.js'
 import type { MecanismeBrut } from './contrat.js'
 
 /**
@@ -146,6 +147,28 @@ function creerCas9(): MecanismeBrut {
   cas9.name = 'cas9'
   groupe.add(cas9)
 
+  // ── LA VRAIE FORME DE CAS9 ──────────────────────────────────────────────
+  // 4OO8, chaîne A : SpCas9 en complexe avec son ARN guide et son ADN cible,
+  // résolue par Nishimasu et coll. en 2014 — la structure qui a montré
+  // comment cette protéine tient sa cible. Sa conformation ACTIVE, refermée
+  // en pince autour du duplex, ne ressemble pas à sa forme libre : c'est le
+  // guide qui la referme, et c'est celle-là qu'il faut montrer ici.
+  //
+  // Seule la chaîne A est retenue : le fichier porte DEUX copies du complexe,
+  // et l'ARN guide comme l'ADN sont déjà animés dans la scène.
+  const materiauCas9 = materiauOrganite(TEINTES.lysosome, { opacite: 0.9 })
+  poserSilhouette(
+    '4OO8',
+    cas9,
+    { rayon: 0.0075, materiau: materiauCas9 },
+    () => {
+      // La forme mesurée prend la place des deux lobes ; les deux lames
+      // restent, car ce sont elles que la scène montre à l'œuvre.
+      lobeRec.visible = false
+      lobeNuc.visible = false
+    },
+  )
+
   // L'ARN guide : 20 nt d'appariement, qui viennent se coller au brin cible.
   const guide = new THREE.InstancedMesh(
     new THREE.IcosahedronGeometry(RAYON_BASE * 0.9, 1),
@@ -270,6 +293,12 @@ function creerCas9(): MecanismeBrut {
       "accéléré d'environ ×180 — mais les trois horloges qu'il contient ne " +
       "sont pas au même facteur, et l'ellision le dit.",
     ellision:
+      "CAS9 N'EST PAS DESSINÉE : c'est la structure 4OO8, résolue en 2014 — " +
+      "la protéine en complexe avec son guide et sa cible, dans la " +
+      'conformation refermée qui est sa forme active ; mille trois cents ' +
+      "résidus, un point chacun. Ses deux lames, elles, sont figurées : à " +
+      "cette échelle, HNH et RuvC sont des domaines internes qu'aucune " +
+      'silhouette extérieure ne montrerait. ' +
       "LA RECHERCHE EST ÉCRASÉE, PAS ACCÉLÉRÉE : on montre cinq essais ratés " +
       "là où il y en a des millions, et le temps réel de la traque — des " +
       "heures — ne tient dans aucun facteur. À l'inverse, la coupure est " +

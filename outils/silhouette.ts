@@ -15,9 +15,25 @@ import { analyserCa, analyserCaMmcif, centrerEtNormaliser } from '../src/noyau/p
 
 const identifiant = process.argv[2]
 if (!identifiant) {
-  console.error('usage : npx tsx outils/silhouette.ts <identifiant PDB>  (exemple : 2ZXE)')
+  console.error(
+    'usage : npx tsx outils/silhouette.ts <identifiant PDB> [chaînes]\n' +
+      '  exemples : 2ZXE          — toute la structure\n' +
+      '             4OO8 A        — la seule chaîne A',
+  )
   process.exit(1)
 }
+
+/**
+ * Chaînes à retenir, séparées par des virgules.
+ *
+ * Nécessaire, pas décoratif : un fichier PDB contient souvent PLUSIEURS
+ * copies du même complexe dans son unité asymétrique. 4OO8 en porte deux —
+ * les poser telles quelles mettrait deux Cas9 côte à côte dans la scène, et
+ * personne ne comprendrait pourquoi. Sans argument, tout est retenu.
+ */
+const chainesVoulues = process.argv[3]
+  ? new Set(process.argv[3].split(',').map((c) => c.trim()))
+  : null
 
 const debut = Date.now()
 const code = identifiant.toUpperCase()
@@ -44,7 +60,12 @@ async function telecharger(): Promise<{ texte: string; format: 'pdb' | 'mmcif' }
 const { texte, format } = await telecharger()
 const telecharge = Date.now()
 
-const atomes = format === 'pdb' ? analyserCa(texte) : analyserCaMmcif(texte)
+const tous = format === 'pdb' ? analyserCa(texte) : analyserCaMmcif(texte)
+const atomes = chainesVoulues ? tous.filter((a) => chainesVoulues.has(a.chaine)) : tous
+if (atomes.length === 0) {
+  console.error(`aucun atome retenu — chaînes présentes : ${[...new Set(tous.map((a) => a.chaine))].join(', ')}`)
+  process.exit(1)
+}
 if (atomes.length === 0) {
   console.error('aucun carbone alpha trouvé — structure probablement non protéique')
   process.exit(1)

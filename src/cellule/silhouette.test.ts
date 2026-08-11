@@ -23,7 +23,7 @@ describe('les silhouettes cristallographiques livrées', () => {
   })
 
   it('sont centrées et normalisées : tout tient dans la sphère unité', async () => {
-    for (const code of ['6ek0', '2zxe', '1ffk', '4v6x']) {
+    for (const code of ['6ek0', '2zxe', '1ffk', '4v6x', '4oo8']) {
       const s = await lire(code)
       let rayonMax = 0
       let cx = 0
@@ -130,6 +130,7 @@ describe('les silhouettes sont vraiment livrées', () => {
     expect(fichiers.filter((f) => f.endsWith('.bin')).sort()).toEqual([
       '1ffk.bin',
       '2zxe.bin',
+      '4oo8.bin',
       '4v6x.bin',
       '6ek0.bin',
     ])
@@ -145,5 +146,23 @@ describe('les silhouettes sont vraiment livrées', () => {
         `« ${ligne} » exclurait les silhouettes du dépôt`,
       ).toBe(false)
     }
+  })
+})
+
+describe('Cas9 dans sa conformation active', () => {
+  it("ne porte QU'UNE copie du complexe, pas les deux du fichier", async () => {
+    const cas9 = await lire('4oo8')
+    // 4OO8 contient deux complexes (chaînes A-B-C et D-E-F). Retenir tout
+    // poserait deux Cas9 côte à côte dans la scène ; on garde la chaîne A,
+    // soit les 1 301 résidus résolus de la protéine.
+    expect(cas9.nombreAtomes).toBeGreaterThan(1_200)
+    expect(cas9.nombreAtomes).toBeLessThan(1_400)
+  })
+
+  it('est bien plus petite que le ribosome, comme dans la cellule', async () => {
+    const cas9 = await lire('4oo8')
+    const ribosome = await lire('6ek0')
+    // Cas9 fait ~160 kDa, le ribosome 80S ~4 200 : un ordre de grandeur.
+    expect(ribosome.nombreAtomes / cas9.nombreAtomes).toBeGreaterThan(8)
   })
 })
