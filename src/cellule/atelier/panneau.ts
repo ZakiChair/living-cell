@@ -401,9 +401,13 @@ export const FICHE_ATELIER = {
     '(NM_000207.3) et épinglées base par base par un test.',
   ellision:
     "LE RIBOSOME, LUI, N'EST PAS DESSINÉ : c'est la structure 6EK0 du ribosome " +
-    "80S humain, résolue par cryo-microscopie électronique, avec un carbone α " +
-    "par acide aminé — onze mille sept cents billes qui ne doivent leur forme " +
-    "à aucun géomètre. Les billes se recouvrent volontairement pour rendre une " +
+    "80S humain, résolue par cryo-microscopie électronique : dix-sept mille " +
+    "quatre cents billes — un carbone α par acide aminé, un phosphore par " +
+    "nucléotide — qui ne doivent leur forme à aucun géomètre. Les DEUX " +
+    "familles comptent : l'ARN ribosomique fait les deux tiers de la masse " +
+    "du ribosome, forme son cœur et porte le site qui soude les acides " +
+    "aminés — une silhouette faite des seules protéines montrerait la " +
+    "coquille et manquerait la machine. Les billes se recouvrent volontairement pour rendre une " +
     "SURFACE : à cette échelle, un atome n'est pas une information, la " +
     "silhouette en est une. Les autres protéines du site restent des formes " +
     "procédurales — les cent cinquante ribosomes du tapis de réticulum " +

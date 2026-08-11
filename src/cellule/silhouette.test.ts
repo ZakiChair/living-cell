@@ -13,10 +13,13 @@ async function lire(code: string): Promise<Silhouette> {
 }
 
 describe('les silhouettes cristallographiques livrées', () => {
-  it('le ribosome humain porte ses onze mille sept cents carbones α', async () => {
+  it("le ribosome humain porte ses protéines ET son ARN", async () => {
     const ribosome = await lire('6ek0')
-    expect(ribosome.nombreAtomes).toBeGreaterThan(11_000)
-    expect(ribosome.nombreAtomes).toBeLessThan(12_000)
+    // 11 725 carbones α (les protéines) + 5 723 phosphores (les quatre ARN
+    // ribosomiques). Une silhouette sans l'ARN montrait la coquille et
+    // manquait le cœur : l'ARN fait les deux tiers de la masse du ribosome.
+    expect(ribosome.nombreAtomes).toBeGreaterThan(17_000)
+    expect(ribosome.nombreAtomes).toBeLessThan(18_000)
   })
 
   it('sont centrées et normalisées : tout tient dans la sphère unité', async () => {
@@ -99,9 +102,11 @@ describe("l'amas d'instances d'une silhouette", () => {
       materiau: new THREE.MeshLambertMaterial(),
     })
     expect(amas.isInstancedMesh).toBe(true)
-    // 20 triangles par bille : le budget que la scène doit assumer.
+    // 20 triangles par bille : le budget que la scène doit assumer. 350 000
+    // pour l'objet-héros, mesuré à 120 images par seconde — le vrai juge est
+    // la cadence, pas un plafond de principe.
     const triangles = amas.count * 20
-    expect(triangles).toBeLessThan(300_000)
+    expect(triangles).toBeLessThan(400_000)
   })
 })
 

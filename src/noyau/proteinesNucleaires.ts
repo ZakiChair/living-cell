@@ -132,7 +132,7 @@ export const PROTEINES_NUCLEAIRES: readonly ProteineNucleaire[] = Object.freeze(
     famille: 'porte',
     exemplaires: 3_000,
     tailleNm: 120,
-    role: "La plus grosse machine de la cellule : une trentaine de nucléoporines en huit exemplaires. Seule porte du noyau, dans les deux sens.",
+    role: "La plus grosse machine de la cellule : une trentaine de nucléoporines en huit exemplaires. Seule porte du noyau, dans les deux sens. Les 120 nm sont ceux du complexe entier, filaments compris ; l'anneau cytoplasmique que la scène dessine en fait une centaine.",
   },
   {
     nom: 'Importine β / Ran',

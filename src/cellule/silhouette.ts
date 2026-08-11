@@ -15,7 +15,8 @@ import * as THREE from 'three'
  * disparaissent. C'est ce que fait une illustration de David Goodsell, et
  * c'est ce que la spec du site demandait.
  *
- * Le budget est le sujet : 11 725 carbones α pour un ribosome humain. À
+ * Le budget est le sujet : 17 448 points pour un ribosome humain — carbones
+ * α des protéines ET phosphores des ARN, un par résidu dans les deux cas. À
  * 20 triangles la sphère, c'est 234 500 triangles en UN seul appel de
  * dessin — tenable pour un objet unique, intenable pour les cent cinquante
  * ribosomes d'un tapis de réticulum. D'où `pas` : on peut n'en garder qu'un
@@ -26,7 +27,7 @@ import * as THREE from 'three'
 export interface Silhouette {
   /** Positions x,y,z aplaties, centrées, rayon maximal ramené à 1. */
   points: Float32Array
-  /** Nombre de carbones α réellement présents dans le fichier. */
+  /** Points de squelette du fichier : un par acide aminé et par nucléotide. */
   nombreAtomes: number
 }
 
@@ -94,7 +95,7 @@ export function creerAmasSilhouette(
   // bille doit être grosse pour que la surface reste fermée. La racine
   // cubique vient du volume — c'est la même loi que pour un empilement.
   const rayonBille =
-    options.rayonBille ?? 0.055 * Math.cbrt(pas) * Math.cbrt(11_725 / silhouette.nombreAtomes)
+    options.rayonBille ?? 0.055 * Math.cbrt(pas) * Math.cbrt(17_448 / silhouette.nombreAtomes)
 
   const amas = new THREE.InstancedMesh(
     new THREE.IcosahedronGeometry(1, 0),

@@ -10,8 +10,9 @@ import type { MecanismeBrut } from './contrat.js'
  *
  * 1. LE PAM D'ABORD, LA SÉQUENCE ENSUITE. Cas9 ne lit pas le génome comme un
  *    texte : il percute l'ADN au hasard, teste en une milliseconde s'il y a
- *    un motif NGG — le PAM — et repart s'il n'y en a pas. Il y en a des
- *    dizaines de millions dans un génome humain. Ce n'est qu'AU PAM qu'il
+ *    un motif NGG — le PAM — et repart s'il n'y en a pas. Un NGG tombe en
+ *    moyenne toutes les huit paires de bases : il y en a des CENTAINES de
+ *    millions dans un génome humain, sur les deux brins. Ce n'est qu'AU PAM qu'il
  *    ouvre la double hélice et compare son guide, base à base.
  * 2. LA COUPURE EST À BOUTS FRANCS, ET DEUX DOMAINES LA FONT : HNH coupe le
  *    brin apparié au guide, RuvC coupe l'autre, trois paires de bases en
@@ -263,7 +264,7 @@ function creerCas9(): MecanismeBrut {
     },
     justificationFacteur:
       "Trouver une cible dans trois milliards de bases prend des heures : Cas9 " +
-      'teste des dizaines de millions de PAM par collisions successives, une ' +
+      'teste des centaines de millions de PAM par collisions successives, une ' +
       "milliseconde chacun. La coupure elle-même, une fois l'appariement fait, " +
       "prend moins d'une seconde. Le cycle entier tient ici en 30 s, soit un " +
       "accéléré d'environ ×180 — mais les trois horloges qu'il contient ne " +

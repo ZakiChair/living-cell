@@ -769,7 +769,7 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   const fluxVidangeRE =
     (0.0005 + ouvertureRyR) * Math.max(0, i.calciumRE - ca);
   // Facteur 2, pas 10 : le rapport des volumes donnerait ×10, mais la lumière
-  // est massivement TAMPONNÉE (calséquestrine, calréticuline — plus de 90 %
+  // est massivement TAMPONNÉE (calréticuline surtout, et BiP — plus de 90 %
   // du calcium y est lié). C'est ce tampon qui fait du réservoir la variable
   // LENTE de l'oscillateur : il se vide en trente secondes, se recharge en
   // quatre minutes, et c'est la période des vagues.

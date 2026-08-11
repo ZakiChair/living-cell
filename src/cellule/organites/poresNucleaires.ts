@@ -49,7 +49,14 @@ const ANGLE_OR = Math.PI * (3 - Math.sqrt(5))
 /** Symétrie d'ordre 8 : la signature du complexe, comme l'ordre 9 l'est du centriole. */
 const SYMETRIE = 8
 
-/** Diamètre externe réel du pore : 100 nm. Rayon 0,036 + tube 0,014 = 0,05. */
+/**
+ * Diamètre de l'ANNEAU cytoplasmique : 100 nm. Rayon 0,036 + tube 0,014.
+ *
+ * À ne pas confondre avec le diamètre du COMPLEXE entier, filaments et
+ * panier compris, qui approche 120 nm — c'est ce dernier que l'inventaire
+ * des protéines nucléaires cite. Les deux chiffres sont justes et ne
+ * mesurent pas la même chose ; ils se contredisaient faute de le dire.
+ */
 const RAYON_ANNEAU = 0.036
 const RAYON_TUBE_ANNEAU = 0.014
 

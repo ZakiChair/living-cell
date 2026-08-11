@@ -9,6 +9,11 @@
  * espaces casse dès qu'un champ déborde sur son voisin.
  */
 
+/**
+ * Un point du SQUELETTE : carbone α d'un acide aminé, ou phosphore d'un
+ * nucléotide. Un par résidu dans les deux cas — c'est ce qui rend les deux
+ * familles comparables et permet de dessiner une silhouette complète.
+ */
 export interface AtomeCa {
   x: number
   y: number
@@ -21,7 +26,13 @@ export function analyserCa(texte: string): AtomeCa[] {
   for (const ligne of texte.split('\n')) {
     if (!ligne.startsWith('ATOM')) continue
     // Colonnes 13-16 : nom de l'atome, dans le champ de quatre caractères du format.
-    if (ligne.slice(12, 16).trim() !== 'CA') continue
+    // Carbone α pour les protéines, PHOSPHORE pour les acides nucléiques.
+    // Ne retenir que le CA donnait un ribosome SANS SON ARN — or l'ARN
+    // ribosomique fait les deux tiers de sa masse, forme son cœur et porte
+    // son site catalytique. La silhouette montrait la coquille protéique
+    // périphérique et prétendait montrer le ribosome.
+    const nomAtome = ligne.slice(12, 16).trim()
+    if (nomAtome !== 'CA' && nomAtome !== 'P') continue
     atomes.push({
       x: Number.parseFloat(ligne.slice(30, 38)),
       y: Number.parseFloat(ligne.slice(38, 46)),
@@ -74,7 +85,10 @@ export function analyserCaMmcif(texte: string): AtomeCa[] {
       return i === undefined ? undefined : champs[i]
     }
 
-    if (lire('label_atom_id') !== 'CA') continue
+    // Carbone α (protéines) ou phosphore (acides nucléiques) : voir le
+    // parseur PDB ci-dessus, même raison.
+    const nomAtome = lire('label_atom_id')
+    if (nomAtome !== 'CA' && nomAtome !== 'P') continue
 
     const x = Number.parseFloat(lire('Cartn_x') ?? '')
     const y = Number.parseFloat(lire('Cartn_y') ?? '')
