@@ -40,8 +40,14 @@ export function glycemieJournee(heure: number): number {
   );
 }
 
-/** Durée réelle d'une journée, en secondes : la constante du scénario. */
+/** Durée d'une journée, en secondes. */
 export const JOURNEE_S = 86_400;
 
-/** Compression du scénario : 24 h vécues en ~2 minutes d'écran. */
-export const ACCELERATION_JOURNEE = 720;
+/** Ce que le bouton du laboratoire promet : 24 h en deux minutes d'écran. */
+export const DUREE_SCENARIO_S = 120;
+
+/**
+ * Compression du scénario, DÉDUITE de la promesse affichée : si le libellé
+ * dit deux minutes, le facteur ne peut pas dire autre chose.
+ */
+export const ACCELERATION_JOURNEE = JOURNEE_S / DUREE_SCENARIO_S;

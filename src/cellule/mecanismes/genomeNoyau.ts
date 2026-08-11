@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { CENTRE_NOYAU, RAYON_NOYAU, TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import { CHROMOSOMES, NOMBRE_DIPLOIDE, locusDe } from '../../noyau/genome.js'
+import { CHROMOSOMES, locusDe } from '../../noyau/genome.js'
 import { PROTEINES_NUCLEAIRES } from '../../noyau/proteinesNucleaires.js'
 import type { MecanismeBrut } from './contrat.js'
 
@@ -318,6 +318,3 @@ export function creerGenomeNoyau(): MecanismeBrut[] {
     },
   ]
 }
-
-/** Nombre de territoires effectivement posés — exporté pour que le test le prouve. */
-export const TERRITOIRES_POSES = NOMBRE_DIPLOIDE - 2 + 2

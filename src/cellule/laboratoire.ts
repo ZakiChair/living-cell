@@ -219,7 +219,13 @@ export function creerLaboratoireCellulaire(
     const maintenant = performance.now();
     const dtReel = Math.min((maintenant - journee.dernierInstant) / 1000, 0.2);
     journee.dernierInstant = maintenant;
-    const dtSimule = dtReel * ACCELERATION_JOURNEE;
+    // ATTENTION, DEUX APPELANTS : la boucle de rendu avance déjà ces deux
+    // systèmes à leur rythme normal (main.ts). Ce que le scénario ajoute
+    // ici, c'est le SURPLUS qui porte la journée — d'où la soustraction du
+    // pas déjà consommé ailleurs. Sans elle, le temps simulé dépasserait ce
+    // que le libellé promet, d'un cheveu aujourd'hui et de beaucoup le jour
+    // où quelqu'un accélérera aussi la boucle de rendu.
+    const dtSimule = Math.max(0, dtReel * (ACCELERATION_JOURNEE - 1));
     journee.heure = (journee.heure + dtSimule / 3600) % 24;
     appliquer(traite, ['milieu', 'glucoseCible'], glycemieJournee(journee.heure));
     // Le témoin vit la même journée, perfusé à sa référence : c'est le jeûne.

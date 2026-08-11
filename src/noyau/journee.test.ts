@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { glycemieJournee } from "./journee.js";
+import { ACCELERATION_JOURNEE, DUREE_SCENARIO_S, JOURNEE_S, glycemieJournee } from "./journee.js";
 import { creerEtat } from "./etatCellule.js";
 import {
   avancerSystemeCellulaire,
@@ -53,5 +53,13 @@ describe("la cellule vit sa journée", () => {
     expect(dejeuner).toBeGreaterThan(3 * nuit);
     // Et la nuit n'est pas morte : la sécrétion basale existe.
     expect(nuit).toBeGreaterThan(0);
+  });
+});
+
+describe("le scénario tient la promesse de son libellé", () => {
+  it("vingt-quatre heures passent bien en deux minutes", () => {
+    expect(ACCELERATION_JOURNEE).toBe(JOURNEE_S / DUREE_SCENARIO_S);
+    expect(DUREE_SCENARIO_S).toBe(120);
+    expect(JOURNEE_S / ACCELERATION_JOURNEE).toBe(120);
   });
 });

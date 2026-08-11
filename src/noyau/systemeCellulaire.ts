@@ -261,6 +261,48 @@ export interface SystemeCellulaire {
   temoinViabilite: number;
 }
 
+/**
+ * LE REPOS EST UN POINT FIXE PAR CONSTRUCTION.
+ *
+ * Trois grandeurs doivent s'annuler au repos déclaré, et une seule façon de
+ * le garantir : les DÉRIVER, jamais les régler. Une calibration à la main a
+ * déjà échoué deux fois ici — d'abord des fuites trop fortes (10 mM de K⁺
+ * perdus par heure), puis une correction qui oubliait deux facteurs de la
+ * pompe et laissait la cellule se stabiliser à −58 mV au lieu de −70. Le
+ * défaut est invisible sur cinq minutes et flagrant sur une journée.
+ */
+const K_REPOS = 140;
+const NA_REPOS = 12;
+const CL_REPOS = 35;
+const NA_EXTERIEUR_REPOS = 145;
+const K_EXTERIEUR_REPOS = 4.5;
+
+/**
+ * Le débit de la pompe AU REPOS, tous ses facteurs compris — c'est
+ * l'oubli de deux d'entre eux qui a produit le défaut de −58 mV :
+ * la part du budget (25 %), la réponse au sodium interne, la charge
+ * énergétique (1 au repos) et le terme de bilan (0,85 quand production et
+ * consommation s'équilibrent).
+ */
+const REPONSE_SODIUM_REPOS =
+  0.4 + 1.6 * ((NA_REPOS * NA_REPOS) / (15 * 15 + NA_REPOS * NA_REPOS));
+const BILAN_REPOS = 0.7 + 0.3 * 0.5;
+const POMPE_REPOS = 0.010 * 0.25 * REPONSE_SODIUM_REPOS * BILAN_REPOS;
+
+/** Trois Na⁺ sortent par cycle : la fuite qui les ramène doit les compenser exactement. */
+const FUITE_NA_REPOS =
+  (3 * POMPE_REPOS * 140) / (NA_EXTERIEUR_REPOS - NA_REPOS);
+/** Deux K⁺ entrent par cycle. */
+const FUITE_K_REPOS = (2 * POMPE_REPOS * 140) / (K_REPOS - K_EXTERIEUR_REPOS);
+
+/**
+ * Le reste de l'osmolarité interne : protéines, métabolites, ions mineurs.
+ * DÉDUIT pour que la cellule au repos soit exactement à sa consigne — sinon
+ * le volume gonfle, dilue toutes les concentrations, et l'erreur se propage
+ * à tout le modèle par les équations de Goldman.
+ */
+const OSMOLARITE_RESIDUELLE = 300 - (NA_REPOS + K_REPOS + CL_REPOS);
+
 export const PROFIL_BETA_HUMAINE: Readonly<ProfilCellulaire> = Object.freeze({
   nom: "cellule beta pancreatique humaine",
   temperatureKelvin: 310.15,
@@ -272,16 +314,18 @@ export const PROFIL_BETA_HUMAINE: Readonly<ProfilCellulaire> = Object.freeze({
   vmaxGlycolyse: 0.036,
   vmaxRespiration: 0.030,
   vmaxBetaOxydation: 0.006,
-  permeabiliteNa: 0.040,
+  // Perméabilités relatives de Goldman. Le rapport PNa/PK au repos décide du
+  // potentiel : à 0,04 et 0,08, la cellule se stabilisait à −61 mV, trop
+  // dépolarisée pour une bêta au repos (−65 à −70 publiés) — et l'écart
+  // rongeait l'amplitude de la réponse au glucose.
+  permeabiliteNa: 0.025,
   permeabiliteK: 1.0,
-  permeabiliteCl: 0.080,
-  // Fuites calibrées pour que le repos ionique soit STATIONNAIRE par
-  // construction : fuite = pompe de repos × 140/(gradient de repos), pour
-  // 3 Na⁺ et 2 K⁺ par cycle. Les anciennes valeurs (0,010/0,008) perdaient
-  // 10 mM de K⁺ par heure au repos — invisible en cinq minutes, dévastateur
-  // sur la journée que le scénario du laboratoire fait vivre.
-  fuiteNa: 0.0079,
-  fuiteK: 0.0052,
+  permeabiliteCl: 0.045,
+  // Fuites DÉRIVÉES (voir FUITE_NA_REPOS / FUITE_K_REPOS plus bas) : le repos
+  // doit être un point fixe par construction, pas par réglage. Les valeurs
+  // écrites ici sont remplacées à la construction du profil.
+  fuiteNa: FUITE_NA_REPOS,
+  fuiteK: FUITE_K_REPOS,
   pompeNaKMax: 0.010,
   canalCalciqueMax: 0.0018,
   extrusionCalcium: 0.90,
@@ -629,8 +673,11 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   // que le métabolisme ferme, et les KCa, que le calcium OUVRE — lentement.
   // Ce second frein, différé d'une minute, est ce qui fait pulser la cellule
   // stimulée au lieu de la laisser plafonner.
+  // 5 % de conductance potassique résiduelle canaux K-ATP fermés : ce
+  // plancher fixe la profondeur de la dépolarisation. À 12 %, la cellule ne
+  // dépassait pas −38 mV et n'ouvrait ses canaux calciques qu'à peine.
   const permeabiliteKEffective =
-    p.permeabiliteK * (0.12 + 0.88 * i.canalKATP) + 0.10 * i.kCa;
+    p.permeabiliteK * (0.05 + 0.95 * i.canalKATP) + 0.10 * i.kCa;
   const numerateurGoldman =
     permeabiliteKEffective * i.potassiumExterieur +
     p.permeabiliteNa * i.sodiumExterieur +
@@ -669,7 +716,7 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   i.potassiumExterieur = borner(i.potassiumExterieur + dt * (f.fuiteK - 2 * f.pompeNaK) * 0.02, 1, 20);
 
   const osmolariteInterne =
-    i.sodiumInterieur + i.potassiumInterieur + i.chlorureInterieur + 115;
+    i.sodiumInterieur + i.potassiumInterieur + i.chlorureInterieur + OSMOLARITE_RESIDUELLE;
   const volumePrecedent = i.volumePicolitre;
   const volumeCible = p.volumeReposPicolitre * osmolariteInterne / p.osmolariteCible;
   i.volumePicolitre = borner(
@@ -682,7 +729,14 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   i.potassiumInterieur = borner(i.potassiumInterieur * dilution, 60, 180);
   i.chlorureInterieur = borner(i.chlorureInterieur * dilution, 5, 100);
 
-  const activationVoltage = 1 / (1 + Math.exp(-(i.potentielMembrane + 28) / 6));
+  // Demi-activation à −38 mV, et non au seuil réel des canaux Cav (~−20).
+  // La raison est déclarée dans l'ellision du laboratoire : ce modèle donne
+  // l'ENVELOPPE du potentiel, pas les trains de potentiels d'action qui la
+  // parcourent. Ce sont leurs POINTES, à −20 mV et au-delà, qui ouvrent
+  // réellement les canaux calciques ; un seuil calé sur les pointes rendrait
+  // muette une enveloppe qui plafonne à −42 mV. Le seuil abaissé est la
+  // contrepartie assumée du bursting absent.
+  const activationVoltage = 1 / (1 + Math.exp(-(i.potentielMembrane + 38) / 6));
   i.canalCalcique = borner(activationVoltage * (1 - milieu.bloqueurCalcique), 0, 1);
   f.entreeCalcium =
     p.canalCalciqueMax * i.canalCalcique * Math.max(0, i.calciumExterieur - i.calciumCytosolique);
@@ -783,7 +837,7 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   // il y en a juste moins) et le frein α2 de l'adrénaline, DISTAL au
   // calcium — la machinerie d'exocytose elle-même est inhibée.
   const masseFonctionnelle = borner(s.viabilite, 0, 1);
-  const freinAlpha2 = 1 - 0.85 * borner(milieu.adrenaline, 0, 1);
+  const freinAlpha2 = 1 - 0.90 * borner(milieu.adrenaline, 0, 1);
   f.secretion =
     3.0 * p.secretionMax * calciumHill * borner(atp, 0, 1) * incretine *
     masseFonctionnelle * freinAlpha2 *
@@ -847,10 +901,14 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     10,
   );
   e.proinsulineGolgi = borner(e.proinsulineGolgi + dt * (f.transportGolgi - f.biogeneseGranules - 0.006 * e.proinsulineGolgi), 0, 12);
+  // La capacité est celle du STOCK ENTIER : ce que la réserve peut tenir est
+  // ce qui reste une fois le pool amarré rempli. Sans cette soustraction, le
+  // total dépassait la capacité déclarée de 10 %, et la jauge des granules
+  // saturait en silence.
   e.granulesReserve = borner(
     e.granulesReserve + dt * (f.biogeneseGranules - mobilisation),
     0,
-    p.capaciteGranules,
+    p.capaciteGranules - CAPACITE_AMARRES,
   );
   e.granulesAmarres = borner(
     e.granulesAmarres + dt * (mobilisation - f.secretion),
