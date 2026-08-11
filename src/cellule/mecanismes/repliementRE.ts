@@ -371,7 +371,11 @@ export function creerRepliementRE(): MecanismeBrut[] {
         'diabète néonatal.',
       objet: groupe,
       ancre: groupe.position.clone(),
-      rayonCadrage: 0.24,
+      // 0,11 et non 0,24 : le gate visuel a montré que les trois chaînes et
+      // leurs ponts — le sujet même de la scène — étaient illisibles de loin.
+      // On approche la caméra, on ne grossit pas les objets : c'est la
+      // doctrine du site, et c'est la seule réponse juste.
+      rayonCadrage: 0.11,
       couleur: TEINTES.reticulumRugueux,
       animer,
     },

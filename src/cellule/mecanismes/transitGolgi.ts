@@ -55,7 +55,12 @@ export function creerTransitGolgi(): MecanismeBrut[] {
   // Chaque citerne est une calotte aplatie, comme l'organite voisin.
   const matCiterne = materiauOrganite(TEINTES.golgi, { opacite: 0.5 })
   const geoCiterne = new THREE.SphereGeometry(0.11, 20, 12)
-  geoCiterne.scale(1, 0.18, 0.72)
+  // APLATIE SUR X, l'axe de la pile — pas sur Y. Les citernes étaient des
+  // disques couchés qu'on empilait de chant : elles s'interpénétraient et la
+  // pile se lisait comme une seule galette. Un Golgi s'empile
+  // perpendiculairement au plan de ses citernes, et c'est par là que le
+  // cargo le traverse, de la face cis à la face trans.
+  geoCiterne.scale(0.18, 1, 0.72)
   const citernes: THREE.Mesh[] = []
   for (let c = 0; c < NB_CITERNES; c++) {
     const citerne = new THREE.Mesh(geoCiterne, matCiterne)
