@@ -53,6 +53,12 @@ export interface ContexteCellule {
    * dédifférenciée est vivante, mais elle a cessé d'être une cellule bêta.
    */
   readonly identiteBeta: number;
+  /**
+   * Amyline agrégée, en unités du modèle. Une cellule saine n'en a pas ;
+   * une cellule qui hypersécrète sous charge chronique en accumule, et ces
+   * dépôts abîment sa membrane.
+   */
+  readonly amylineAgregee: number;
 }
 
 const EPSILON = 1e-9;
@@ -89,6 +95,7 @@ export function contexteRepos(): ContexteCellule {
     stressRE: 0.04,
     proteinesMalRepliees: 0.05,
     identiteBeta: 0.9,
+    amylineAgregee: 0,
   };
 }
 
@@ -129,5 +136,6 @@ export function contexteDe(systeme: SystemeCellulaire): ContexteCellule {
         borner(systeme.expression.mafa, 0, 1) *
         borner(systeme.expression.neurod1, 0, 1),
     ),
+    amylineAgregee: systeme.expression.amylineAgregee,
   };
 }

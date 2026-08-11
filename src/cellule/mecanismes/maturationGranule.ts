@@ -255,10 +255,10 @@ export function creerMaturationGranule(): MecanismeBrut[] {
     }
     zincs.instanceMatrix.needsUpdate = true
 
-    // L'amyline suit la maturation, comme l'insuline — et son agrégat croît
-    // avec ce que le modèle a accumulé : une cellule sous charge chronique
-    // le montre, une cellule saine n'en a pas.
-    const agregat = Math.min(1, contexte.proteinesMalRepliees * 0.6 + 0.15)
+    // L'amyline suit la maturation, comme l'insuline — et son agrégat lit
+    // CE QUE LE MODÈLE A ACCUMULÉ, pas un proxy : une cellule saine n'en a
+    // pas, une cellule qui hypersécrète sous charge chronique en montre.
+    const agregat = Math.min(1, contexte.amylineAgregee / 0.6)
     for (let i = 0; i < NB_AMYLINE; i++) {
       const derive = lissage((p - P_COUPES_DEB) / 0.3)
       _position.copy(ancresAmyline[i]!)

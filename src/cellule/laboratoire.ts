@@ -106,13 +106,18 @@ export function creerLaboratoireCellulaire(
     couvrait une bactérie de 525 gènes : personne n'a celui d'une cellule humaine,
     et ce site ne prétend pas l'avoir — il prétend déclarer ce qu'il coupe.</p></details>
     <section aria-labelledby="lab-profil"><h3 id="lab-profil">Profil cellulaire</h3><dl class="laboratoire-mesures"></dl></section>
-    <section aria-labelledby="lab-commandes"><h3 id="lab-commandes">Interventions</h3><div class="laboratoire-commandes"></div></section>
+    <section aria-labelledby="lab-commandes"><h3 id="lab-commandes">Interventions</h3><div class="laboratoire-commandes"></div>
+    <label class="laboratoire-vitesse">Vitesse du temps
+      <input type="range" min="0" max="4" step="1" value="0" class="laboratoire-curseur-vitesse" />
+      <output class="laboratoire-valeur-vitesse">×1</output>
+    </label>
+    <p class="laboratoire-aparte">Le stress du réticulum, la dédifférenciation, l'amyline et l'insulite se comptent en HEURES : au temps réel, ces leviers ne montrent rien. Accélérez pour les voir venir — et remarquez qu'aucun n'est instantané, ce qui est le fait le plus important à leur sujet.</p></section>
     <section aria-labelledby="lab-courbes"><div class="laboratoire-ligne-titre"><h3 id="lab-courbes">Traité / témoin</h3><label for="laboratoire-signal">Signal</label><select id="laboratoire-signal" name="laboratoire-signal" class="laboratoire-select"><option value="atp">ATP</option><option value="potentielMembrane">Vm</option><option value="calcium">Ca cytosolique</option><option value="secretionInsuline">Insuline sécrétée</option><option value="viabilite">Viabilité</option><option value="ros">ROS</option><option value="identite">Identité bêta</option></select></div><canvas class="laboratoire-canvas" role="img" aria-label="Courbe comparative du traité et du témoin"></canvas><p class="laboratoire-legende"><span>Traité</span><span>Témoin</span></p></section>
     <footer><button type="button" class="laboratoire-reset">Réinitialiser</button><button type="button" class="laboratoire-csv">Exporter CSV</button></footer>`;
 
   const style = document.createElement('style');
   style.textContent = `
-    .laboratoire-declencheur{margin:.5rem 0;border:1px solid ${BLEU};border-radius:999px;background:${IVOIRE};color:${ENCRE};padding:.55rem .9rem;font:600 .88rem/1 system-ui;cursor:pointer}.laboratoire-cellulaire{position:fixed;z-index:30;top:1rem;right:1rem;width:min(29rem,calc(100vw - 2rem));max-height:calc(100vh - 2rem);overflow:auto;box-sizing:border-box;padding:1.2rem;border:1px solid #cbd8df;border-radius:1rem;background:${IVOIRE};color:${ENCRE};box-shadow:0 1.25rem 3.5rem #18243333;font:400 .9rem/1.45 system-ui}.laboratoire-cellulaire header,.laboratoire-ligne-titre,.laboratoire-cellulaire footer{display:flex;align-items:center;justify-content:space-between;gap:.75rem}.laboratoire-cellulaire h2,.laboratoire-cellulaire h3{margin:0;color:${ENCRE}}.laboratoire-cellulaire h2{font-size:1.2rem}.laboratoire-cellulaire h3{font-size:.9rem}.laboratoire-surtitre{margin:0;color:${BLEU};font-size:.68rem;font-weight:800;letter-spacing:.12em}.laboratoire-note{padding:.65rem .75rem;border-left:3px solid ${BLEU};background:#e9f4f8}.laboratoire-limites{margin:.5rem 0 0;font-size:.84rem}.laboratoire-limites summary{cursor:pointer;font-weight:700;color:#813400}.laboratoire-limites p{margin:.4rem 0 0;padding:.6rem .7rem;border-left:3px solid #d55e00;background:#fff3ec}.laboratoire-cellulaire section{margin-top:.7rem}.laboratoire-mesures{display:grid;grid-template-columns:1fr auto 1fr auto;gap:.22rem .7rem;margin:.4rem 0;font-size:.84rem}.laboratoire-mesures dt{color:#44515c}.laboratoire-mesures dd{margin:0;font-weight:700}.laboratoire-commandes{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}.laboratoire-cellulaire button,.laboratoire-cellulaire select{border:1px solid #9eafb9;border-radius:.45rem;background:#fffef9;color:${ENCRE};padding:.45rem .55rem;font:inherit}.laboratoire-intervention{padding:.32rem .45rem;font-size:.82rem;line-height:1.2}.laboratoire-cellulaire button{cursor:pointer}.laboratoire-intervention[aria-pressed=true]{border-color:${ORANGE};background:#fff0e9;color:#813400}.laboratoire-canvas{display:block;width:100%;height:8.5rem;margin-top:.7rem;border:1px solid #d7e1e5;background:#fffef9}.laboratoire-legende{display:flex;gap:1rem;margin:.4rem 0 0;font-size:.8rem}.laboratoire-legende span:first-child::before,.laboratoire-legende span:last-child::before{content:'';display:inline-block;width:.75rem;height:.18rem;margin-right:.3rem;vertical-align:middle;background:${ORANGE}}.laboratoire-legende span:last-child::before{background:${BLEU}}.laboratoire-cellulaire footer{margin-top:1rem}@media(max-width:900px){.laboratoire-cellulaire{inset:auto 0 0 0;width:100%;max-height:82vh;border-radius:1rem 1rem 0 0}.laboratoire-commandes{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.laboratoire-cellulaire{scroll-behavior:auto}}
+    .laboratoire-declencheur{margin:.5rem 0;border:1px solid ${BLEU};border-radius:999px;background:${IVOIRE};color:${ENCRE};padding:.55rem .9rem;font:600 .88rem/1 system-ui;cursor:pointer}.laboratoire-cellulaire{position:fixed;z-index:30;top:1rem;right:1rem;width:min(29rem,calc(100vw - 2rem));max-height:calc(100vh - 2rem);overflow:auto;box-sizing:border-box;padding:1.2rem;border:1px solid #cbd8df;border-radius:1rem;background:${IVOIRE};color:${ENCRE};box-shadow:0 1.25rem 3.5rem #18243333;font:400 .9rem/1.45 system-ui}.laboratoire-cellulaire header,.laboratoire-ligne-titre,.laboratoire-cellulaire footer{display:flex;align-items:center;justify-content:space-between;gap:.75rem}.laboratoire-cellulaire h2,.laboratoire-cellulaire h3{margin:0;color:${ENCRE}}.laboratoire-cellulaire h2{font-size:1.2rem}.laboratoire-cellulaire h3{font-size:.9rem}.laboratoire-surtitre{margin:0;color:${BLEU};font-size:.68rem;font-weight:800;letter-spacing:.12em}.laboratoire-note{padding:.65rem .75rem;border-left:3px solid ${BLEU};background:#e9f4f8}.laboratoire-limites{margin:.5rem 0 0;font-size:.84rem}.laboratoire-limites summary{cursor:pointer;font-weight:700;color:#813400}.laboratoire-limites p{margin:.4rem 0 0;padding:.6rem .7rem;border-left:3px solid #d55e00;background:#fff3ec}.laboratoire-cellulaire section{margin-top:.7rem}.laboratoire-mesures{display:grid;grid-template-columns:1fr auto 1fr auto;gap:.22rem .7rem;margin:.4rem 0;font-size:.84rem}.laboratoire-mesures dt{color:#44515c}.laboratoire-mesures dd{margin:0;font-weight:700}.laboratoire-commandes{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}.laboratoire-vitesse{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;font-size:.84rem}.laboratoire-vitesse input{flex:1}.laboratoire-valeur-vitesse{font-weight:700;min-width:3.2rem;text-align:right}.laboratoire-aparte{margin:.35rem 0 0;padding:.4rem .5rem;background:#f3f0e6;border-left:2px solid #9eafb9;font-size:.78rem;line-height:1.35}.laboratoire-cellulaire button,.laboratoire-cellulaire select{border:1px solid #9eafb9;border-radius:.45rem;background:#fffef9;color:${ENCRE};padding:.45rem .55rem;font:inherit}.laboratoire-intervention{padding:.32rem .45rem;font-size:.82rem;line-height:1.2}.laboratoire-cellulaire button{cursor:pointer}.laboratoire-intervention[aria-pressed=true]{border-color:${ORANGE};background:#fff0e9;color:#813400}.laboratoire-canvas{display:block;width:100%;height:8.5rem;margin-top:.7rem;border:1px solid #d7e1e5;background:#fffef9}.laboratoire-legende{display:flex;gap:1rem;margin:.4rem 0 0;font-size:.8rem}.laboratoire-legende span:first-child::before,.laboratoire-legende span:last-child::before{content:'';display:inline-block;width:.75rem;height:.18rem;margin-right:.3rem;vertical-align:middle;background:${ORANGE}}.laboratoire-legende span:last-child::before{background:${BLEU}}.laboratoire-cellulaire footer{margin-top:1rem}@media(max-width:900px){.laboratoire-cellulaire{inset:auto 0 0 0;width:100%;max-height:82vh;border-radius:1rem 1rem 0 0}.laboratoire-commandes{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.laboratoire-cellulaire{scroll-behavior:auto}}
   `;
   document.head.append(style);
   hote.append(bouton);
@@ -201,6 +206,8 @@ export function creerLaboratoireCellulaire(
   // journée saine. L'historique passe au pas de 3 minutes simulées pour que
   // la fenêtre des courbes couvre les 24 h.
   const journee = { active: false, heure: 6, dernierInstant: 0 };
+  let indiceVitesse = 0
+  let dernierInstantLibre = performance.now()
 
   function reglerHistorique(pas: number): void {
     for (const systeme of [traite, temoin]) {
@@ -224,6 +231,29 @@ export function creerLaboratoireCellulaire(
     }
   }
 
+  /**
+   * Les vitesses offertes. À ×1 la cellule vit à son rythme ; au-delà, on
+   * compresse. Trois mille six cents met une heure dans une seconde, ce qui
+   * rend la dédifférenciation observable en quelques secondes — sans quoi le
+   * levier « T2D » ne montre rien à qui le regarde, et une bonne partie du
+   * laboratoire n'est que décorative.
+   */
+  const VITESSES = [1, 10, 60, 600, 3600] as const;
+
+  function avancerTemps(): void {
+    // La journée a sa propre horloge et prime : deux accélérations qui se
+    // multiplieraient feraient mentir le libellé « 24 h ≈ 2 min ».
+    if (journee.active) return avancerJournee();
+    const facteur = VITESSES[indiceVitesse]!;
+    if (facteur === 1) return;
+    const maintenant = performance.now();
+    const dtReel = Math.min((maintenant - dernierInstantLibre) / 1000, 0.2);
+    dernierInstantLibre = maintenant;
+    // Le SURPLUS seulement : la boucle de rendu avance déjà d'un pas normal.
+    avancerSystemeCellulaire(traite, dtReel * (facteur - 1));
+    avancerSystemeCellulaire(temoin, dtReel * (facteur - 1));
+  }
+
   function avancerJournee(): void {
     if (!journee.active) return;
     const maintenant = performance.now();
@@ -244,7 +274,7 @@ export function creerLaboratoireCellulaire(
   }
 
   function rafraichir(): void {
-    avancerJournee();
+    avancerTemps();
     const valeurs: Array<[string, string]> = [
       ...(journee.active
         ? [['Heure de la journée', `${Math.floor(journee.heure)} h ${String(Math.floor((journee.heure % 1) * 60)).padStart(2, '0')}`] as [string, string]]
@@ -257,6 +287,17 @@ export function creerLaboratoireCellulaire(
   panneau.querySelector('.laboratoire-fermer')?.addEventListener('click', () => bouton.click());
   document.addEventListener('keydown', evenement => { if (evenement.key === 'Escape' && !panneau.hidden) bouton.click(); });
   select.addEventListener('change', () => { mesure = select.value as Mesure; derniereTaille = -1; dessiner(true); });
+  const curseurVitesse = panneau.querySelector<HTMLInputElement>('.laboratoire-curseur-vitesse')!
+  const valeurVitesse = panneau.querySelector<HTMLOutputElement>('.laboratoire-valeur-vitesse')!
+  curseurVitesse.addEventListener('input', () => {
+    indiceVitesse = Number(curseurVitesse.value)
+    const facteur = VITESSES[indiceVitesse]!
+    valeurVitesse.textContent =
+      facteur >= 3600 ? '×3 600' : facteur >= 600 ? '×600' : `×${facteur}`
+    // Repartir de maintenant : sans ça, le temps écoulé depuis le dernier
+    // réglage serait compté au nouveau facteur, d'un coup.
+    dernierInstantLibre = performance.now()
+  })
   new ResizeObserver(() => dessiner(true)).observe(canvas);
   panneau.querySelector('.laboratoire-reset')?.addEventListener('click', () => { reinitialiserSystemeCellulaire(traite); reinitialiserSystemeCellulaire(temoin); commandes.querySelectorAll('.laboratoire-intervention').forEach(commande => commande.setAttribute('aria-pressed', 'false')); derniereTaille = -1; rafraichir(); });
   panneau.querySelector('.laboratoire-csv')?.addEventListener('click', () => { const a = historique(traite, mesure), b = historique(temoin, mesure); const csv = ['index,traite,temoin', ...Array.from({ length: Math.max(a.length, b.length) }, (_, i) => `${i},${a[i] ?? ''},${b[i] ?? ''}`)].join('\n'); const lien = document.createElement('a'); lien.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); lien.download = `laboratoire-${mesure}.csv`; lien.click(); URL.revokeObjectURL(lien.href); });

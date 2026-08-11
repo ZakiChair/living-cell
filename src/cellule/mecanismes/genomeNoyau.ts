@@ -2,7 +2,8 @@ import * as THREE from 'three'
 import { CENTRE_NOYAU, RAYON_NOYAU, TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 import { CHROMOSOMES, locusDe } from '../../noyau/genome.js'
 import { PROTEINES_NUCLEAIRES } from '../../noyau/proteinesNucleaires.js'
-import type { MecanismeBrut } from './contrat.js'
+import { contexteRepos } from '../../noyau/contexte.js'
+import type { ContexteCellule, MecanismeBrut } from './contrat.js'
 
 /**
  * LE PATRIMOINE GÉNÉTIQUE : 46 chromosomes, chacun chez lui.
@@ -214,7 +215,20 @@ export function creerGenomeNoyau(): MecanismeBrut[] {
     }
   }
 
-  const animer = (temps: number): void => {
+  // Les trois facteurs d'identité, repérés dans l'échantillon : ce sont les
+  // seules protéines de cette scène dont le nombre visible CHANGE.
+  const indicesIdentite: number[] = []
+  {
+    let curseur = 0
+    for (const { proteine, nombre } of echantillon) {
+      if (proteine.nom === 'PDX1' || proteine.nom === 'MAFA' || proteine.nom === 'NEUROD1') {
+        for (let n = 0; n < nombre; n++) indicesIdentite.push(curseur + n)
+      }
+      curseur += nombre
+    }
+  }
+
+  const animer = (temps: number, contexte: ContexteCellule = contexteRepos()): void => {
     // Les territoires respirent et dérivent lentement : en interphase, un
     // chromosome bouge de quelques dixièmes de micromètre par demi-heure,
     // sans jamais quitter son domaine. C'est ce mouvement contraint que la
@@ -244,7 +258,18 @@ export function creerGenomeNoyau(): MecanismeBrut[] {
       )
       _axe.set(0, 1, 0)
       _quat.setFromAxisAngle(_axe, temps * 0.2 + i)
-      _matrice.compose(_position, _quat, _echelle.setScalar(rayonsProteines[i]!))
+      // PDX1, MAFA et NEUROD1 s'effacent avec l'identité de la cellule : une
+      // cellule dédifférenciée garde tout son génome et perd ceux qui le
+      // lisent. C'est le seul endroit du site où l'on VOIT une cellule
+      // cesser d'être une cellule bêta.
+      const facteurIdentite = indicesIdentite.includes(i)
+        ? 0.25 + 0.75 * contexte.identiteBeta
+        : 1
+      _matrice.compose(
+        _position,
+        _quat,
+        _echelle.setScalar(rayonsProteines[i]! * facteurIdentite),
+      )
       proteines.setMatrixAt(i, _matrice)
     }
     proteines.instanceMatrix.needsUpdate = true
@@ -309,7 +334,11 @@ export function creerGenomeNoyau(): MecanismeBrut[] {
         'relatif vrai : les histones écrasent tout — trente et un millions ' +
         "d'octamères —, puis les lamines de la charpente, et enfin les rares " +
         'ouvrières de la lecture, dont PDX1, MAFA et NEUROD1, le trio qui ' +
-        'décide que cette cellule est une cellule bêta.',
+        'décide que cette cellule est une cellule bêta — et ces trois-là ' +
+        'RÉTRÉCISSENT sous vos yeux si vous installez une hyperglycémie ' +
+        'chronique au laboratoire : la cellule garde tout son génome et perd ' +
+        "ceux qui le lisent. C'est la dédifférenciation, et elle précède la " +
+        'mort de plusieurs longueurs.',
       objet: groupe,
       ancre: CENTRE_NOYAU.clone(),
       rayonCadrage: RAYON_NOYAU * 1.15,

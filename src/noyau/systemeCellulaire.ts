@@ -854,19 +854,22 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     1,
   );
   // MAFA est le plus fragile des trois : il s'efface le premier, et c'est
-  // par lui que la dédifférenciation commence.
+  // par lui que la dédifférenciation commence. Aucun ne tombe à ZÉRO : une
+  // cellule dédifférenciée réduit ses facteurs de moitié ou des trois
+  // quarts — elle se tait, elle ne s'efface pas. C'est ce qui rend la
+  // reprise possible quand la glycémie revient.
   e.mafa = borner(
-    e.mafa + dt * (1 / 5400) * (recrutement * (1 - 1.35 * usure) - e.mafa),
+    e.mafa + dt * (1 / 5400) * (recrutement * (1 - 0.95 * usure) - e.mafa),
     0,
     1,
   );
   e.pdx1 = borner(
-    e.pdx1 + dt * (1 / 7200) * (0.55 + 0.45 * recrutement - 0.9 * usure - e.pdx1),
+    e.pdx1 + dt * (1 / 7200) * (0.55 + 0.45 * recrutement - 0.62 * usure - e.pdx1),
     0,
     1,
   );
   e.neurod1 = borner(
-    e.neurod1 + dt * (1 / 7200) * (0.6 + 0.4 * recrutement - 0.75 * usure - e.neurod1),
+    e.neurod1 + dt * (1 / 7200) * (0.6 + 0.4 * recrutement - 0.5 * usure - e.neurod1),
     0,
     1,
   );

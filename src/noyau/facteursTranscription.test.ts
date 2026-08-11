@@ -73,3 +73,28 @@ describe("le trio des facteurs commande le gène de l'insuline", () => {
     expect(s.expression.mafa).toBeGreaterThan(creux * 1.4);
   });
 });
+
+/**
+ * L'identité doit être VISIBLE, pas seulement modélisée.
+ *
+ * C'est le défaut que ce projet a mis deux jours à corriger : des variables
+ * simulées que rien ne montrait. Le contexte porte donc l'identité, et la
+ * scène du génome la lit — les trois facteurs y rétrécissent quand la
+ * cellule se dédifférencie.
+ */
+describe("l'identité passe du modèle à la scène", () => {
+  it("le contexte la porte, et elle tombe avec la glucotoxicité", { timeout: 30_000 }, async () => {
+    const { contexteDe } = await import("./contexte.js");
+    const saine = heuresDurant(creerSystemeCellulaire(creerEtat()), 6);
+    const malade = creerSystemeCellulaire(creerEtat());
+    malade.milieu.glucoseCible = 15;
+    heuresDurant(malade, 6);
+
+    expect(contexteDe(saine).identiteBeta).toBeGreaterThan(0.7);
+    expect(contexteDe(malade).identiteBeta).toBeLessThan(0.6);
+    // Et l'amyline agrégée suit le même chemin, sans proxy.
+    expect(contexteDe(malade).amylineAgregee).toBeGreaterThan(
+      contexteDe(saine).amylineAgregee,
+    );
+  });
+});
