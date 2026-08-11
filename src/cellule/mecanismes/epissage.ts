@@ -56,6 +56,16 @@ const DEBUT_PREMIER = 3.6
 const DUREE_TRANSCRIPTION = 10
 const DUREE_BOUCLE = 35
 
+/**
+ * La fenêtre du premier cycle, PUBLIÉE pour être mesurable.
+ *
+ * Les cinq snRNP servent les trois introns à tour de rôle : qui échantillonne
+ * la scène sans savoir où commence un cycle mélange trois histoires et lit
+ * n'importe quoi. Le mécanisme publie donc sa fenêtre, comme il publie déjà
+ * son porteur de cycle pour le harnais de période.
+ */
+export const CYCLE_PREMIER_INTRON = { debut: DEBUT_PREMIER, duree: DUREE_CYCLE }
+
 // Fractions du cycle d'un intron. L'ordre d'arrivée est celui de la biochimie :
 // U1 sur le site 5', U2 sur le point de branchement, puis le tri-snRNP en bloc.
 const P_U1 = 0.12
@@ -80,6 +90,8 @@ const I_U2 = 1
 const I_U4 = 2
 const I_U5 = 3
 const I_U6 = 4
+/** Les noms tels que la biologie les écrit, et tels que la scène les publie. */
+const NOMS_SNRNP = ['U1', 'U2', 'U4', 'U5', 'U6']
 
 /** Jaune Okabe-Ito, réservé aux deux sites qui vont se lier en 2'-5'. */
 const TEINTE_SITE = 0xf0e442
@@ -259,6 +271,9 @@ export function creerEpissage(): MecanismeBrut[] {
       materiauOrganite(TEINTES_SNRNP[i]!, { doubleFace: false }),
     )
     if (i === I_U2) corps.scale.set(1.25, 0.8, 1)
+    // Nommés : la relève de U1 par U6 est le fait central de cette scène,
+    // et un test doit pouvoir la MESURER sur la géométrie livrée.
+    corps.name = NOMS_SNRNP[i]!
     groupe.add(corps)
     snrnp.push(corps)
   }
@@ -360,11 +375,17 @@ export function creerEpissage(): MecanismeBrut[] {
       return sortie.copy(site5[k]!).addScaledVector(d1, 0.028).addScaledVector(d2, 0.044)
     }
     if (i === I_U5) return sortie.copy(jonction[k]!).addScaledVector(d2, 0.038)
-    // U6 rejoint d'abord U2 au point de branchement, puis PREND LA PLACE de U1
-    // sur le site 5' : c'est la raison même du départ de U1.
-    sortie.copy(branche[k]!).addScaledVector(d2, 0.034)
-    ancreTemp3.copy(site5[k]!).addScaledVector(d1, 0.03)
-    return sortie.lerp(ancreTemp3, lissage((p - P_DEPART_U1) / 0.08))
+    if (i === I_U6) {
+      // U6 rejoint d'abord U2 au point de branchement, puis PREND LA PLACE de
+      // U1 sur le site 5' : c'est la raison même du départ de U1.
+      sortie.copy(branche[k]!).addScaledVector(d2, 0.034)
+      ancreTemp3.copy(site5[k]!).addScaledVector(d1, 0.03)
+      return sortie.lerp(ancreTemp3, lissage((p - P_DEPART_U1) / 0.08))
+    }
+    // Le cas U6 était implicite : il attrapait « tout le reste ». Un sixième
+    // snRNP ajouté un jour aurait donc été placé en U6, en silence. Chaque
+    // acteur a maintenant sa branche, et l'oubli devient une erreur.
+    throw new Error(`snRNP ${i} sans ancrage déclaré`)
   }
 
   const animer = (temps: number): void => {

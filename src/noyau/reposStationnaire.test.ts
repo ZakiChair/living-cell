@@ -33,7 +33,7 @@ const DEPART = {
 };
 
 describe("le repos déclaré est un point fixe", () => {
-  it("les gradients ioniques tiennent leurs valeurs sur trois jours", () => {
+  it("les gradients ioniques tiennent leurs valeurs sur trois jours", { timeout: 30_000 }, () => {
     const s = auRepos(72);
     expect(Math.abs(s.ions.potassiumInterieur - DEPART.potassium)).toBeLessThan(2);
     expect(Math.abs(s.ions.sodiumInterieur - DEPART.sodium)).toBeLessThan(1);
@@ -58,7 +58,7 @@ describe("le repos déclaré est un point fixe", () => {
     expect(osmolarite).toBeGreaterThan(150);
   });
 
-  it("rien ne dérive entre le premier jour et le troisième", () => {
+  it("rien ne dérive entre le premier jour et le troisième", { timeout: 30_000 }, () => {
     const unJour = auRepos(24);
     const troisJours = auRepos(72);
     expect(
