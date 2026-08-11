@@ -6,6 +6,10 @@ const racine = fileURLToPath(new URL('.', import.meta.url))
 
 // Chaque banc est une page autonome : on les déclare toutes en points d'entrée.
 export default defineConfig({
+  // Vitest ramasse « **/*.spec.ts » par défaut : sans cette exclusion il
+  // tenterait d'exécuter les tests de bout en bout, qui importent Playwright
+  // et pilotent un navigateur.
+  test: { exclude: ['node_modules/**', 'dist/**', 'e2e/**'] },
   // Exposé sur le réseau local pour la mesure sur téléphone réel (tâche 10) :
   // l'émulation d'appareil du navigateur ne simule pas le GPU, donc elle ne
   // répond pas à la question posée.

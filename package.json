@@ -9,12 +9,14 @@
     "build": "vite build",
     "test": "tsc --noEmit && vitest run",
     "test:suivi": "vitest",
-    "relecture": "tsx outils/dossierRelecture.ts > docs/relecture-scientifique.md"
+    "relecture": "tsx outils/dossierRelecture.ts > docs/relecture-scientifique.md",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "three": "0.185.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/node": "24.10.1",
     "@types/three": "0.185.1",
     "tsx": "4.23.1",

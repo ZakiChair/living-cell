@@ -3,3 +3,6 @@ dist/
 .DS_Store
 *.log
 .vercel
+test-results/
+.playwright-mcp/
+playwright-report/

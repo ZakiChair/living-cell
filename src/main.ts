@@ -141,7 +141,11 @@ for (const [siege, liste] of parSiege) {
   const hoteFrise = document.querySelector<HTMLElement>('#reglages')
   if (hoteFrise) {
     const frise = creerFrise(mecanismes, (cle) => boutonsMecanisme.get(cle)?.click())
-    hoteFrise.append(frise.bouton, frise.panneau)
+    hoteFrise.append(frise.bouton)
+    // Même piège que le laboratoire : #reglages porte un transform et un
+    // backdrop-filter, qui capturent les descendants « position: fixed ».
+    // Le panneau va sur <body> ; seul le bouton reste dans la barre.
+    document.body.append(frise.panneau)
   }
 }
 
