@@ -3,6 +3,7 @@ import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
 import { RAYON_NOYAU, SIEGES } from '../mecanismes/contrat.js'
 import { TEINTES_CLASSE } from '../../noyau/codeGenetique.js'
 import { arntGagnant, type Atelier } from '../../noyau/atelier.js'
+import { poserSilhouette } from '../silhouette.js'
 
 /**
  * LA SCÈNE DE L'ATELIER DU GÈNE.
@@ -288,6 +289,9 @@ export function creerSceneAtelier(): SceneAtelier {
   ribosome.position.x = X_RIBOSOME
   groupe.add(ribosome)
 
+  // Deux boules : la forme de repli, celle que la scène garde si la
+  // silhouette cristallographique n'arrive pas. Elle dit déjà le fait qui
+  // compte — deux sous-unités de tailles nettement différentes.
   const grande = new THREE.Mesh(
     new THREE.IcosahedronGeometry(RAYON_GRANDE, 2),
     materiauOrganite(TEINTES.ribosome),
@@ -301,6 +305,26 @@ export function creerSceneAtelier(): SceneAtelier {
   petite.position.y = -RAYON_GRANDE * 0.72
   petite.scale.set(1.1, 0.8, 1)
   ribosome.add(grande, petite)
+
+  // ── LA VRAIE FORME ──────────────────────────────────────────────────────
+  // 6EK0 : le ribosome 80S HUMAIN, résolu par cryo-microscopie électronique.
+  // Onze mille sept cents carbones α, un par acide aminé — la forme mesurée,
+  // pas dessinée. C'est le seul objet du site qui ne soit pas une invention
+  // de géomètre, et c'est l'objet-héros : celui à qui l'on donne le brin.
+  //
+  // Le budget tient parce qu'il est UNIQUE : 11 725 instances en un seul
+  // appel de dessin. Les cent cinquante ribosomes du tapis de réticulum
+  // resteront procéduraux — ils coûteraient un million et demi d'instances.
+  poserSilhouette(
+    '6EK0',
+    ribosome,
+    { rayon: RAYON_GRANDE * 1.5, materiau: materiauOrganite(TEINTES.ribosome) },
+    () => {
+      // La silhouette a pris le relais : les deux boules s'effacent.
+      grande.visible = false
+      petite.visible = false
+    },
+  )
   // Les deux sous-unités ne sont assemblées que lorsqu'elles tiennent un brin.
   ribosome.visible = true
 

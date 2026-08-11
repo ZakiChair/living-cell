@@ -400,7 +400,16 @@ export const FICHE_ATELIER = {
     'bases proviennent de la région codante du gène INS humain, collationnée sur GenBank ' +
     '(NM_000207.3) et épinglées base par base par un test.',
   ellision:
-    "C'EST UN PLATEAU, pas une vue de la cellule : les organites sont retirés " +
+    "LE RIBOSOME, LUI, N'EST PAS DESSINÉ : c'est la structure 6EK0 du ribosome " +
+    "80S humain, résolue par cryo-microscopie électronique, avec un carbone α " +
+    "par acide aminé — onze mille sept cents billes qui ne doivent leur forme " +
+    "à aucun géomètre. Les billes se recouvrent volontairement pour rendre une " +
+    "SURFACE : à cette échelle, un atome n'est pas une information, la " +
+    "silhouette en est une. Les autres protéines du site restent des formes " +
+    "procédurales — les cent cinquante ribosomes du tapis de réticulum " +
+    "coûteraient un million et demi d'instances, celui-ci est seul et les " +
+    "assume. Si le fichier n'arrive pas, la scène retombe sur deux boules et " +
+    "continue. C'EST UN PLATEAU, pas une vue de la cellule : les organites sont retirés " +
     "le temps de la scène, car à trois cents nanomètres le noyau n'est plus un " +
     "contexte mais une paroi opaque devant le sujet. Le fragment d'enveloppe et " +
     "l'anneau du pore sont réduits à 150 nm de côté — un pore réel en fait 120 " +
