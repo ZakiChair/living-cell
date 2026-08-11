@@ -149,7 +149,19 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 8 ms · 1,5 s · 160 nm · 130 · 200 · 195 · 160 · 20 · 320 · 820
 
-### 2.6 Réplication : la fourche et ses fragments d'Okazaki
+### 2.6 Le patrimoine génétique : 46 territoires, et une adresse
+
+**Siège** : Noyau · **Facteur temporel affiché** : accéléré ×90
+
+**Justification du facteur.** Un territoire chromosomique dérive de quelques dixièmes de micromètre par demi-heure en interphase — un mouvement contraint, jamais une migration. La ronde tient ici en 20 s, soit un accéléré d'environ ×90. Les protéines, elles, diffusent bien plus vite : leur agitation est ralentie de plusieurs ordres de grandeur.
+
+**Description lue par l’étudiant.** Les chromosomes en X que dessinent les manuels n'existent qu'en métaphase, quelques dizaines de minutes par division. Le reste du temps — donc presque toujours — ils sont décondensés, mais PAS mélangés : chacun occupe un TERRITOIRE dont il ne sort pas, et qu'on peut peindre en couleur. Il y en a quarante-six ici, à leur volume relatif vrai. Leur place n'est pas un hasard : les chromosomes RICHES EN GÈNES siègent au centre, les pauvres contre l'enveloppe, là où la chromatine est compactée et muette — la teinte suit cette densité, du bleu profond des muets au rose des bavards. Le 19, le plus dense du génome, est au cœur ; le 18, de taille voisine mais pauvre, au bord. Et le point jaune qui pulse ? C'est INS, le gène de l'insuline, à son adresse exacte : bande 11p15.5, tout au bout du bras court d'un chromosome 11 — 1 431 paires de bases dans 135 millions, une part sur 94 403. Tout ce que cette cellule fabrique vient de ce point-là. Autour dérivent les protéines qui font vivre le noyau, en nombre relatif vrai : les histones écrasent tout — trente et un millions d'octamères —, puis les lamines de la charpente, et enfin les rares ouvrières de la lecture, dont PDX1, MAFA et NEUROD1, le trio qui décide que cette cellule est une cellule bêta.
+
+**Ellision — ce qui est coupé ou échantillonné.** Un territoire est dessiné comme une SPHÈRE : la forme réelle est irrégulière et interpénétrée aux bords, où les gènes actifs sortent en boucles. Le caryotype montré est XY ; une cellule bêta peut être XX, et l'un des deux X y serait alors condensé en corpuscule de Barr. Le point jaune du gène INS fait 75 nm pour 1 431 paires de bases, soit 1/94 403 de son chromosome : à l'échelle vraie il serait invisible, et son jumeau sur le second chromosome 11 n'est pas marqué. Les protéines sont échantillonnées en racine quatrième de leur abondance — sinon les histones prendraient toutes les instances : c'est leur RAPPORT qui est lisible, pas leur compte. Les nucléosomes, la chromatine dense et le nucléole ont leurs propres objets dans la scène de la cellule ; ici, on ne montre que la carte.
+
+> **Chiffres à contrôler** : 20 s · 20 · 90 · 19 · 18 · 11 · 1 431 · 135 · 94 · 403 · 75 nm · 75
+
+### 2.7 Réplication : la fourche et ses fragments d'Okazaki
 
 **Siège** : Noyau · **Facteur temporel affiché** : ralenti ×3
 
@@ -161,7 +173,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 150 nt · 30 · 150 · 0,5 % · 22
 
-### 2.7 Mitose : le fuseau, la cohésine, le pincement
+### 2.8 Mitose : le fuseau, la cohésine, le pincement
 
 **Siège** : Cytosquelette · **Facteur temporel affiché** : accéléré ×120
 
@@ -173,7 +185,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 30 s · 30 · 120 · 0,5 %
 
-### 2.8 Transcription de l'ADN en ARN
+### 2.9 Transcription de l'ADN en ARN
 
 **Siège** : Noyau · **Facteur temporel affiché** : ralenti ×20
 
@@ -185,7 +197,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 17 ms · 0,33 s · 3,5 s · 60 nt · 3,6 kb/min · 6 kb/min · 2 kb/min · 60 · 17 · 33 · 20 · 10 · 4 nm · 500 pb · 21 pb · 5 nm · 26 s · 2,5 nm · 500 · 21 · 26
 
-### 2.9 Épissage de l'ARN par le spliceosome
+### 2.10 Épissage de l'ARN par le spliceosome
 
 **Siège** : Noyau · **Facteur temporel affiché** : accéléré ×50
 
@@ -197,7 +209,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 16 737 pb · 2 kb/min · 6 kb/min · 60 nt · 3,6 kb/min · 10 · 50 · 16 737 · 60 · 45 · 5 419 pb · 1,63 µm · 120 pb · 0,036 µm · 0,5 % · 8 % · 5 419 · 63 · 48 · 120 · 036
 
-### 2.10 Export de l'ARN messager
+### 2.11 Export de l'ARN messager
 
 **Siège** : Enveloppe nucléaire · **Facteur temporel affiché** : ralenti ×200
 
@@ -209,7 +221,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 350 ms · 200 · 50 · 350 · 2,5 ms · 7,1 ms
 
-### 2.11 Traduction : un polysome au travail
+### 2.12 Traduction : un polysome au travail
 
 **Siège** : Cytosol · **Facteur temporel affiché** : ralenti ×20
 
@@ -221,7 +233,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20 · 0,9 nm · 1 nm · 300 · 35
 
-### 2.12 Translocation : SRP, Sec61 et peptide signal
+### 2.13 Translocation : SRP, Sec61 et peptide signal
 
 **Siège** : Réticulum endoplasmique rugueux · **Facteur temporel affiché** : ralenti ×20
 
@@ -233,7 +245,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 170 ms · 3,4 s · 170 · 20
 
-### 2.13 Repliement : BiP, PDI et les trois ponts
+### 2.14 Repliement : BiP, PDI et les trois ponts
 
 **Siège** : Réticulum endoplasmique rugueux · **Facteur temporel affiché** : accéléré ×30
 
@@ -245,7 +257,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 20 s · 20 · 30
 
-### 2.14 Golgi : citernes qui mûrissent, sucres qui s'ajoutent
+### 2.15 Golgi : citernes qui mûrissent, sucres qui s'ajoutent
 
 **Siège** : Appareil de Golgi · **Facteur temporel affiché** : accéléré ×50
 
@@ -257,7 +269,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 24 s · 24 · 50
 
-### 2.15 Maturation du granule : convertases, peptide C, cristal de zinc
+### 2.16 Maturation du granule : convertases, peptide C, cristal de zinc
 
 **Siège** : Appareil de Golgi · **Facteur temporel affiché** : accéléré ×150
 
@@ -269,7 +281,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 24 s · 24 · 150
 
-### 2.16 Kinésine et dynéine sur le microtubule
+### 2.17 Kinésine et dynéine sur le microtubule
 
 **Siège** : Cytosquelette · **Facteur temporel affiché** : ralenti ×100
 
@@ -281,7 +293,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 8 nm · 800 nm · 10 ms · 800 · 10 · 1 nm · 0,9 µm · 100 · 52 000
 
-### 2.17 Instabilité dynamique du microtubule
+### 2.18 Instabilité dynamique du microtubule
 
 **Siège** : Cytosquelette · **Facteur temporel affiché** : accéléré ×3
 
@@ -293,7 +305,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 1,8 µm · 17 µm · 0,38 µm · 17 · 38 · 8 nm · 160
 
-### 2.18 Endocytose par puits de clathrine
+### 2.19 Endocytose par puits de clathrine
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : accéléré ×2,3
 
@@ -305,7 +317,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 60 s · 20 s · 45 s · 30 · 60 · 20 · 45
 
-### 2.19 Sécrétion d'insuline : calcium, SNARE et granule
+### 2.20 Sécrétion d'insuline : calcium, SNARE et granule
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : deux temps : accéléré ×5, puis ralenti ×5 000
 
@@ -317,7 +329,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 1 ms · 5 s · 5 000 · 2 nm · 150 nm · 12 nm · 150 · 12 · 13
 
-### 2.20 Pompe Na⁺/K⁺ et canal potassique
+### 2.21 Pompe Na⁺/K⁺ et canal potassique
 
 **Siège** : Membrane plasmique · **Facteur temporel affiché** : ralenti ×1 000
 
@@ -329,7 +341,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 20 ms · 20
 
-### 2.21 Dégradation par le protéasome
+### 2.22 Dégradation par le protéasome
 
 **Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×10
 
@@ -341,7 +353,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 23 s · 2,3 s · 23 · 10 · 05 · 1,3 nm · 3 µm
 
-### 2.22 Autophagie : le phagophore, LC3 et le recyclage
+### 2.23 Autophagie : le phagophore, LC3 et le recyclage
 
 **Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×30
 
@@ -353,7 +365,7 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 20 s · 20 · 30
 
-### 2.23 Apoptose : la mitochondrie signe, les caspases exécutent
+### 2.24 Apoptose : la mitochondrie signe, les caspases exécutent
 
 **Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×120
 
@@ -365,7 +377,31 @@ chiffres du site qui pilotent une simulation plutôt que de décorer une animati
 
 > **Chiffres à contrôler** : 30 s · 30 · 120
 
-### 2.24 L'îlot de Langerhans : la cellule dans son organe
+### 2.25 CRISPR-Cas9 : le PAM, la R-loop, la cassure double-brin
+
+**Siège** : Noyau · **Facteur temporel affiché** : accéléré ×180
+
+**Justification du facteur.** Trouver une cible dans trois milliards de bases prend des heures : Cas9 teste des dizaines de millions de PAM par collisions successives, une milliseconde chacun. La coupure elle-même, une fois l'appariement fait, prend moins d'une seconde. Le cycle entier tient ici en 30 s, soit un accéléré d'environ ×180 — mais les trois horloges qu'il contient ne sont pas au même facteur, et l'ellision le dit.
+
+**Description lue par l’étudiant.** Cas9 ne lit pas le génome comme un texte : il le PERCUTE au hasard. À chaque collision, une seule question, tranchée en une milliseconde : y a-t-il un PAM — le motif NGG, en orange ? S'il n'y en a pas, il repart aussitôt, et c'est ce que font les autres Cas9 qu'on voit rebondir. S'il y en a un, alors seulement il ouvre la double hélice et présente son ARN GUIDE : vingt bases qui s'apparient une à une, du PAM vers l'amont, comme une fermeture éclair — un seul mésappariement près du PAM et tout se défait. Quand les vingt tiennent, la protéine change de forme et arme ses DEUX lames : HNH, en rose, coupe le brin apparié au guide ; RuvC, en vert, coupe l'autre. La cassure est à bouts francs, trois paires de bases en amont du PAM — et les deux moitiés du chromosome s'écartent. Ce qui se passe ensuite n'est plus de CRISPR : c'est la cellule qui referme la plaie, et c'est en réparant mal qu'elle casse le gène. L'édition du génome est un accident de réparation qu'on provoque à un endroit choisi.
+
+**Ellision — ce qui est coupé ou échantillonné.** LA RECHERCHE EST ÉCRASÉE, PAS ACCÉLÉRÉE : on montre cinq essais ratés là où il y en a des millions, et le temps réel de la traque — des heures — ne tient dans aucun facteur. À l'inverse, la coupure est RALENTIE pour être visible. Quarante-six paires de bases sont dessinées pour un génome de trois milliards, et un grain par base au lieu des vingt atomes qu'elle compte. Ce qui SUIT la coupure n'est pas montré et n'est pas de CRISPR : c'est la cellule qui répare, mal par NHEJ — elle perd ou ajoute des bases, et c'est ainsi qu'on éteint un gène — ou bien par HDR sur matrice, plus rare, qui le réécrit. Enfin Cas9 est ici SpCas9, celle de Streptococcus pyogenes : son PAM est NGG, d'autres orthologues en ont d'autres, et les éditeurs de base modernes ne coupent plus du tout les deux brins.
+
+> **Chiffres à contrôler** : 30 s · 30 · 180
+
+### 2.26 CRISPR-Cas13 : couper l’ARN, et tout ce qui passe
+
+**Siège** : Cytosol · **Facteur temporel affiché** : accéléré ×50
+
+**Justification du facteur.** Trouver un ARN messager parmi les centaines de milliers du cytosol prend une quinzaine de minutes ; le cycle tient ici en 18 s, soit un accéléré d'environ ×50. Le clivage collatéral, lui, est bien plus rapide : une fois Cas13 activé, des milliers de coupures par minute.
+
+**Description lue par l’étudiant.** Cas13 est le cousin qui coupe l'ARN. Deux choses le séparent de Cas9, et elles changent tout. La première : IL N’A PAS DE PAM. Rien ne l’autorise à s’arrêter quelque part, rien ne le freine — il suffit que la séquence soit là et que le repliement de l'ARN la laisse accessible. La seconde est plus surprenante : une fois apparié à sa cible, ses deux domaines HEPN se rejoignent en un site catalytique unique, placé À L'EXTÉRIEUR de la protéine — et il devient une nucléase GÉNÉRALE. Il coupe sa cible, puis les ARN qui passent à sa portée, innocents compris : c'est le clivage COLLATÉRAL, qu'on voit ici hacher les voisins verts. En thérapie, c’est un défaut qu’il faut contenir. En diagnostic, c’est devenu le principe d’un test : dans SHERLOCK, on ajoute des ARN rapporteurs qui s’allument en étant coupés — un seul ARN viral suffit à déclencher le massacre, et le massacre se voit à l’œil nu. Le défaut est devenu la mesure.
+
+**Ellision — ce qui est coupé ou échantillonné.** Sept ARN voisins pour les centaines de milliers d'un cytosol, et une dizaine de grains par ARN. La cible est dessinée nue : un ARN messager réel est empaqueté de protéines, et son repliement décide de son accessibilité — c'est la première difficulté de la méthode. Le PFS, cette préférence de base juste à côté de la cible que montrent certains orthologues, n'est pas figuré. Ce qui suit la coupure — la dégradation des morceaux par les exonucléases — est hors cadre, et le rapporteur fluorescent du test SHERLOCK aussi.
+
+> **Chiffres à contrôler** : 18 s · 18 · 50
+
+### 2.27 L'îlot de Langerhans : la cellule dans son organe
 
 **Siège** : Îlot de Langerhans · **Facteur temporel affiché** : accéléré ×15
 
@@ -542,4 +578,4 @@ Ce dossier couvre le TEXTE. Trois choses lui échappent et demandent la page :
 - **Le geste** : donner un brin d'ARN à un ribosome, et couper l'oxygène pour voir la
   traduction s’arrêter.
 
-*Généré depuis 24 mécanismes, 18 familles d'organites et 90 bases.*
+*Généré depuis 27 mécanismes, 18 familles d'organites et 90 bases.*

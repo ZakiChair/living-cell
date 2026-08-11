@@ -29,6 +29,9 @@ export const CLES_MECANISMES = [
   "beta-oxydation",
   "krebs",
   "respiration",
+  "genome-noyau",
+  "crispr-cas9",
+  "crispr-cas13",
   "replication-adn",
   "mitose",
   "transcription",
@@ -970,6 +973,14 @@ export function activiteMecanisme(
     case "beta-oxydation": return borner(f.betaOxydation / Math.max(EPSILON, p.vmaxBetaOxydation), 0, 1);
     case "krebs": return borner(f.krebs / Math.max(EPSILON, p.vmaxRespiration), 0, 1);
     case "respiration": return borner(f.respiration / Math.max(EPSILON, p.vmaxRespiration), 0, 1);
+    // Le patrimoine génétique dérive toujours : son horloge ne dépend que
+    // de l'énergie disponible, jamais d'un flux — un noyau ne s'arrête pas.
+    case "genome-noyau": return borner(0.25 + 0.75 * borner(atpRelatif(systeme.energie), 0, 1), 0, 1);
+    // CRISPR est un OUTIL : rien dans la cellule ne le régule. Il tourne à
+    // vitesse constante tant qu'il y a de quoi vivre — c'est le seul
+    // mécanisme du site qui vienne du dehors.
+    case "crispr-cas9":
+    case "crispr-cas13": return borner(0.4 + 0.6 * borner(atpRelatif(systeme.energie), 0, 1), 0, 1);
     case "replication-adn": return borner(f.cycleCellulaire, 0, 1);
     case "mitose": return borner(f.cycleCellulaire, 0, 1);
     case "transcription": return borner(f.transcription / Math.max(EPSILON, p.transcriptionINSMax), 0, 1);

@@ -20,6 +20,8 @@ import { creerReplicationAdn } from './replicationAdn.js'
 import { creerMitose } from './mitose.js'
 import { creerAutophagie } from './autophagie.js'
 import { creerApoptose } from './apoptose.js'
+import { creerGenomeNoyau } from './genomeNoyau.js'
+import { creerCrispr } from './crispr.js'
 import { creerIlot } from './ilot.js'
 
 /**
@@ -54,7 +56,8 @@ export function creerMecanismes(): Mecanisme[] {
     ...creerBetaOxydation(),
     ...creerKrebs(),
     ...creerRespiration(),
-    // Information — d'abord copier le livre, puis le lire
+    // Information — d'abord le livre lui-même, puis le copier et le lire
+    ...creerGenomeNoyau(),
     ...creerReplicationAdn(),
     ...creerMitose(),
     ...creerTranscription(),
@@ -72,6 +75,8 @@ export function creerMecanismes(): Mecanisme[] {
     // Le destin — survivre en se recyclant, ou mourir proprement
     ...creerAutophagie(),
     ...creerApoptose(),
+    // L'outil venu du dehors : des ciseaux programmables
+    ...creerCrispr(),
     // Et le zoom arrière final : la cellule dans son organe
     ...creerIlot(),
     ]),
