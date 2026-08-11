@@ -52,8 +52,11 @@ if (atomes.length === 0) {
 
 const plat = centrerEtNormaliser(atomes)
 
-await mkdir('assets/silhouettes', { recursive: true })
-const chemin = `assets/silhouettes/${code.toLowerCase()}.bin`
+// public/ : c'est le SEUL dossier que Vite copie tel quel dans le build.
+// Écrire ailleurs produisait des binaires absents de la production, et le
+// repli des scènes masquait le défaut en silence.
+await mkdir('public/assets/silhouettes', { recursive: true })
+const chemin = `public/assets/silhouettes/${code.toLowerCase()}.bin`
 await writeFile(chemin, Buffer.from(plat.buffer))
 
 const chaines = [...new Set(atomes.map((a) => a.chaine))].sort()

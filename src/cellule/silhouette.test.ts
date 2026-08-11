@@ -5,7 +5,7 @@ import { creerAmasSilhouette, type Silhouette } from './silhouette.js'
 
 /** Lit un binaire de silhouette depuis le disque, comme le navigateur le ferait. */
 async function lire(code: string): Promise<Silhouette> {
-  const tampon = await readFile(new URL(`../../assets/silhouettes/${code}.bin`, import.meta.url))
+  const tampon = await readFile(new URL(`../../public/assets/silhouettes/${code}.bin`, import.meta.url))
   const points = new Float32Array(
     tampon.buffer.slice(tampon.byteOffset, tampon.byteOffset + tampon.byteLength),
   )
@@ -102,5 +102,43 @@ describe("l'amas d'instances d'une silhouette", () => {
     // 20 triangles par bille : le budget que la scène doit assumer.
     const triangles = amas.count * 20
     expect(triangles).toBeLessThan(300_000)
+  })
+})
+
+/**
+ * LE DÉFAUT QUE CE TEST EXISTE POUR EMPÊCHER.
+ *
+ * Les binaires vivaient dans `assets/silhouettes/`, à la racine — un dossier
+ * que Vite ne copie PAS dans le build, et que `.gitignore` excluait par
+ * dessus le marché. Résultat : le ribosome cristallographique marchait en
+ * développement et retombait silencieusement sur deux boules en production,
+ * où le fichier renvoyait 404. Le repli, qui est une bonne chose, masquait
+ * le défaut au lieu de le signaler.
+ *
+ * Deux invariants pour que cela ne se reproduise pas : les binaires sont
+ * SOUS `public/` (le seul dossier copié tel quel), et ils sont VERSIONNÉS.
+ */
+describe('les silhouettes sont vraiment livrées', () => {
+  it('vivent sous public/, le seul dossier que le build copie', async () => {
+    const { readdir } = await import('node:fs/promises')
+    const fichiers = await readdir(new URL('../../public/assets/silhouettes/', import.meta.url))
+    expect(fichiers.filter((f) => f.endsWith('.bin')).sort()).toEqual([
+      '1ffk.bin',
+      '2zxe.bin',
+      '4v6x.bin',
+      '6ek0.bin',
+    ])
+  })
+
+  it('ne sont pas exclues du dépôt : un binaire ignoré est un 404 en production', async () => {
+    const { readFile } = await import('node:fs/promises')
+    const ignore = await readFile(new URL('../../.gitignore', import.meta.url), 'utf8')
+    for (const ligne of ignore.split('\n').map((l) => l.trim())) {
+      if (!ligne || ligne.startsWith('#')) continue
+      expect(
+        'public/assets/silhouettes/6ek0.bin'.includes(ligne.replace(/\/$/, '')),
+        `« ${ligne} » exclurait les silhouettes du dépôt`,
+      ).toBe(false)
+    }
   })
 })
