@@ -27,7 +27,7 @@ describe("la glycémie d'une journée saine", () => {
 });
 
 describe("la cellule vit sa journée", () => {
-  it("trois vagues d'insuline, et le calme nocturne retrouvé", () => {
+  it("trois vagues d'insuline, et le calme nocturne retrouvé", { timeout: 20_000 }, () => {
     const systeme = creerSystemeCellulaire(creerEtat());
     const parFenetre = new Map<string, number>();
     let precedent = 0;

@@ -116,6 +116,18 @@ export interface MilieuCellulaire {
    * repliement, d'un seul geste.
    */
   thapsigargine: number;
+  /**
+   * Adrénaline (0 à 1) : le frein d'urgence. Le récepteur α2, couplé Gi,
+   * inhibe la machinerie d'exocytose EN AVAL du calcium — pendant l'effort
+   * ou l'hypoglycémie, une cellule pleine de calcium ne sécrète plus.
+   */
+  adrenaline: number;
+  /**
+   * Insulite auto-immune (0 à 1) : le diabète de type 1. Les lymphocytes
+   * tuent les bêta ; la masse fonctionnelle fond, la sécrétion avec elle, à
+   * machinerie intacte. Cinétique compressée (des mois en quelques heures).
+   */
+  insulite: number;
 }
 
 export interface Metabolites {
@@ -374,6 +386,8 @@ export function creerSystemeCellulaire(
       diazoxide: 0,
       glp1: 0,
       thapsigargine: 0,
+      adrenaline: 0,
+      insulite: 0,
     },
     metabolites: {
       glucose: 2.2,
@@ -761,16 +775,27 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   // Seul le pool AMARRÉ peut fusionner, et il fusionne VITE : la première
   // phase de la sécrétion est sa vidange, en deux ou trois minutes.
   const CAPACITE_AMARRES = 1.2;
+  // Deux facteurs que la vraie sécrétion porte toujours : la MASSE
+  // fonctionnelle (l'insulite la fait fondre — chaque survivante marche,
+  // il y en a juste moins) et le frein α2 de l'adrénaline, DISTAL au
+  // calcium — la machinerie d'exocytose elle-même est inhibée.
+  const masseFonctionnelle = borner(s.viabilite, 0, 1);
+  const freinAlpha2 = 1 - 0.85 * borner(milieu.adrenaline, 0, 1);
   f.secretion =
     3.0 * p.secretionMax * calciumHill * borner(atp, 0, 1) * incretine *
+    masseFonctionnelle * freinAlpha2 *
     (e.granulesAmarres / (0.35 + e.granulesAmarres));
   // La réserve rejoint la membrane bien plus lentement — transport sur
   // l'actine corticale, amorçage — et c'est ELLE qui fixe la deuxième phase :
   // un plateau sous le pic, jamais un arrêt.
   // Le recrutement est lui-même calcium-dépendant : la deuxième phase GRANDIT
   // avec le stimulus, elle ne fait pas que survivre au pic.
+  // La masse et le frein α2 portent sur TOUTE la machinerie : en régime,
+  // sécrétion = mobilisation (conservation), un frein sur la seule fusion
+  // ne serait que transitoire. L'α2 baisse l'AMPc, qui pilote aussi le
+  // recrutement ; l'insulite retire des cellules entières.
   const mobilisation =
-    0.006 *
+    0.006 * masseFonctionnelle * (1 - 0.75 * borner(milieu.adrenaline, 0, 1)) *
     (0.3 + 0.7 * (calciumHill / (0.15 + calciumHill))) *
     (1 - borner(e.granulesAmarres / CAPACITE_AMARRES, 0, 1)) *
     (e.granulesReserve / (2 + e.granulesReserve)) *
@@ -858,12 +883,12 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
   s.autophagie = borner(0.08 + 0.62 * s.stressRE + 0.25 * s.ros + 0.12 * (1 - borner(atp, 0, 1)), 0, 1);
   f.autophagie = 0.025 * s.autophagie * borner(atp, 0, 1);
   s.dommage = borner(
-    s.dommage + dt * (0.055 * Math.max(0, s.ros - 0.35) + 0.045 * Math.max(0, s.stressRE - 0.45) - 0.025 * s.autophagie * (1 - s.dommage)),
+    s.dommage + dt * (0.055 * Math.max(0, s.ros - 0.35) + 0.045 * Math.max(0, s.stressRE - 0.45) + 0.00008 * borner(milieu.insulite, 0, 1) - 0.025 * s.autophagie * (1 - s.dommage)),
     0,
     1,
   );
   s.viabilite = borner(
-    s.viabilite - dt * (0.025 * s.dommage + 0.015 * Math.max(0, s.stressRE - 0.75) + 0.020 * Math.max(0, 0.25 - atp)),
+    s.viabilite - dt * (0.025 * s.dommage + 0.015 * Math.max(0, s.stressRE - 0.75) + 0.020 * Math.max(0, 0.25 - atp) + 0.00012 * borner(milieu.insulite, 0, 1)),
     0,
     1,
   );
@@ -1017,5 +1042,9 @@ export function estConditionTraitee(systeme: SystemeCellulaire): boolean {
     systeme.milieu.bloqueurCalcique > 0 ||
     systeme.milieu.stressRE > 0 ||
     systeme.milieu.sulfonylure > 0 ||
-    systeme.milieu.diazoxide > 0;
+    systeme.milieu.diazoxide > 0 ||
+    systeme.milieu.glp1 > 0 ||
+    systeme.milieu.thapsigargine > 0 ||
+    systeme.milieu.adrenaline > 0 ||
+    systeme.milieu.insulite > 0;
 }
