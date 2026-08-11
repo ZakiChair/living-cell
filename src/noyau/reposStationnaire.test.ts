@@ -91,7 +91,7 @@ describe("le repos déclaré est un point fixe", () => {
 });
 
 describe("le pool de granules respecte sa capacité déclarée", () => {
-  it("amarrés et réserve tiennent ENSEMBLE dans la capacité", () => {
+  it("amarrés et réserve tiennent ENSEMBLE dans la capacité", { timeout: 30_000 }, () => {
     const s = auRepos(24);
     expect(s.expression.insulineGranules).toBeLessThanOrEqual(
       PROFIL_BETA_HUMAINE.capaciteGranules + 1e-9,

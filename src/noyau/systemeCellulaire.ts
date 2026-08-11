@@ -183,6 +183,29 @@ export interface ExpressionProteique {
   granulesReserve: number;
   insulineSecretee: number;
   proteinesMalRepliees: number;
+  /**
+   * PDX1, MAFA, NEUROD1 : activité nucléaire relative, 0 à 1.
+   *
+   * Le trio qui décide qu'une cellule est une cellule bêta. Ils commandent
+   * le gène INS — et leur perte est le mécanisme de la DÉDIFFÉRENCIATION :
+   * sous glucotoxicité, la cellule cesse d'être une cellule bêta bien avant
+   * de mourir. MAFA s'efface le premier, c'est le plus fragile des trois.
+   */
+  pdx1: number;
+  mafa: number;
+  neurod1: number;
+  /**
+   * Amyline (IAPP) agrégée, en unités du modèle.
+   *
+   * La SECONDE hormone du granule, faite dans le même granule que
+   * l'insuline et sécrétée avec elle, dans un rapport d'environ un pour
+   * vingt. L'amyline humaine a la mauvaise propriété de s'agréger en
+   * fibrilles amyloïdes — celle du rat ne le fait pas, ce qui explique
+   * pourquoi tant de modèles animaux ratent ce mécanisme. Les dépôts
+   * amyloïdes se retrouvent dans plus de neuf pancréas de type 2 sur dix,
+   * et les oligomères, plus que les fibres, abîment la membrane.
+   */
+  amylineAgregee: number;
 }
 
 export interface StressCellulaire {
@@ -237,6 +260,8 @@ export interface PointHistorique {
   secretion: number;
   stress: number;
   viabilite: number;
+  /** Identité bêta : la moyenne géométrique du trio de facteurs. */
+  identite: number;
 }
 
 export interface SystemeCellulaire {
@@ -474,6 +499,10 @@ export function creerSystemeCellulaire(
       granulesReserve: 7.1,
       insulineSecretee: 0,
       proteinesMalRepliees: 0.05,
+      pdx1: 0.92,
+      mafa: 0.88,
+      neurod1: 0.9,
+      amylineAgregee: 0,
     },
     stress: {
       ros: 0.04,
@@ -802,7 +831,56 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     0.3 +
     0.9 *
       (Math.pow(milieu.glucoseExterne, 2) / (64 + Math.pow(milieu.glucoseExterne, 2)));
-  f.transcription = p.transcriptionINSMax * transcriptionRegime * (1 + 0.015 * bruitCentre(systeme));
+  // ── Les facteurs de transcription, et l'identité de la cellule ──────────
+  // Le glucose les RECRUTE (PDX1 entre au noyau, MAFA est stabilisé), le
+  // stress oxydant et la charge chronique les EFFACENT. Constantes de temps
+  // de l'ordre de l'heure : une identité cellulaire ne se perd pas en une
+  // minute, et ne se retrouve pas plus vite.
+  const recrutement = 0.62 + 0.38 * glucoseSignal;
+  // L'usure a un SEUIL, et c'est un fait : un pic post-prandial à 12 mM est
+  // le métier de cette cellule, pas une agression. Seule une charge
+  // chronique installée — au-delà de la moitié de l'échelle, soit une
+  // glycémie durablement supérieure à ~11,5 mM — commence à effacer les
+  // facteurs. Sans ce seuil, un repas dédifférenciait la cellule.
+  // Chaque terme a son SEUIL, et pour la même raison : le métier normal de
+  // cette cellule — un pic post-prandial, la respiration qui s'accélère et
+  // ses radicaux — ne doit pas effacer son identité. Seuls les excès
+  // installés le font.
+  const usure = borner(
+    1.7 * Math.max(0, s.chargeChronique - 0.5) +
+      0.6 * Math.max(0, s.ros - 0.2) +
+      0.5 * Math.max(0, s.stressRE - 0.15),
+    0,
+    1,
+  );
+  // MAFA est le plus fragile des trois : il s'efface le premier, et c'est
+  // par lui que la dédifférenciation commence.
+  e.mafa = borner(
+    e.mafa + dt * (1 / 5400) * (recrutement * (1 - 1.35 * usure) - e.mafa),
+    0,
+    1,
+  );
+  e.pdx1 = borner(
+    e.pdx1 + dt * (1 / 7200) * (0.55 + 0.45 * recrutement - 0.9 * usure - e.pdx1),
+    0,
+    1,
+  );
+  e.neurod1 = borner(
+    e.neurod1 + dt * (1 / 7200) * (0.6 + 0.4 * recrutement - 0.75 * usure - e.neurod1),
+    0,
+    1,
+  );
+  // Le promoteur de l'insuline porte les sites A3 (PDX1), C1 (MAFA) et E1
+  // (NEUROD1) : les trois agissent ENSEMBLE, et leur produit dit qu'aucun ne
+  // suffit seul. Un plancher tient la transcription basale.
+  const commandeDuGene = borner(
+    0.12 + 0.88 * Math.cbrt(e.pdx1 * e.mafa * e.neurod1),
+    0,
+    1,
+  );
+  f.transcription =
+    p.transcriptionINSMax * transcriptionRegime * commandeDuGene *
+    (1 + 0.015 * bruitCentre(systeme));
   f.maturation = 0.030 * maturationRegime * e.preArnINS;
   f.exportNucleaire = 0.025 * exportRegime * e.arnINSNucleaire;
   f.traduction =
@@ -931,6 +1009,31 @@ function sousPas(systeme: SystemeCellulaire, dt: number): void {
     0,
     1,
   );
+  // ── L'amyline et ses agrégats ──────────────────────────────────────────
+  // Elle est faite avec l'insuline, dans le même granule et par les mêmes
+  // convertases. Tant que le débit reste normal, elle part avec elle. Mais
+  // une cellule qui SUR-produit agrège : la concentration locale dépasse ce
+  // que les chaperons tiennent en solution, et les oligomères s'accumulent
+  // au dehors, où ils percent les membranes. Le nettoyage est lent —
+  // l'autophagie y aide, et c'est un fait publié.
+  // Un pour vingt : c'est le rapport molaire IAPP / insuline sécrété.
+  const productionAmyline = 0.05 * f.biogeneseGranules;
+  // Ce qui agrège n'est pas la production seule — une cellule saine en
+  // fabrique toute sa vie sans jamais faire un dépôt. C'est la production
+  // SOUS CHARGE CHRONIQUE : la phase compensatoire du prédiabète, où la
+  // cellule hypersécrète pour tenir une glycémie qui monte. Le carré dit
+  // que le mécanisme s'emballe — plus il y a d'agrégats, plus le milieu
+  // devient propice. La résorption existe mais prend des mois : ici
+  // comprimée, et l'autophagie y aide, comme il est publié.
+  e.amylineAgregee = borner(
+    e.amylineAgregee +
+      dt *
+        (0.1 * productionAmyline * s.chargeChronique * s.chargeChronique -
+          0.00002 * e.amylineAgregee * (1 + s.autophagie)),
+    0,
+    3,
+  );
+
   const pressionOxydante = 1.8 * f.respiration + 0.8 * f.betaOxydation + 0.25 * s.dommage;
   s.ros = borner(s.ros + dt * (pressionOxydante - p.capaciteAntioxydante * s.ros), 0, 5);
   // Les chaperons de la lumière travaillent AU calcium : un réticulum vidé
@@ -987,6 +1090,7 @@ function enregistrerHistorique(systeme: SystemeCellulaire): void {
     secretion: systeme.temoinSecretion,
     stress: systeme.temoinStress,
     viabilite: systeme.temoinViabilite,
+    identite: 0.9,
   });
   ajouterPoint(systeme, {
     temps: systeme.temps,
@@ -997,6 +1101,9 @@ function enregistrerHistorique(systeme: SystemeCellulaire): void {
     secretion: systeme.flux.secretion,
     stress: Math.max(systeme.stress.ros, systeme.stress.stressRE),
     viabilite: systeme.stress.viabilite,
+    identite: Math.cbrt(
+      systeme.expression.pdx1 * systeme.expression.mafa * systeme.expression.neurod1,
+    ),
   });
 }
 

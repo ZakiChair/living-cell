@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
-import type { MecanismeBrut } from './contrat.js'
+import { contexteRepos } from '../../noyau/contexte.js'
+import type { ContexteCellule, MecanismeBrut } from './contrat.js'
 
 /**
  * La maturation du granule : PC1/3, PC2, le peptide C, le zinc et le cristal.
@@ -147,7 +148,32 @@ export function creerMaturationGranule(): MecanismeBrut[] {
   coeur.name = 'coeur-en-cristallisation'
   groupe.add(coeur)
 
-  const animer = (temps: number): void => {
+  // ── L'AMYLINE, seconde hormone du granule ───────────────────────────────
+  // Un pour vingt en rapport molaire avec l'insuline, faite dans le même
+  // granule, coupée par les mêmes convertases, sécrétée avec elle. C'est la
+  // version HUMAINE qui s'agrège en amyloïde ; celle du rat n'en est pas
+  // capable, et c'est pourquoi tant de modèles animaux ratent ce mécanisme.
+  const NB_AMYLINE = 4
+  const amyline = new THREE.InstancedMesh(
+    new THREE.IcosahedronGeometry(0.0042, 0),
+    materiauOrganite(TEINTES.reticulumLisse, { doubleFace: false }),
+    NB_AMYLINE,
+  )
+  amyline.frustumCulled = false
+  groupe.add(amyline)
+  const ancresAmyline: THREE.Vector3[] = []
+  for (let i = 0; i < NB_AMYLINE; i++) {
+    const a = (i / NB_AMYLINE) * Math.PI * 2 + 0.8
+    ancresAmyline.push(
+      new THREE.Vector3(
+        Math.cos(a) * RAYON_GRANULE * 0.55,
+        Math.sin(a) * RAYON_GRANULE * 0.5,
+        (i % 2 === 0 ? 1 : -1) * RAYON_GRANULE * 0.3,
+      ),
+    )
+  }
+
+  const animer = (temps: number, contexte: ContexteCellule = contexteRepos()): void => {
     const p = ((temps / PERIODE) % 1 + 1) % 1
 
     // Les plaques de clathrine s'en vont au tiers du cycle.
@@ -228,6 +254,26 @@ export function creerMaturationGranule(): MecanismeBrut[] {
       zincs.setMatrixAt(z, _matrice)
     }
     zincs.instanceMatrix.needsUpdate = true
+
+    // L'amyline suit la maturation, comme l'insuline — et son agrégat croît
+    // avec ce que le modèle a accumulé : une cellule sous charge chronique
+    // le montre, une cellule saine n'en a pas.
+    const agregat = Math.min(1, contexte.proteinesMalRepliees * 0.6 + 0.15)
+    for (let i = 0; i < NB_AMYLINE; i++) {
+      const derive = lissage((p - P_COUPES_DEB) / 0.3)
+      _position.copy(ancresAmyline[i]!)
+      _position.x += Math.sin(temps * 0.8 + i * 2.1) * 0.004
+      _position.y += Math.cos(temps * 0.7 + i * 1.6) * 0.004
+      // Agrégée, elle se rassemble en amas au lieu de rester dispersée.
+      if (agregat > 0.4) _position.multiplyScalar(1 - 0.35 * (agregat - 0.4))
+      _matrice.compose(
+        _position,
+        _quat,
+        _echelle.setScalar((0.6 + 0.4 * derive) * (0.7 + 0.6 * agregat)),
+      )
+      amyline.setMatrixAt(i, _matrice)
+    }
+    amyline.instanceMatrix.needsUpdate = true
     _echelle.setScalar(1)
   }
 
@@ -273,7 +319,15 @@ export function creerMaturationGranule(): MecanismeBrut[] {
         "c'est le cœur dense des clichés de microscopie. Le peptide C, lui, ne " +
         'part pas : dissous dans le halo, il sera co-sécrété MOLE POUR MOLE avec ' +
         "l'insuline — c'est lui qu'on dose en clinique pour savoir si un " +
-        "pancréas fabrique encore, car l'insuline injectée n'en a pas.",
+        "pancréas fabrique encore, car l'insuline injectée n'en a pas. Et le " +
+        "granule porte une SECONDE hormone, en vert d'eau : l'AMYLINE, une " +
+        'pour vingt insulines, coupée par les mêmes convertases et sécrétée ' +
+        "avec elle — elle freine la vidange de l'estomac et coupe l'appétit, " +
+        "ce dont un analogue est fait médicament. L'amyline HUMAINE a une " +
+        "mauvaise propriété que celle du rat n'a pas : elle s'agrège en " +
+        'fibrilles amyloïdes, et ces dépôts se retrouvent dans plus de neuf ' +
+        'pancréas de type 2 sur dix. Sous charge chronique, regardez-la se ' +
+        'rassembler en amas au lieu de rester dispersée.',
       objet: groupe,
       ancre: groupe.position.clone(),
       rayonCadrage: 0.28,

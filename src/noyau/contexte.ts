@@ -47,6 +47,12 @@ export interface ContexteCellule {
   readonly stressRE: number;
   /** Protéines mal repliées en attente de dégradation, unités du modèle. */
   readonly proteinesMalRepliees: number;
+  /**
+   * IDENTITÉ de la cellule bêta, 0 à 1 : la moyenne géométrique de PDX1,
+   * MAFA et NEUROD1. Elle tombe avant la viabilité — une cellule
+   * dédifférenciée est vivante, mais elle a cessé d'être une cellule bêta.
+   */
+  readonly identiteBeta: number;
 }
 
 const EPSILON = 1e-9;
@@ -82,6 +88,7 @@ export function contexteRepos(): ContexteCellule {
     secretionRelative: 0.02,
     stressRE: 0.04,
     proteinesMalRepliees: 0.05,
+    identiteBeta: 0.9,
   };
 }
 
@@ -117,5 +124,10 @@ export function contexteDe(systeme: SystemeCellulaire): ContexteCellule {
     ),
     stressRE: borner(systeme.stress.stressRE, 0, 1),
     proteinesMalRepliees: systeme.expression.proteinesMalRepliees,
+    identiteBeta: Math.cbrt(
+      borner(systeme.expression.pdx1, 0, 1) *
+        borner(systeme.expression.mafa, 0, 1) *
+        borner(systeme.expression.neurod1, 0, 1),
+    ),
   };
 }

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { RAYON_CELLULE, TEINTES, creerAlea, materiauOrganite } from '../contrat.js'
+import { poserSilhouette } from '../silhouette.js'
 import type { MecanismeBrut } from './contrat.js'
 
 /**
@@ -85,6 +86,27 @@ export function creerPompeSodiumPotassium(): MecanismeBrut[] {
     materiauOrganite(TEINTES.proteineMembranaire),
   )
   pompe.add(corpsPompe)
+
+  // ── LA VRAIE FORME DE LA POMPE ──────────────────────────────────────────
+  // 2ZXE : la Na⁺/K⁺-ATPase de rein de porc, résolue par Shinoda et coll. en
+  // 2009 — la première structure de cette pompe, dans l'état E2 lié à deux
+  // potassiums. Mille deux cent quatre-vingt-seize résidus mesurés, là où le
+  // cylindre ne montrait qu'un tonneau.
+  //
+  // Le corps procédural reste, mais dessous : c'est LUI qui se déforme d'un
+  // état à l'autre (le changement de conformation est le sujet de la scène,
+  // et une silhouette figée ne peut pas le rendre). La forme mesurée donne la
+  // silhouette, le cylindre donne le mouvement.
+  const silhouettePompe = new THREE.Group()
+  pompe.add(silhouettePompe)
+  poserSilhouette(
+    '2ZXE',
+    silhouettePompe,
+    { rayon: 0.058, materiau: materiauOrganite(TEINTES.proteineMembranaire) },
+    () => {
+      corpsPompe.visible = false
+    },
+  )
 
   // Deux volets qui s'écartent : c'est eux qui rendent le changement de
   // conformation lisible. Un cylindre seul ne montrerait rien.
@@ -192,6 +214,9 @@ export function creerPompeSodiumPotassium(): MecanismeBrut[] {
     voletDehors.position.y = DEHORS * (0.062 + ouvDehors * 0.03)
     voletDehors.rotation.z = -ouvDehors * 0.8
     corpsPompe.scale.set(largeur, 1, largeur)
+    // La silhouette suit le même souffle : la molécule réelle change bien de
+    // largeur entre E1 et E2, et c'est ce qui fait passer les ions.
+    silhouettePompe.scale.set(largeur, 1, largeur)
 
     // Le phosphate n'est présent qu'en E1-P et E2-P, les deux états phosphorylés.
     const phosphoryle = indice === 1 || indice === 2

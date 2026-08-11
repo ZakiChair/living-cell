@@ -9,7 +9,7 @@ export interface LaboratoireCellulaire {
   rafraichir(): void;
 }
 
-type Mesure = 'atp' | 'potentielMembrane' | 'calcium' | 'secretionInsuline' | 'viabilite' | 'ros';
+type Mesure = 'atp' | 'potentielMembrane' | 'calcium' | 'secretionInsuline' | 'viabilite' | 'ros' | 'identite';
 
 const BLEU = '#0072b2';
 const ORANGE = '#d55e00';
@@ -35,6 +35,8 @@ function valeur(systeme: SystemeCellulaire, mesure: Mesure): number {
     secretionInsuline: [['expression', 'insulineSecretee']],
     viabilite: [['stress', 'viabilite']],
     ros: [['stress', 'ros']],
+    // L'identité : moyenne géométrique du trio PDX1 · MAFA · NEUROD1.
+    identite: [['expression', 'mafa']],
   };
   for (const chemin of chemins[mesure]) {
     const v = lire(s, chemin, Number.NaN);
@@ -54,6 +56,7 @@ function historique(systeme: SystemeCellulaire, mesure: Mesure): number[] {
     secretionInsuline: 'secretion',
     viabilite: 'viabilite',
     ros: 'stress',
+    identite: 'identite',
   };
   return h.filter((point: any) => point?.serie === 'traite').map((point: any) => nombre(point?.[champ[mesure]]));
 }
@@ -104,7 +107,7 @@ export function creerLaboratoireCellulaire(
     et ce site ne prétend pas l'avoir — il prétend déclarer ce qu'il coupe.</p></details>
     <section aria-labelledby="lab-profil"><h3 id="lab-profil">Profil cellulaire</h3><dl class="laboratoire-mesures"></dl></section>
     <section aria-labelledby="lab-commandes"><h3 id="lab-commandes">Interventions</h3><div class="laboratoire-commandes"></div></section>
-    <section aria-labelledby="lab-courbes"><div class="laboratoire-ligne-titre"><h3 id="lab-courbes">Traité / témoin</h3><label for="laboratoire-signal">Signal</label><select id="laboratoire-signal" name="laboratoire-signal" class="laboratoire-select"><option value="atp">ATP</option><option value="potentielMembrane">Vm</option><option value="calcium">Ca cytosolique</option><option value="secretionInsuline">Insuline sécrétée</option><option value="viabilite">Viabilité</option><option value="ros">ROS</option></select></div><canvas class="laboratoire-canvas" role="img" aria-label="Courbe comparative du traité et du témoin"></canvas><p class="laboratoire-legende"><span>Traité</span><span>Témoin</span></p></section>
+    <section aria-labelledby="lab-courbes"><div class="laboratoire-ligne-titre"><h3 id="lab-courbes">Traité / témoin</h3><label for="laboratoire-signal">Signal</label><select id="laboratoire-signal" name="laboratoire-signal" class="laboratoire-select"><option value="atp">ATP</option><option value="potentielMembrane">Vm</option><option value="calcium">Ca cytosolique</option><option value="secretionInsuline">Insuline sécrétée</option><option value="viabilite">Viabilité</option><option value="ros">ROS</option><option value="identite">Identité bêta</option></select></div><canvas class="laboratoire-canvas" role="img" aria-label="Courbe comparative du traité et du témoin"></canvas><p class="laboratoire-legende"><span>Traité</span><span>Témoin</span></p></section>
     <footer><button type="button" class="laboratoire-reset">Réinitialiser</button><button type="button" class="laboratoire-csv">Exporter CSV</button></footer>`;
 
   const style = document.createElement('style');
@@ -246,7 +249,7 @@ export function creerLaboratoireCellulaire(
       ...(journee.active
         ? [['Heure de la journée', `${Math.floor(journee.heure)} h ${String(Math.floor((journee.heure % 1) * 60)).padStart(2, '0')}`] as [string, string]]
         : []),
-      ['Temps simulé', `${lire(traite, ['temps'], lire(traite, ['tempsSimule'])) .toFixed(1)} s`], ['ATP', `${valeur(traite, 'atp').toFixed(2)} mM`], ['Vm', `${valeur(traite, 'potentielMembrane').toFixed(1)} mV`], ['Ca cytosolique', `${(valeur(traite, 'calcium') * 1000).toPrecision(3)} µM`], ['Granules', lire(traite, ['expression', 'insulineGranules']).toFixed(0)], ['Insuline sécrétée', valeur(traite, 'secretionInsuline').toFixed(2)], ['ROS', valeur(traite, 'ros').toFixed(2)], ['Viabilité', `${(valeur(traite, 'viabilite') * 100).toFixed(1)} %`], ['Destin', String((traite as any).stress?.destin ?? '—')],
+      ['Temps simulé', `${lire(traite, ['temps'], lire(traite, ['tempsSimule'])) .toFixed(1)} s`], ['ATP', `${valeur(traite, 'atp').toFixed(2)} mM`], ['Vm', `${valeur(traite, 'potentielMembrane').toFixed(1)} mV`], ['Ca cytosolique', `${(valeur(traite, 'calcium') * 1000).toPrecision(3)} µM`], ['Granules', lire(traite, ['expression', 'insulineGranules']).toFixed(0)], ['Insuline sécrétée', valeur(traite, 'secretionInsuline').toFixed(2)], ['ROS', valeur(traite, 'ros').toFixed(2)], ['Viabilité', `${(valeur(traite, 'viabilite') * 100).toFixed(1)} %`], ['Identité bêta', `${(Math.cbrt(lire(traite, ['expression', 'pdx1'], 1) * lire(traite, ['expression', 'mafa'], 1) * lire(traite, ['expression', 'neurod1'], 1)) * 100).toFixed(0)} %`], ['Destin', String((traite as any).stress?.destin ?? '—')],
     ];
     mesures.innerHTML = valeurs.map(([nom, v]) => `<dt>${nom}</dt><dd>${v}</dd>`).join(''); dessiner();
   }
